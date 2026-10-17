@@ -1,0 +1,103 @@
+---
+import Legal from "../layouts/Legal.astro";
+import { site } from "../data/site";
+
+/*
+  NÁVRH. Před spuštěním webu musí projít majitelka a doplnit IČO a sídlo.
+  Text popisuje zpracování, které nastane, až bude rezervační formulář
+  napojený na databázi. Do té doby web žádné osobní údaje nesbírá.
+*/
+---
+
+<Legal lang="cs" title="Zásady ochrany osobních údajů" updated="Naposledy upraveno: září 2026">
+  <h2>Kdo údaje zpracovává</h2>
+  <p>
+    Správcem osobních údajů je <strong>{site.legalName}</strong>, se sídlem
+    <span class="todo">TODO: sídlo dle rejstříku</span>, IČO
+    <span class="todo">TODO: IČO</span>, provozovna {site.address.street},
+    {site.address.zip} {site.address.city}.
+  </p>
+  <p>
+    Ve věcech ochrany údajů nás zastihnete na
+    <a href={`mailto:${site.email}`}>{site.email}</a> nebo na telefonu
+    <a href={`tel:${site.phone}`}>{site.phoneDisplay}</a>.
+  </p>
+
+  <h2>Jaké údaje sbíráme</h2>
+  <p>Při rezervaci stolu od vás potřebujeme jen to, bez čeho stůl nepřipravíme:</p>
+  <ul>
+    <li>jméno a příjmení,</li>
+    <li>telefonní číslo,</li>
+    <li>e-mailovou adresu,</li>
+    <li>datum, čas a počet osob,</li>
+    <li>poznámku, pokud ji vyplníte.</li>
+  </ul>
+  <p>
+    Dále ukládáme technický otisk vaší IP adresy v zahašované podobě. Slouží
+    výhradně k tomu, abychom ubránili formulář před roboty. Zpětně z něj vaši IP
+    adresu nezískáme.
+  </p>
+
+  <h2>Proč je zpracováváme</h2>
+  <p>
+    Údaje potřebujeme, abychom vaši rezervaci vyřídili a poslali vám potvrzení.
+    Právním základem je <strong>plnění smlouvy</strong> podle čl. 6 odst. 1
+    písm. b) GDPR. Ochrana formuláře před zneužitím stojí na našem oprávněném
+    zájmu podle písm. f).
+  </p>
+  <p>
+    Nepoužíváme vaše údaje k rozesílání nabídek a nepředáváme je nikomu pro
+    marketingové účely.
+  </p>
+
+  <h2>Jak dlouho je držíme</h2>
+  <p>
+    Osobní údaje mažeme <strong>30 dní</strong> po datu rezervace. Z rezervace
+    zůstane jen anonymní záznam bez jména a kontaktu, tedy datum, čas, počet
+    osob a výsledek. Ten nám slouží k tomu, abychom věděli, kolik stolů
+    plánovat. Po roce mizí i tento záznam.
+  </p>
+
+  <h2>Komu se údaje dostanou</h2>
+  <p>
+    Web běží na infrastruktuře společnosti <strong>Cloudflare, Inc.</strong>,
+    která pro nás vystupuje jako zpracovatel. Data mohou být zpracována i mimo
+    Evropskou unii; přenos je krytý standardními smluvními doložkami Evropské
+    komise a rámcem EU-US Data Privacy Framework.
+  </p>
+  <p>
+    Nikomu dalšímu údaje nepředáváme. Nepoužíváme Google Analytics ani jiné
+    sledovací nástroje.
+  </p>
+
+  <h2>Cookies</h2>
+  <p>
+    Web nepoužívá analytické ani reklamní cookies, proto se vás na nic
+    neptáme. Ukládáme jedinou technickou položku do úložiště prohlížeče: vaši
+    volbu světlého nebo tmavého vzhledu. Zůstává ve vašem zařízení a nikam se
+    neodesílá.
+  </p>
+  <p>
+    Přihlášení do vnitřní správy rezervací používá nezbytnou technickou cookie.
+    Týká se jen personálu restaurace, ne hostů.
+  </p>
+
+  <h2>Vaše práva</h2>
+  <p>Kdykoliv nás můžete požádat o:</p>
+  <ul>
+    <li>přístup k údajům, které o vás vedeme,</li>
+    <li>opravu, pokud něco nesedí,</li>
+    <li>výmaz,</li>
+    <li>omezení zpracování,</li>
+    <li>přenesení údajů,</li>
+    <li>vznesení námitky proti zpracování z oprávněného zájmu.</li>
+  </ul>
+  <p>
+    Napište nám na <a href={`mailto:${site.email}`}>{site.email}</a> a ozveme se
+    nejpozději do měsíce. Pokud byste s naším postupem nebyli spokojeni, můžete
+    podat stížnost u
+    <a href="https://uoou.gov.cz/" target="_blank" rel="noopener noreferrer">
+      Úřadu pro ochranu osobních údajů
+    </a>.
+  </p>
+</Legal>

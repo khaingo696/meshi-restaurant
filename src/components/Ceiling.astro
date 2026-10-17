@@ -1,0 +1,54 @@
+---
+import { Image } from "astro:assets";
+import interier2 from "../assets/interier-2.webp";
+
+/*
+  Pruh stropu se zavěšenými rostlinami, rozpuštěný do papíru.
+
+  Rostliny nejde z fotky vyříznout: dřevěné trámy mají stejnou světlost i
+  stejný odstín zeleně jako listy, histogram je jeden hrb bez propadu, takže
+  žádný práh je neoddělí. Bereme proto celý pruh a maskou ho necháme
+  přejít do papíru.
+
+  Působí to, jako by host vzhlédl ke stropu, což je první věc, které si
+  v sále všimne.
+*/
+---
+
+<div data-ceiling class="ceiling pointer-events-none absolute inset-x-0 select-none" aria-hidden="true">
+  <Image
+    data-ceiling-img
+    src={interier2}
+    alt=""
+    widths={[900, 1440, 1920]}
+    sizes="100vw"
+    loading="eager"
+    class="h-full w-full object-cover object-top will-change-transform"
+  />
+</div>
+
+<style>
+  .ceiling {
+    /* Pod lištou, ne pod ní. Přes fotku by navigace nebyla čitelná. */
+    top: 64px;
+    height: clamp(10rem, 26vh, 17rem);
+    /* Dole se pruh vytratí, nahoře je plný. Bez tvrdé hrany. */
+    /* Nahoře i dole měkký přechod, aby pruh nikde nekončil hranou. */
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 40%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 40%, transparent 100%);
+    opacity: 0.42;
+    /* Fotka je teplá a tmavá, násobení ji posadí do papíru místo na něj. */
+    mix-blend-mode: multiply;
+  }
+
+  @media (width >= 48rem) {
+    .ceiling {
+      top: 72px;
+    }
+  }
+
+  :global(:root[data-theme="dark"]) .ceiling {
+    mix-blend-mode: screen;
+    opacity: 0.32;
+  }
+</style>

@@ -1,0 +1,51 @@
+---
+import { getImage } from "astro:assets";
+import leafTl from "../assets/leaf-tl-cut.png";
+import leafBr from "../assets/leaf-br-cut.png";
+
+interface Props {
+  /** Který roh listy obsadí. Na prostírání jsou v protilehlých rozích. */
+  corner?: "tl" | "br" | "both";
+  class?: string;
+}
+const { corner = "both" } = Astro.props;
+
+const l1 = await getImage({ src: leafTl, width: 800, format: "webp" });
+const l2 = await getImage({ src: leafBr, width: 800, format: "webp" });
+---
+
+{/*
+  Javorové větve vyříznuté z prostírání restaurace. Mají skutečnou průhlednost
+  a vlastní hnědý tón, stejný jako u létajících listů. Dřív to byly obdélníkové
+  výřezy schované přes `mix-blend-mode: darken`, což je drželo příliš bledé
+  a nad jiným pozadím než papír by se prozradily.
+*/}
+{
+  (corner === "tl" || corner === "both") && (
+    <img
+      src={l1.src}
+      alt=""
+      aria-hidden="true"
+      data-leaf="-14"
+      class="leaf pointer-events-none absolute -top-[8%] -left-[6%] w-[38vw] max-w-[30rem] select-none"
+    />
+  )
+}
+{
+  (corner === "br" || corner === "both") && (
+    <img
+      src={l2.src}
+      alt=""
+      aria-hidden="true"
+      data-leaf="11"
+      class="leaf pointer-events-none absolute -right-[5%] -bottom-[10%] w-[32vw] max-w-[26rem] select-none"
+    />
+  )
+}
+
+<style>
+  /* Bez míchání. Tón i alfa jsou zapečené v souboru, kreslí se přímo. */
+  .leaf {
+    opacity: 0.72;
+  }
+</style>

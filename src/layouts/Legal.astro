@@ -1,0 +1,79 @@
+---
+import Base from "./Base.astro";
+import type { Lang } from "../data/i18n";
+
+interface Props {
+  lang: Lang;
+  title: string;
+  updated: string;
+}
+
+const { lang, title, updated } = Astro.props;
+---
+
+<Base lang={lang}>
+  <article class="wrap py-32 md:py-40">
+    <header class="max-w-[46rem]">
+      <h1 class="display-lg text-fg">{title}</h1>
+      <p class="mt-5 text-[0.82rem] tracking-[0.12em] uppercase text-fg-muted">{updated}</p>
+      <hr class="rule-gold mt-10" />
+    </header>
+
+    <div class="prose-legal mt-12 max-w-[46rem]">
+      <slot />
+    </div>
+  </article>
+</Base>
+
+<style is:global>
+  /* Čitelnost dlouhého textu je tu důležitější než výraz. */
+  .prose-legal h2 {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    line-height: 1.2;
+    margin-top: 3rem;
+    color: var(--fg);
+  }
+
+  .prose-legal h2:first-child {
+    margin-top: 0;
+  }
+
+  .prose-legal p,
+  .prose-legal li {
+    color: var(--fg-muted);
+    margin-top: 1rem;
+    line-height: 1.75;
+  }
+
+  .prose-legal ul {
+    margin-top: 1rem;
+    padding-left: 1.15rem;
+    list-style: disc;
+  }
+
+  .prose-legal li {
+    margin-top: 0.5rem;
+  }
+
+  .prose-legal a {
+    color: var(--accent-deep);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .prose-legal strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  /* Zvýraznění míst, kam patří údaje od majitelky. */
+  .prose-legal .todo {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border: 1px dashed var(--accent);
+    border-radius: var(--radius-card);
+    color: var(--accent-deep);
+    font-size: 0.88em;
+  }
+</style>

@@ -1,0 +1,432 @@
+@import "tailwindcss";
+
+/* Self-hosted fonts. Nikdy ne Google Fonts CDN (GDPR: přenos IP do USA). */
+/*
+  Poppins, geometrický grotesk. Stejné písmo jako reference azu-ya.cz.
+  Má latin-ext, takže česká diakritika sedí. Neseme tři řezy, víc by
+  zbytečně přitížilo stránce.
+*/
+@import "@fontsource/poppins/300.css";
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+
+/* ---------------------------------------------------------------------------
+   MESHI design tokens
+
+   Směr: japonsko-evropské fine dining. Washi papír, sumi inkoust, zlatá z loga.
+   Inspirace paletou vychází z vlastních brandových materiálů restaurace
+   (zlaté logo s branou torii, javorové listy, papírové pozadí), ne z šablony.
+
+   TVAROVÝ ZÁMEK (jedno pravidlo, platí všude):
+     fotky a média  18px
+     karty a plochy 18px
+     tlačítka       plná pilulka
+     pole formuláře 12px
+   Žádné pravoúhlé rámečky kolem obsahu.
+   BAREVNÝ ZÁMEK: jediný akcent = zlatá. Žádná druhá akcentní barva nikde.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  /* Kana se sází systémovým Minchem: 0 kB navíc, správný tvar na všech OS. */
+  --font-kana: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Shippori Mincho",
+    "Noto Serif JP", serif;
+
+  --radius-card: 18px;
+  --radius-field: 12px;
+
+  --spacing-section: clamp(6rem, 12vw, 11rem);
+  --ease-silk: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  color-scheme: light;
+
+  --bg: #e9decc; /* papír odebraný ze skutečného prostírání restaurace */
+  --bg-2: #e0d3bd; /* tišší pás */
+  --fg: #2e241a; /* sumi text */
+  --fg-muted: #6b5a46;
+  /* Vzorkováno z neprůhledných pixelů loga: brána i nápis MESHI. */
+  --gold-light: #e1c174;
+  --gold: #be9d58;
+  --gold-deep: #a18253;
+  --brown: #5b3a17; /* barva nápisu MESHI */
+  --accent: #8a6a35; /* kana, vlasové linky */
+  --accent-deep: #6b4c1e; /* drobný text, splňuje AA na papíře */
+  --accent-lift: #c9a15a;
+  --btn: linear-gradient(135deg, #a1783c 0%, #5b3a17 100%);
+  --btn-hover: linear-gradient(135deg, #be9d58 0%, #6d4a1f 100%);
+  --btn-fg: #faebdf;
+  --line: rgb(46 36 26 / 0.16);
+  --line-strong: rgb(46 36 26 / 0.34);
+
+  /* Horní lišta. Matné sklo z papírového tónu: listy pod ní ještě
+     prosvítají, ale pás už drží vlastní hmotu a kontrast textu. */
+  --nav-bg: rgb(224 211 189 / 0.82);
+  --nav-fg: #2e241a;
+  --nav-muted: rgb(46 36 26 / 0.62);
+  --nav-accent: #8a6a35;
+  --nav-line: rgb(46 36 26 / 0.16);
+
+  /* Jediný tmavý blok na stránce (signature pokrmy + patička).
+     Záměrná kompozice, ne střídání témat. */
+  --sumi: #171310;
+  --sumi-fg: #efe6d6;
+  --sumi-muted: rgb(239 230 214 / 0.6);
+  --sumi-line: rgb(239 230 214 / 0.16);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #171310;
+  --bg-2: #1f1913;
+  --fg: #efe6d6;
+  --fg-muted: rgb(239 230 214 / 0.62);
+  --accent: #c9a15a;
+  --accent-deep: #e0be7e;
+  --accent-lift: #e8cc93;
+  --btn: linear-gradient(135deg, #be9d58 0%, #8a6330 100%);
+  --btn-hover: linear-gradient(135deg, #e1c174 0%, #a1783c 100%);
+  --btn-fg: #221609;
+  --line: rgb(239 230 214 / 0.14);
+  --line-strong: rgb(239 230 214 / 0.3);
+
+  --sumi: #0f0c0a;
+  --sumi-fg: #efe6d6;
+  --sumi-muted: rgb(239 230 214 / 0.6);
+  --sumi-line: rgb(239 230 214 / 0.16);
+
+  --nav-bg: rgb(23 19 16 / 0.68);
+  --nav-fg: #efe6d6;
+  --nav-muted: rgb(239 230 214 / 0.62);
+  --nav-accent: #c9a15a;
+  --nav-line: rgb(239 230 214 / 0.14);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-lift: var(--accent-lift);
+  --color-btn-fg: var(--btn-fg);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-sumi: var(--sumi);
+  --color-sumi-fg: var(--sumi-fg);
+  --color-sumi-muted: var(--sumi-muted);
+  --color-sumi-line: var(--sumi-line);
+  --color-nav-bg: var(--nav-bg);
+  --color-nav-fg: var(--nav-fg);
+  --color-nav-muted: var(--nav-muted);
+  --color-nav-accent: var(--nav-accent);
+  --color-nav-line: var(--nav-line);
+}
+
+/* --------------------------------------------------------------------------
+   Base
+-------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  border-color: var(--line);
+}
+
+html {
+  /* Lenis řídí plynulý scroll; nativní smooth by s ním kolidoval. */
+  scroll-behavior: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 1.02rem;
+  line-height: 1.65;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-deep);
+  outline-offset: 3px;
+  border-radius: var(--radius-field);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.005em;
+  /* 1.1 minimum: kurzíva v displeji má dolní dotažnice (y, g, j, p) */
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Fixní lišta by jinak zakryla nadpis sekce, na kterou odkaz míří. */
+section[id] {
+  scroll-margin-top: 88px;
+}
+
+/* --------------------------------------------------------------------------
+   Utility vrstva
+-------------------------------------------------------------------------- */
+
+@utility wrap {
+  width: 100%;
+  max-width: 84rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+
+  @media (width >= 48rem) {
+    padding-inline: 2.5rem;
+  }
+
+  @media (width >= 80rem) {
+    padding-inline: 3.5rem;
+  }
+}
+
+@utility display-xl {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.7rem, 5.8vw, 5.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.018em;
+}
+
+@utility display-lg {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.3rem, 5vw, 4.3rem);
+  line-height: 1.06;
+  letter-spacing: -0.014em;
+}
+
+@utility kana {
+  font-family: var(--font-kana);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+}
+
+/* Oblouk. Sál restaurace má valenou klenbu a logo bránu torii, takže tvar
+   fotek vychází z místa samotného, ne z náhodného zaoblení rohů. */
+@utility arch {
+  border-radius: 46% 46% var(--radius-card) var(--radius-card) / 30% 30%
+    var(--radius-card) var(--radius-card);
+  overflow: hidden;
+}
+
+/* Menší oblouk pro karty pokrmů, aby si nekonkuroval s hlavní fotkou. */
+@utility arch-sm {
+  border-radius: 42% 42% var(--radius-card) var(--radius-card) / 20% 20%
+    var(--radius-card) var(--radius-card);
+  overflow: hidden;
+}
+
+/* Svislá kana v japonské sazbě odshora dolů. Tenký akcent u okraje,
+   ne obří vodoznak přes půl obrazovky. */
+@utility kana-column {
+  font-family: var(--font-kana);
+  writing-mode: vertical-rl;
+  letter-spacing: 0.55em;
+  font-size: 1.15rem;
+}
+
+/* Hlavní tlačítko. Přechod jde od zlaté brány ke hnědé nápisu, obojí z loga. */
+@utility btn-primary {
+  background-image: var(--btn);
+  color: var(--btn-fg);
+  transition: background-image 0.3s var(--ease-silk), transform 0.2s;
+}
+
+@utility btn-primary-hover {
+  background-image: var(--btn-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Fotky pod kurzorem
+
+   Snímky leží v papírovém světě pod tenkým závojem v barvě papíru. Pod
+   kurzorem se závoj rozpustí a zespodu vyjede zlatá linka. Měřítko obrázku
+   řeší GSAP, tady zůstává jen to, co se nedotýká `transform`.
+-------------------------------------------------------------------------- */
+
+[data-frame] {
+  position: relative;
+  cursor: pointer;
+}
+
+[data-frame]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--bg) 20%, transparent);
+  transition: opacity 0.7s var(--ease-silk);
+}
+
+[data-frame].is-hovered::after {
+  opacity: 0;
+}
+
+/* Zlatá linka se vykreslí zleva, stejný motiv jako předěly sekcí. */
+[data-frame]::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 2;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.7s var(--ease-silk);
+  pointer-events: none;
+}
+
+[data-frame].is-hovered::before {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-frame]::after,
+  [data-frame]::before {
+    transition: none;
+  }
+}
+
+/* Vlasová zlatá linka: opakující se motiv místo rámečků a stínů. */
+@utility rule-gold {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent) 12%,
+    var(--accent) 88%,
+    transparent
+  );
+  height: 1px;
+  width: 100%;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Papírová textura
+   Fixní, pointer-events:none, mimo scrollující kontejnery (GPU repaint).
+-------------------------------------------------------------------------- */
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+
+:root[data-theme="dark"] .grain {
+  mix-blend-mode: screen;
+  opacity: 0.16;
+}
+
+/* --------------------------------------------------------------------------
+   Motion: výchozí stavy pro GSAP.
+   Prvky startují skryté jen tehdy, když JS poběží. Bez JS zůstane vše viditelné.
+-------------------------------------------------------------------------- */
+
+/* Prvky se skryjí až v okamžiku, kdy je jasné, že o ně animace převezme péči.
+   Atribut `data-ready` doplní skript hned po nastavení animace, a navíc ho
+   po dvou a půl vteřinách doplní pojistka. Když se GSAP nenačte nebo spadne,
+   text se tedy sám objeví místo toho, aby zůstal neviditelný. */
+
+.js [data-reveal]:not([data-ready]) {
+  opacity: 0;
+}
+
+.js [data-stagger]:not([data-ready]) > * {
+  opacity: 0;
+}
+
+/* Nadpis se dělí na řádky až v prohlížeči. Do té doby je schovaný celý,
+   jinak by problikl nerozdělený a pak poskočil. */
+.js [data-split]:not([data-ready]),
+.js [data-typewriter]:not([data-ready]) {
+  opacity: 0;
+}
+
+/* Jen průhlednost, nikdy transform. O posun se stará výhradně GSAP; kdyby
+   výchozí polohu nastavilo CSS, GSAP by si ji přečetl a přičetl ke své vlastní. */
+/* Fotky startují odhrnuté zdola. `clip-path` je vlastní kanál, nemíchá se
+   s transformem, takže tady si CSS a GSAP do zelí nelezou. */
+.js [data-frame]:not([data-ready]) {
+  clip-path: inset(0 0 100% 0);
+}
+
+/* Skupina se skrývá přes své rámy, sama nic nedělá. */
+.js [data-frame-group]:not([data-ready]) [data-frame] {
+  clip-path: inset(0 0 100% 0);
+}
+
+/* Hero startuje jako vodorovná štěrbiny uprostřed obrazovky. */
+.js [data-hero-slit]:not([data-ready]) {
+  clip-path: inset(46% 0% 46% 0% round 0px);
+}
+
+/* Nekonečný pás japonských názvů. Jediný na celé stránce. */
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 42s linear infinite;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal],
+  .js [data-split],
+  .js [data-split] > .line > .word {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .js [data-frame] {
+    clip-path: none !important;
+  }
+
+  .marquee {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

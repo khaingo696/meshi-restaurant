@@ -1,0 +1,71 @@
+---
+import { t, type Lang } from "../data/i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const copy = t[lang];
+---
+
+{/*
+  Typografická sekce bez fotky. Drží dech mezi hero a tmavým blokem pokrmů
+  a nezopakuje rozvržení "text vedle obrázku".
+
+  Kompozice je záměrně nesouměrná: nadpis vlevo nahoře, odstavec vpravo a
+  níž, principy dole s prostřídanou výškou. Nic nesedí na jedné lince.
+*/}
+<section id="pribeh" class="relative overflow-hidden pt-(--spacing-section) pb-24 md:pb-32">
+  <span
+    data-parallax="12"
+    aria-hidden="true"
+    class="kana pointer-events-none absolute top-1/2 right-[-3vw] -translate-y-1/2 text-[34vw] leading-none text-accent/[0.07] select-none lg:text-[21vw]"
+  >
+    {copy.story.kana}
+  </span>
+
+  <div class="wrap relative z-10">
+    <div class="grid gap-y-10 lg:grid-cols-12 lg:gap-x-8">
+      <h2 data-split class="display-lg lg:col-span-6 lg:pt-4">
+        {copy.story.heading}
+      </h2>
+
+      {/* Odstavec sedí níž než nadpis. Odtud pochází ten posun. */}
+      <div class="lg:col-span-5 lg:col-start-8 lg:pt-28">
+        <p data-split="words" class="text-[1.06rem] leading-[1.8] text-fg-muted">
+          {copy.story.body[0]}
+        </p>
+      </div>
+    </div>
+
+    <hr data-rule class="rule-gold mt-20 md:mt-28" />
+
+    {/*
+      Tři principy. Ne karty: dělí je jen prázdné místo a vlasová linka.
+      Prostřídaná výška drží stejný nesouměrný rytmus jako horní část.
+      Pod 640px se skládají pod sebe a linky se překlopí na vodorovné.
+    */}
+    <dl class="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-0">
+      {
+        copy.story.pillars.map((p, i) => (
+          <div
+            data-reveal
+            data-reveal-delay={i * 0.1}
+            class:list={[
+              "sm:px-9 sm:first:pl-0 sm:last:pr-0",
+              i > 0 && "border-t border-line pt-10 sm:border-t-0 sm:border-l sm:pt-0",
+              // Ne translate: `data-reveal` níž zapisuje transform inline a přebil by ho.
+              i === 1 && "sm:mt-12",
+              i === 2 && "sm:mt-24",
+            ]}
+          >
+            <dt class="font-display text-[1.9rem] leading-none text-fg">{p.title}</dt>
+            <dd class="mt-4 max-w-[26ch] text-[0.95rem] leading-relaxed text-fg-muted">
+              {p.note}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

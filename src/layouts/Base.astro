@@ -1,0 +1,134 @@
+---
+import "../styles/global.css";
+import { site, mapsUrl } from "../data/site";
+import { t, type Lang } from "../data/i18n";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const copy = t[lang];
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+// Strukturovaná data pro místní vyhledávání. Bez nich Google neví, že jde
+// o restauraci s otevírací dobou, a nezobrazí ji v mapovém boxu.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  name: site.name,
+  url: canonical,
+  telephone: site.phone,
+  email: site.email,
+  servesCuisine: ["Japanese", "Sushi", "Asian"],
+  priceRange: "$$",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: site.address.street,
+    addressLocality: site.address.city,
+    postalCode: site.address.zip,
+    addressCountry: site.address.country,
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: site.address.lat,
+    longitude: site.address.lng,
+  },
+  hasMap: mapsUrl,
+  openingHoursSpecification: [
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday"],
+      opens: "11:00",
+      closes: "22:00",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Friday", "Saturday"],
+      opens: "11:00",
+      closes: "23:00",
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: "Sunday",
+      opens: "12:00",
+      closes: "22:00",
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang={copy.htmlLang} data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{copy.meta.title}</title>
+    <meta name="description" content={copy.meta.description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="cs" href={new URL("/", Astro.site).href} />
+    <link rel="alternate" hreflang="en" href={new URL("/en/", Astro.site).href} />
+    <link rel="alternate" hreflang="x-default" href={new URL("/", Astro.site).href} />
+
+    <meta property="og:type" content="restaurant" />
+    <meta property="og:title" content={copy.meta.title} />
+    <meta property="og:description" content={copy.meta.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={lang === "cs" ? "cs_CZ" : "en_GB"} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="512x512" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <meta name="theme-color" content="#f4ede1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#171310" media="(prefers-color-scheme: dark)" />
+
+    {/*
+      Běží před prvním vykreslením. Dvě věci najednou:
+      1. `js` na <html>, aby CSS schovalo prvky určené k animaci hned,
+         ne až po DOMContentLoaded (jinak text problikne).
+      2. Uložené téma, aby tmavý režim nezablikal bíle.
+    */}
+    <script is:inline>
+      (function () {
+        var root = document.documentElement;
+        root.classList.add("js");
+        try {
+          var saved = localStorage.getItem("meshi-theme");
+          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          root.dataset.theme = saved || (prefersDark ? "dark" : "light");
+        } catch (e) {
+          /* Soukromé okno nebo zablokované úložiště: zůstane světlý režim. */
+        }
+      })();
+    </script>
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+
+  <body>
+    <a
+      href="#obsah"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-fg focus:px-4 focus:py-2 focus:text-bg"
+    >
+      {copy.nav.skip}
+    </a>
+
+    <div class="grain" aria-hidden="true"></div>
+
+    <Nav lang={lang} />
+
+    <main id="obsah">
+      <slot />
+    </main>
+
+    <Footer lang={lang} />
+
+    <script>
+      import "../scripts/motion";
+      import "../scripts/theme";
+      import "../scripts/openState";
+    </script>
+  </body>
+</html>

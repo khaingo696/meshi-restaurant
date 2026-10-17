@@ -1,0 +1,118 @@
+---
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+import mark from "../assets/mark-meshi.png";
+import { site } from "../data/site";
+import { sections, t, type Lang } from "../data/i18n";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const copy = t[lang];
+
+const year = new Date().getFullYear();
+const privacyHref = lang === "cs" ? "/zasady-ochrany-osobnich-udaju/" : "/en/privacy/";
+
+const links = [
+  { href: `#${sections.menu}`, label: copy.nav.menu },
+  { href: `#${sections.gallery}`, label: copy.nav.gallery },
+  { href: `#${sections.reserve}`, label: copy.nav.reserve },
+  { href: `#${sections.contact}`, label: copy.nav.contact },
+  { href: site.giftVoucherUrl, label: copy.nav.voucher, external: true },
+];
+---
+
+<footer class="border-t border-line pt-16 pb-10">
+  <div class="wrap">
+    <div class="grid gap-12 md:grid-cols-12 md:gap-8">
+      <div class="md:col-span-5">
+        {/*
+          Z loga bereme jen bránu. Nápis MESHI je v souboru tmavě hnědý a
+          v tmavém režimu by zmizel, proto jméno sází písmo.
+        */}
+        <Image
+          src={mark}
+          alt=""
+          aria-hidden="true"
+          widths={[180, 360]}
+          sizes="120px"
+          loading="lazy"
+          class="h-auto w-[7rem]"
+        />
+        <p class="mt-5 font-display text-[1.9rem] leading-none tracking-[0.2em] text-fg">MESHI</p>
+        <p class="mt-3 text-[0.72rem] tracking-[0.26em] uppercase text-fg-muted">
+          {copy.home.tagline}
+        </p>
+        <p class="mt-6 max-w-[30ch] text-[0.95rem] text-fg-muted">
+          {site.address.street}, {site.address.zip} {site.address.city}
+        </p>
+      </div>
+
+      <nav class="md:col-span-3" aria-label={copy.nav.menu}>
+        <ul class="flex flex-col gap-3">
+          {
+            links.map((l) => (
+              <li>
+                <a
+                  href={l.href}
+                  target={l.external ? "_blank" : undefined}
+                  rel={l.external ? "noopener noreferrer" : undefined}
+                  class="inline-flex items-center gap-1.5 text-[0.95rem] text-fg-muted transition-colors hover:text-accent-deep"
+                >
+                  {l.label}
+                  {l.external && <Icon name="ph:arrow-up-right" class="size-3.5 opacity-60" />}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="md:col-span-4">
+        <a
+          href={`tel:${site.phone}`}
+          class="font-display text-[1.45rem] leading-none text-fg transition-colors hover:text-accent-deep"
+        >
+          {site.phoneDisplay}
+        </a>
+        <a
+          href={`mailto:${site.email}`}
+          class="mt-3 block text-[0.95rem] text-fg-muted transition-colors hover:text-fg"
+        >
+          {site.email}
+        </a>
+
+        <div class="mt-6 flex items-center gap-3">
+          <a
+            href={site.social.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={copy.footer.instagram}
+            class="grid size-10 place-items-center rounded-full border border-line text-fg-muted transition-colors hover:border-accent hover:text-accent-deep"
+          >
+            <Icon name="ph:instagram-logo" class="size-5" />
+          </a>
+          <a
+            href={site.social.facebook}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={copy.footer.facebook}
+            class="grid size-10 place-items-center rounded-full border border-line text-fg-muted transition-colors hover:border-accent hover:text-accent-deep"
+          >
+            <Icon name="ph:facebook-logo" class="size-5" />
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <hr data-rule class="rule-gold mt-14" />
+
+    <div
+      class="mt-6 flex flex-col gap-3 text-[0.82rem] text-fg-muted sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>&copy; {year} {site.name}. {copy.footer.rights}</p>
+      <a href={privacyHref} class="transition-colors hover:text-accent-deep">{copy.footer.privacy}</a>
+    </div>
+  </div>
+</footer>
