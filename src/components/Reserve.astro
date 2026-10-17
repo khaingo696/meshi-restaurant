@@ -1,396 +1,55 @@
----
-import { Icon } from "astro-icon/components";
-import { site } from "../data/site";
-import { sections, t, type Lang } from "../data/i18n";
+<section class="section bg-surface" id="rezervace">
+  <div class="kanji-bg jp" style="left:-3rem; bottom:-1rem; font-size:22rem" data-drift="-50" aria-hidden="true">席</div>
+  <div class="glow" style="width:28rem;height:28rem;top:18%;left:50%;translate:-50% 0;background:rgba(200,150,80,.12)"></div>
 
-interface Props {
-  lang: Lang;
-}
-const { lang } = Astro.props;
-const copy = t[lang];
-const f = copy.form;
-
-const sizes = Array.from({ length: site.reservation.maxPartySize }, (_, i) => i + 1);
-const privacyHref = lang === "cs" ? "/zasady-ochrany-osobnich-udaju/" : "/en/privacy/";
-
-/*
-  Pole formuláře drží stejná jména, jaká bude čekat API. Až se dodělá backend,
-  mění se jen `action` a odesílací skript, ne struktura.
-*/
----
-
-<section id={sections.reserve} class="relative overflow-hidden bg-bg-2 py-(--spacing-section)">
-  <span
-    data-parallax="12"
-    aria-hidden="true"
-    class="kana pointer-events-none absolute -right-[1vw] -bottom-[4vw] text-[22vw] leading-none text-accent/[0.08] select-none lg:text-[13vw]"
-  >
-    {copy.reserve.kana}
-  </span>
-
-  <div class="wrap relative z-10 grid gap-14 lg:grid-cols-12 lg:gap-16">
-    <div class="lg:col-span-4">
-      <h2 data-split class="display-lg max-w-[12ch] text-fg">
-        {copy.reserve.heading}
-      </h2>
-      <p data-split="words" class="mt-6 max-w-[38ch] text-fg-muted">
-        {copy.reserve.lead}
-      </p>
-
-      <hr data-rule class="rule-gold mt-10" />
-
-      <p class="mt-8 text-[0.78rem] tracking-[0.16em] uppercase text-fg-muted">
-        {copy.reserve.callInstead}
-      </p>
-      <a
-        href={`tel:${site.phone}`}
-        class="mt-2 inline-flex items-center gap-3 font-display text-[1.8rem] leading-none text-fg transition-colors hover:text-accent-deep"
-      >
-        <Icon name="ph:phone" class="size-5 shrink-0 text-accent" />
-        {site.phoneDisplay}
-      </a>
-    </div>
-
-    <form
-      data-reserve-form
-      novalidate
-      class="grid gap-x-6 gap-y-7 sm:grid-cols-2 lg:col-span-8"
-    >
-      <div class="field sm:col-span-1">
-        <label for="r-name">{f.name}</label>
-        <input id="r-name" name="name" type="text" autocomplete="name" required />
-        <p class="err" data-err-for="name" hidden></p>
+  <div class="wrap">
+    <div class="res-card" data-rv="fade-up">
+      <div class="res-top">
+        <span class="eyebrow center">Rezervovat stůl</span>
+        <h2>Rezervujte si svůj stůl</h2>
+        <p class="small">Potvrzení posíláme do 15 minut. Raději telefonicky?</p>
+        <a class="res-phone" href="tel:+420778585688"><svg><use href="#ic-phone"/></svg>+420 778 585 688</a>
       </div>
 
-      <div class="field sm:col-span-1">
-        <label for="r-phone">{f.phone}</label>
-        <input
-          id="r-phone"
-          name="phone"
-          type="tel"
-          inputmode="tel"
-          autocomplete="tel"
-          value="+420 "
-          required
-        />
-        <p class="hint">{f.phoneHint}</p>
-        <p class="err" data-err-for="phone" hidden></p>
-      </div>
+      <form class="stack" id="resForm" novalidate>
+        <div class="fgrid">
+          <div class="field"><label for="r-name">Jméno a příjmení *</label><input id="r-name" type="text" placeholder="Jan Novák" required /></div>
+          <div class="field"><label for="r-phone">Telefon *</label><input id="r-phone" type="tel" placeholder="+420 777 000 000" required /></div>
+          <div class="field"><label for="r-mail">E-mail *</label><input id="r-mail" type="email" placeholder="jan.novak@email.cz" required /></div>
+          <div class="field"><label for="r-date">Datum *</label><input id="r-date" type="date" required /></div>
+          <div class="field"><label for="r-time">Čas *</label>
+            <select id="r-time" required>
+              <option>17:00</option><option>17:30</option><option selected>18:00</option><option>18:30</option>
+              <option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option>
+            </select>
+          </div>
+          <div class="field"><label for="r-ppl">Počet osob *</label>
+            <select id="r-ppl" required>
+              <option>1 osoba</option><option selected>2 osoby</option><option>3 osoby</option><option>4 osoby</option>
+              <option>5 osob</option><option>6 osob</option><option>7 osob</option><option>8 osob</option>
+            </select>
+          </div>
+        </div>
 
-      <div class="field sm:col-span-2">
-        <label for="r-email">{f.email}</label>
-        <input id="r-email" name="email" type="email" autocomplete="email" required />
-        <p class="err" data-err-for="email" hidden></p>
-      </div>
-
-      <div class="field">
-        <label for="r-date">{f.date}</label>
-        <input id="r-date" name="date" type="date" required />
-        <p class="err" data-err-for="date" hidden></p>
-      </div>
-
-      <div class="field">
-        <label for="r-time">{f.time}</label>
-        <select id="r-time" name="time" required>
-          <option value=""></option>
-        </select>
-        <p class="err" data-err-for="time" hidden></p>
-      </div>
-
-      <div class="field sm:col-span-2">
-        <label for="r-party">{f.party}</label>
-        <select id="r-party" name="party" required>
-          {
-            sizes.map((n) => (
-              <option value={n} selected={n === 2}>
-                {n} {f.partyUnit(n)}
-              </option>
-            ))
-          }
-        </select>
-        <p class="hint" data-big-party hidden>{f.bigParty}</p>
-      </div>
-
-      <div class="field sm:col-span-2">
-        <label for="r-note">
-          {f.note}
-          <span class="ml-2 text-[0.72rem] tracking-[0.12em] uppercase opacity-70">
-            {f.optional}
-          </span>
-        </label>
-        <textarea id="r-note" name="note" rows="3"></textarea>
-        <p class="hint">{f.noteHint}</p>
-      </div>
-
-      {/*
-        Souhlas není předzaškrtnutý a nemíchá dohromady různé účely.
-        Text mluví jen o vyřízení rezervace a o odeslání potvrzení.
-      */}
-      <div class="sm:col-span-2">
-        <label class="flex cursor-pointer items-start gap-3 text-[0.92rem] leading-relaxed text-fg-muted">
-          <input
-            type="checkbox"
-            name="consent"
-            required
-            class="mt-1 size-[18px] shrink-0 cursor-pointer accent-[var(--accent)]"
-          />
-          <span>
-            {f.consent}{" "}
-            <a href={privacyHref} class="text-accent-deep underline underline-offset-4">
-              {f.consentLink}
-            </a>
-          </span>
-        </label>
-        <p class="err mt-2" data-err-for="consent" hidden></p>
-      </div>
-
-      <div class="sm:col-span-2">
-        <button
-          type="submit"
-          data-magnetic
-          class="inline-flex w-full items-center justify-center gap-2.5 rounded-full btn-primary hover:btn-primary-hover px-8 py-4 text-[0.82rem] tracking-[0.14em] whitespace-nowrap uppercase text-btn-fg transition-colors duration-300 active:scale-[0.98] disabled:opacity-60 sm:w-auto"
-        >
-          <span data-submit-label>{f.submit}</span>
-          <Icon name="ph:arrow-right" class="size-4" />
+        <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteField">
+          <span class="plus" aria-hidden="true"></span>Přidat poznámku <span class="opt">(alergie, dětská židlička, oslava)</span>
         </button>
-      </div>
+        <div class="field" id="noteField" hidden>
+          <label for="r-note" class="sr-only">Poznámka</label>
+          <textarea id="r-note" rows="2" placeholder="Vaše přání nebo dietní preference…"></textarea>
+        </div>
 
-      {/*
-        Backend se dodělává, takže formulář zatím jen ohlásí stav a nabídne
-        telefon. Nepředstíráme odeslání, které nikam nedojde.
-      */}
-      <div
-        data-form-notice
-        role="status"
-        hidden
-        class="rounded-[var(--radius-card)] border border-accent/40 bg-accent/[0.07] p-5 sm:col-span-2"
-      >
-        <p class="font-display text-[1.3rem] leading-none text-fg">{f.soonTitle}</p>
-        <p class="mt-2 text-[0.95rem] text-fg-muted">{f.soonBody}</p>
-        <a
-          href={`tel:${site.phone}`}
-          class="mt-3 inline-flex items-center gap-2 text-[0.82rem] tracking-[0.12em] uppercase text-accent-deep"
-        >
-          <Icon name="ph:phone" class="size-4" />
-          {site.phoneDisplay}
-        </a>
-      </div>
-    </form>
+        <div class="consent">
+          <input id="r-gdpr" type="checkbox" required />
+          <label for="r-gdpr">Souhlasím se zpracováním údajů pro vyřízení rezervace. <a href="#">Zásady ochrany osobních údajů</a>. U skupin nad 8 osob volejte prosím telefonicky.</label>
+        </div>
+
+        <div class="res-cta">
+          <button class="btn btn-primary" type="submit">Odeslat rezervaci</button>
+        </div>
+
+        <p class="ok-box" id="resOk" role="status">Děkujeme! Vaši rezervaci jsme přijali a potvrzení vám zašleme do 15 minut.</p>
+      </form>
+    </div>
   </div>
 </section>
-
-<style>
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .field label {
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    /* Plný kontrast, ne světle šedá na světlém papíru. */
-    color: var(--fg);
-  }
-
-  .field input,
-  .field select,
-  .field textarea {
-    width: 100%;
-    padding: 0.85rem 1rem;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-field);
-    background: var(--bg);
-    color: var(--fg);
-    font: inherit;
-    transition: border-color 0.3s var(--ease-silk);
-  }
-
-  .field textarea {
-    resize: vertical;
-    min-height: 6rem;
-  }
-
-  .field input:hover,
-  .field select:hover,
-  .field textarea:hover {
-    border-color: var(--accent);
-  }
-
-  .field input:focus-visible,
-  .field select:focus-visible,
-  .field textarea:focus-visible {
-    border-color: var(--accent);
-  }
-
-  .hint {
-    font-size: 0.82rem;
-    color: var(--fg-muted);
-  }
-
-  .err {
-    font-size: 0.82rem;
-    /* Chyba se nesmí spoléhat jen na barvu, proto ji uvádí i symbol. */
-    color: var(--accent-deep);
-    font-weight: 600;
-  }
-
-  .err::before {
-    content: "! ";
-  }
-
-  [data-invalid] input,
-  [data-invalid] select,
-  [data-invalid] textarea {
-    border-color: var(--accent-deep);
-  }
-</style>
-
-<script>
-  import { OPENING, site } from "../data/site";
-  import { t } from "../data/i18n";
-
-  const form = document.querySelector<HTMLFormElement>("[data-reserve-form]");
-  if (form) {
-    const lang = document.documentElement.lang === "en" ? "en" : "cs";
-    const f = t[lang].form;
-
-    const dateEl = form.querySelector<HTMLInputElement>("#r-date")!;
-    const timeEl = form.querySelector<HTMLSelectElement>("#r-time")!;
-    const partyEl = form.querySelector<HTMLSelectElement>("#r-party")!;
-    const bigParty = form.querySelector<HTMLElement>("[data-big-party]")!;
-    const notice = form.querySelector<HTMLElement>("[data-form-notice]")!;
-
-    /* ---- čas v Praze ---------------------------------------------------
-       Aritmetika běží na absolutním okamžiku, teprve výsledek se převádí do
-       pražského pásma. Opačné pořadí je zdroj chyb kolem změny času.
-    -------------------------------------------------------------------- */
-    const pragueDate = (offsetMs = 0) =>
-      new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Prague" }).format(
-        new Date(Date.now() + offsetMs),
-      );
-
-    const pragueTime = (offsetMs = 0) =>
-      new Intl.DateTimeFormat("en-GB", {
-        timeZone: "Europe/Prague",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      }).format(new Date(Date.now() + offsetMs));
-
-    const DAY = 86_400_000;
-    const minDate = pragueDate();
-    const maxDate = pragueDate(site.reservation.maxDaysAhead * DAY);
-    dateEl.min = minDate;
-    dateEl.max = maxDate;
-    if (!dateEl.value) dateEl.value = minDate;
-
-    const addMinutes = (hhmm: string, mins: number) => {
-      const [h, m] = hhmm.split(":").map(Number);
-      const total = h! * 60 + m! + mins;
-      const hh = Math.floor(((total % 1440) + 1440) % 1440 / 60);
-      const mm = ((total % 60) + 60) % 60;
-      return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-    };
-
-    /** Den v týdnu z "YYYY-MM-DD" bez zásahu místního pásma prohlížeče. */
-    const weekdayOf = (iso: string) => {
-      const [y, m, d] = iso.split("-").map(Number);
-      return new Date(Date.UTC(y!, m! - 1, d!)).getUTCDay();
-    };
-
-    function buildSlots() {
-      const iso = dateEl.value;
-      timeEl.innerHTML = "";
-      if (!iso) return;
-
-      const hours = OPENING[weekdayOf(iso) as keyof typeof OPENING];
-      if (!hours) {
-        timeEl.append(new Option(f.closedDay, ""));
-        timeEl.disabled = true;
-        return;
-      }
-
-      const isToday = iso === pragueDate();
-      const earliest = isToday
-        ? pragueTime(site.reservation.minLeadMinutes * 60_000)
-        : hours.open;
-      const latest = addMinutes(
-        hours.close,
-        -site.reservation.lastSeatingBeforeCloseMinutes,
-      );
-
-      const slots: string[] = [];
-      for (
-        let slot = hours.open;
-        slot <= latest;
-        slot = addMinutes(slot, site.reservation.slotStepMinutes)
-      ) {
-        if (slot >= earliest) slots.push(slot);
-      }
-
-      timeEl.disabled = slots.length === 0;
-      if (!slots.length) {
-        timeEl.append(new Option(f.noSlots, ""));
-        return;
-      }
-      timeEl.append(new Option("", ""));
-      for (const s of slots) timeEl.append(new Option(s, s));
-    }
-
-    dateEl.addEventListener("change", buildSlots);
-    buildSlots();
-
-    partyEl.addEventListener("change", () => {
-      bigParty.hidden = Number(partyEl.value) <= site.reservation.callAbovePartySize;
-    });
-
-    /* ---- validace ------------------------------------------------------
-       Jen pro pohodlí návštěvníka. Až bude backend, kontroluje se všechno
-       znovu na serveru, protože tomuhle se nedá věřit.
-    -------------------------------------------------------------------- */
-    const showError = (name: string, message: string | null) => {
-      const box = form.querySelector<HTMLElement>(`[data-err-for="${name}"]`);
-      const field = form.querySelector(`[name="${name}"]`)?.closest(".field, div");
-      if (box) {
-        box.textContent = message ?? "";
-        box.hidden = !message;
-      }
-      if (field) field.toggleAttribute("data-invalid", !!message);
-    };
-
-    const CZ_PHONE = /^\+420\s?[67]\d{2}\s?\d{3}\s?\d{3}$/;
-    const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const data = new FormData(form);
-      let ok = true;
-
-      const check = (name: string, message: string | null) => {
-        showError(name, message);
-        if (message) ok = false;
-      };
-
-      check("name", String(data.get("name") ?? "").trim() ? null : f.errors.required);
-      check("phone", CZ_PHONE.test(String(data.get("phone") ?? "").trim()) ? null : f.errors.phone);
-      check("email", EMAIL.test(String(data.get("email") ?? "").trim()) ? null : f.errors.email);
-
-      const date = String(data.get("date") ?? "");
-      check("date", date >= minDate && date <= maxDate ? null : f.errors.date);
-      check("time", String(data.get("time") ?? "") ? null : f.errors.time);
-      check("consent", data.get("consent") ? null : f.errors.consent);
-
-      if (!ok) {
-        form.querySelector<HTMLElement>("[data-invalid] input, [data-invalid] select")?.focus();
-        return;
-      }
-
-      // TODO: POST /api/rezervace, až bude hotový backend a rozhodnutý kanál
-      // pro potvrzení. Do té doby web nepředstírá, že rezervaci přijal.
-      notice.hidden = false;
-      notice.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  }
-</script>

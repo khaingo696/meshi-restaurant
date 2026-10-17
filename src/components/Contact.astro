@@ -1,225 +1,54 @@
----
-import { Icon } from "astro-icon/components";
-import { site, mapsUrl, OPENING } from "../data/site";
-import { sections, t, type Lang } from "../data/i18n";
-
-interface Props {
-  lang: Lang;
-}
-const { lang } = Astro.props;
-const copy = t[lang];
-
-/*
-  Kontakt podle zadání: adresa s odkazem do Map Google, otevírací doba,
-  telefon, e-mail a ikony Instagramu a Facebooku.
-
-  Zadání ukazuje jako referenci tři karty z webu Vian a majitelka o ně stojí,
-  takže skladba je stejná: tři karty vedle sebe, kulatý zlatý terč sedící na
-  horní hraně, prostřední karta zvýrazněná. Vian je má ostrohranné na černém
-  dřevě; tady leží na papíru, mají rádius stránky a zlato je z loga.
-*/
-const order = [1, 2, 3, 4, 5, 6, 0] as const;
-type Group = { days: number[]; open: string | null; close: string | null };
-
-const groups: Group[] = [];
-for (const day of order) {
-  const h = OPENING[day];
-  const last = groups.at(-1);
-  if (last && last.open === (h?.open ?? null) && last.close === (h?.close ?? null)) {
-    last.days.push(day);
-  } else {
-    groups.push({ days: [day], open: h?.open ?? null, close: h?.close ?? null });
-  }
-}
-
-const groupLabel = (g: Group) =>
-  g.days.length === 1
-    ? copy.contact.days[g.days[0]!]
-    : `${copy.contact.daysShort[g.days[0]!]} - ${copy.contact.daysShort[g.days.at(-1)!]}`;
----
-
-<section id={sections.contact} class="relative overflow-hidden bg-bg-2 py-(--spacing-section)">
-  <span
-    data-parallax="9"
-    aria-hidden="true"
-    class="kana pointer-events-none absolute right-[-2vw] bottom-[4vh] text-[24vw] leading-none text-accent/[0.06] select-none lg:text-[14vw]"
-  >
-    店
-  </span>
-
-  <div class="wrap relative z-10">
-    <div class="flex flex-wrap items-baseline justify-between gap-x-10 gap-y-4">
-      <h2 data-split class="display-lg text-fg">{copy.contact.heading}</h2>
-      <p
-        data-open-state
-        data-label-open={copy.contact.openNow}
-        data-label-closed={copy.contact.closedNow}
-        hidden
-        class="flex items-center gap-2.5 text-[0.82rem] tracking-[0.08em] text-fg-muted"
-      >
-        <span data-open-dot class="size-2 rounded-full bg-fg-muted"></span>
-        <span data-open-label></span>
-      </p>
+<section class="section bg-surface" id="kontakt">
+  <div class="wrap">
+    <div class="rev-top" style="margin-bottom:2.2rem">
+      <span class="eyebrow center" data-rv="fade-up">Kde nás najdete</span>
+      <h2 data-rv="fade-up" style="margin-top:.7rem">Navštivte nás v srdci Plzně</h2>
     </div>
 
-    <hr data-rule class="rule-gold mt-10" />
-
-    {/*
-      Tři karty. Terče přesahují nad horní hranu, proto má mřížka nahoře
-      místo navíc a každá karta odsazený vnitřek.
-    */}
-    <div data-stagger class="mt-20 grid items-stretch gap-x-7 gap-y-20 md:mt-24 lg:grid-cols-3">
-      {/* Adresa */}
-      <article class="info-card">
-        <span class="info-badge" aria-hidden="true">
-          <Icon name="ph:map-pin" class="size-6" />
-        </span>
-        <h3 class="info-title">{copy.contact.addressTitle}</h3>
-        <address class="mt-6 font-display text-[1.5rem] leading-[1.4] not-italic text-fg">
-          {site.address.street}<br />
-          {site.address.zip} {site.address.city}
-        </address>
-
-        {/* Odkaz místo vloženého iframu: ten by hned tahal cookies třetích stran. */}
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="group mt-auto inline-flex items-center gap-2 self-start border-b border-line-strong pt-8 pb-1 text-[0.74rem] tracking-[0.12em] uppercase text-fg transition-colors hover:border-accent hover:text-accent-deep"
-        >
-          {copy.contact.mapsCta}
-          <Icon
-            name="ph:arrow-up-right"
-            class="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-          />
-        </a>
-      </article>
-
-      {/* Otevírací doba, zvýrazněná karta uprostřed */}
-      <article class="info-card info-card--lead">
-        <span class="info-badge" aria-hidden="true">
-          <Icon name="ph:clock" class="size-6" />
-        </span>
-        <h3 class="info-title">{copy.contact.hoursTitle}</h3>
-        <dl class="mt-6 w-full divide-y divide-line">
-          {
-            groups.map((g) => (
-              <div class="flex items-baseline justify-between gap-5 py-3.5 first:pt-0 last:pb-0">
-                <dt class="font-display text-[1.3rem] leading-none text-fg">{groupLabel(g)}</dt>
-                <dd class="font-display text-[1.2rem] leading-none text-fg-muted tabular-nums">
-                  {g.open && g.close ? `${g.open} - ${g.close}` : copy.contact.closed}
-                </dd>
-              </div>
-            ))
-          }
-        </dl>
-      </article>
-
-      {/* Telefon, e-mail a sítě */}
-      <article class="info-card">
-        <span class="info-badge" aria-hidden="true">
-          <Icon name="ph:phone" class="size-6" />
-        </span>
-        <h3 class="info-title">{copy.contact.contactTitle}</h3>
-        <a
-          href={`tel:${site.phone}`}
-          class="mt-6 font-display text-[1.5rem] leading-none tabular-nums text-fg transition-colors hover:text-accent-deep"
-        >
-          {site.phoneDisplay}
-        </a>
-        <a
-          href={`mailto:${site.email}`}
-          class="mt-3.5 text-[0.98rem] text-fg-muted transition-colors hover:text-accent-deep"
-        >
-          {site.email}
-        </a>
-
-        <div class="mt-auto flex items-center gap-3 pt-8">
-          <a
-            href={site.social.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={copy.footer.instagram}
-            class="grid size-11 place-items-center rounded-full border border-line text-fg-muted transition-colors hover:border-accent hover:text-accent-deep"
-          >
-            <Icon name="ph:instagram-logo" class="size-5" />
-          </a>
-          <a
-            href={site.social.facebook}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={copy.footer.facebook}
-            class="grid size-11 place-items-center rounded-full border border-line text-fg-muted transition-colors hover:border-accent hover:text-accent-deep"
-          >
-            <Icon name="ph:facebook-logo" class="size-5" />
+    <div class="kontakt-grid">
+      <div class="map" data-rv="fade-up">
+        <iframe title="Mapa — MESHi Restaurant Plzeň, nám. Republiky 107/14" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1305.5!2d13.3785312!3d49.7466407!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470af101904b4569%3A0xf3c31f42fa8945cf!2sMeshi%20Restaurant%20Plze%C5%88!5e0!3m2!1scs!2scz"></iframe>
+        <div class="map-card">
+          <span class="l">
+            <span class="ico"><svg><use href="#ic-pin"/></svg></span>
+            <span><b>nám. Republiky 107/14</b><span>301 00 Plzeň 3-Vnitřní Město</span></span>
+          </span>
+          <a class="btn btn-primary btn-sm" target="_blank" rel="noopener"
+             href="https://maps.app.goo.gl/UFdjuugsRDGuJuGq6">
+            Otevřít v Mapách<svg><use href="#ic-ext"/></svg>
           </a>
         </div>
-      </article>
+      </div>
+
+      <div class="card info" data-rv="fade-up">
+        <div>
+          <h3><svg><use href="#ic-clock"/></svg>Otevírací doba</h3>
+          <div class="hours">
+            <div><span>Pondělí – Čtvrtek</span><b>11:00 – 22:00</b></div>
+            <div><span>Pátek – Sobota</span><b>11:00 – 23:00</b></div>
+            <div><span>Neděle</span><b>12:00 – 22:00</b></div>
+          </div>
+
+          <h3><svg><use href="#ic-chat"/></svg>Spojení s námi</h3>
+          <div class="contacts">
+            <a href="tel:+420778585688"><svg><use href="#ic-phone"/></svg><b style="color:var(--ink);font-weight:600">+420 778 585 688</b></a>
+            <a href="mailto:info@meshi-restaurant.cz"><svg><use href="#ic-mail"/></svg>info@meshi-restaurant.cz</a>
+            <span class="ico-row">
+              <svg style="width:15px;height:15px;color:var(--primary)"><use href="#ic-globe"/></svg>
+              <a href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">Instagram</a>
+              <span style="color:var(--muted-2)">·</span>
+              <a href="https://www.facebook.com/" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">Facebook</a>
+            </span>
+          </div>
+        </div>
+
+        <div class="biz">
+          <b>Provozovatel</b>
+          Nguyen Quoc Vinh OSVČ<br />
+          IČO: 23517034 · DIČ: CZ9303301480
+        </div>
+      </div>
     </div>
   </div>
 </section>
-
-<style>
-  /*
-    Karta. Papír o odstín světlejší než sekce, zlatá vlasová linka místo
-    rámečku. Hover mění jen barvy, protože transform karet drží GSAP kvůli
-    nabíhání a dva systémy na jedné vlastnosti se vždycky poperou.
-  */
-  .info-card {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    position: relative;
-    padding: 3.75rem 2rem 2.25rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-card);
-    background: color-mix(in srgb, var(--bg) 62%, #fff);
-    transition:
-      border-color 0.5s var(--ease-silk),
-      background-color 0.5s var(--ease-silk);
-  }
-
-  .info-card:hover {
-    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-    background: color-mix(in srgb, var(--bg) 42%, #fff);
-  }
-
-  /* Prostřední karta drží pohled, stejně jako v předloze od majitelky. */
-  .info-card--lead {
-    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-    background: color-mix(in srgb, var(--bg) 34%, #fff);
-  }
-
-  .info-card--lead:hover {
-    border-color: var(--accent);
-  }
-
-  /* Zlatý terč sedí na horní hraně a půlkou přesahuje ven. */
-  .info-badge {
-    position: absolute;
-    top: 0;
-    left: 2rem;
-    display: grid;
-    place-items: center;
-    width: 3.5rem;
-    height: 3.5rem;
-    transform: translateY(-50%);
-    border-radius: 999px;
-    background: var(--btn);
-    color: var(--btn-fg);
-    box-shadow: 0 0 0 6px var(--bg-2);
-  }
-
-  .info-title {
-    font-size: 0.74rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
-  }
-
-  @media (min-width: 1024px) {
-    .info-card {
-      padding-inline: 2.25rem;
-    }
-  }
-</style>

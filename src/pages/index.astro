@@ -1,25 +1,44 @@
 ---
-import Base from "../layouts/Base.astro";
-import Hero from "../components/Hero.astro";
-import Signatures from "../components/Signatures.astro";
-import Gallery from "../components/Gallery.astro";
-import Voucher from "../components/Voucher.astro";
-import Reserve from "../components/Reserve.astro";
-import Contact from "../components/Contact.astro";
-
 /*
-  Pořadí sekcí přesně podle zadání majitelky:
-  Domů, Menu (Naše signatures), Galerie, Rezervace, Dárkový poukaz, Kontakt.
-  Sekce O nás na přání majitelky odpadla.
+  Domovská stránka.
+
+  Marquee je mezi O nás a Signatures, protože tam dělá dělicí pás mezi
+  dvěma světlými plochami.
 */
-const lang = "cs" as const;
+import Base from "../layouts/Base.astro";
+import Icons from "../components/Icons.astro";
+import Header from "../components/Header.astro";
+import Sheet from "../components/Sheet.astro";
+import Hero from "../components/Hero.astro";
+import About from "../components/About.astro";
+import Marquee from "../components/Marquee.astro";
+import Signatures from "../components/Signatures.astro";
+import Reviews from "../components/Reviews.astro";
+import Gallery from "../components/Gallery.astro";
+import Reserve from "../components/Reserve.astro";
+import Voucher from "../components/Voucher.astro";
+import Contact from "../components/Contact.astro";
+import Footer from "../components/Footer.astro";
+import Lightbox from "../components/Lightbox.astro";
 ---
 
-<Base lang={lang}>
-  <Hero lang={lang} />
-  <Signatures lang={lang} />
-  <Gallery lang={lang} />
-  <Reserve lang={lang} />
-  <Voucher lang={lang} />
-  <Contact lang={lang} />
+<Base>
+  <Icons />
+  <Header />
+  <Sheet />
+
+  <main id="top">
+    <Hero />
+    <About />
+    <Marquee />
+    <Signatures />
+    <Reviews />
+    <Gallery />
+    <Reserve />
+    <Voucher />
+    <Contact />
+  </main>
+
+  <Footer />
+  <Lightbox />
 </Base>

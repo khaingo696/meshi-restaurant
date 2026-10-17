@@ -1,134 +1,55 @@
 ---
+/*
+  Základní layout webu.
+
+  Pár rozhodnutí, která vypadají neortodoxně, ale jsou úmyslná:
+    - global.css je ručně psaný, ne Tailwind. Přepis selektorů by znamenal
+      vizuální posun, a podoba webu je odsouhlasená.
+    - fonty, GSAP, Lenis a app.js jdou z public/ přes is:inline, takže se
+      nebundlují. app.js čte globální gsap / ScrollTrigger / Lenis, a ty musí
+      existovat dřív, než se spustí — bundler by to pořadí rozhodil.
+    - obrázky leží v public/, ne v src/assets, takže <img> zůstává prosté.
+      Přechod na astro:assets (srcset, AVIF) je samostatný krok.
+*/
 import "../styles/global.css";
-import { site, mapsUrl } from "../data/site";
-import { t, type Lang } from "../data/i18n";
-import Nav from "../components/Nav.astro";
-import Footer from "../components/Footer.astro";
 
 interface Props {
-  lang: Lang;
+  title?: string;
+  description?: string;
 }
 
-const { lang } = Astro.props;
-const copy = t[lang];
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
-
-// Strukturovaná data pro místní vyhledávání. Bez nich Google neví, že jde
-// o restauraci s otevírací dobou, a nezobrazí ji v mapovém boxu.
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Restaurant",
-  name: site.name,
-  url: canonical,
-  telephone: site.phone,
-  email: site.email,
-  servesCuisine: ["Japanese", "Sushi", "Asian"],
-  priceRange: "$$",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: site.address.street,
-    addressLocality: site.address.city,
-    postalCode: site.address.zip,
-    addressCountry: site.address.country,
-  },
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: site.address.lat,
-    longitude: site.address.lng,
-  },
-  hasMap: mapsUrl,
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday"],
-      opens: "11:00",
-      closes: "22:00",
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Friday", "Saturday"],
-      opens: "11:00",
-      closes: "23:00",
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: "Sunday",
-      opens: "12:00",
-      closes: "22:00",
-    },
-  ],
-};
+const {
+  title = "MESHi | Asijská kuchyně a prémiové sushi v Plzni",
+  description = "MESHi — tradiční asijská kuchyně a prémiové sushi na náměstí Republiky v Plzni. Rezervace stolu, dárkové poukazy.",
+} = Astro.props;
 ---
 
-<!doctype html>
-<html lang={copy.htmlLang} data-theme="light">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{copy.meta.title}</title>
-    <meta name="description" content={copy.meta.description} />
-    <link rel="canonical" href={canonical} />
-    <link rel="alternate" hreflang="cs" href={new URL("/", Astro.site).href} />
-    <link rel="alternate" hreflang="en" href={new URL("/en/", Astro.site).href} />
-    <link rel="alternate" hreflang="x-default" href={new URL("/", Astro.site).href} />
+<html lang="cs" class="no-js">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
 
-    <meta property="og:type" content="restaurant" />
-    <meta property="og:title" content={copy.meta.title} />
-    <meta property="og:description" content={copy.meta.description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:locale" content={lang === "cs" ? "cs_CZ" : "en_GB"} />
-    <meta name="twitter:card" content="summary_large_image" />
+<script is:inline>document.documentElement.className = 'js';</script>
 
-    <link rel="icon" href="/favicon.png" type="image/png" sizes="512x512" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
-    <meta name="theme-color" content="#f4ede1" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#171310" media="(prefers-color-scheme: dark)" />
+<link rel="preload" as="image" href="/assets/hero-poster.webp" />
+<link rel="preload" as="image" href="/assets/meshi_logo_hero.png?v=gold" />
+<link rel="stylesheet" href="/fonts/eb-garamond/index.css" />
+<link rel="stylesheet" href="/fonts/plus-jakarta-sans/index.css" />
+<link rel="stylesheet" href="/fonts/shippori-mincho/japanese-400.css" />
+</head>
 
-    {/*
-      Běží před prvním vykreslením. Dvě věci najednou:
-      1. `js` na <html>, aby CSS schovalo prvky určené k animaci hned,
-         ne až po DOMContentLoaded (jinak text problikne).
-      2. Uložené téma, aby tmavý režim nezablikal bíle.
-    */}
-    <script is:inline>
-      (function () {
-        var root = document.documentElement;
-        root.classList.add("js");
-        try {
-          var saved = localStorage.getItem("meshi-theme");
-          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-          root.dataset.theme = saved || (prefersDark ? "dark" : "light");
-        } catch (e) {
-          /* Soukromé okno nebo zablokované úložiště: zůstane světlý režim. */
-        }
-      })();
-    </script>
+<body>
 
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-  </head>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
 
-  <body>
-    <a
-      href="#obsah"
-      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-fg focus:px-4 focus:py-2 focus:text-bg"
-    >
-      {copy.nav.skip}
-    </a>
+<slot />
 
-    <div class="grain" aria-hidden="true"></div>
-
-    <Nav lang={lang} />
-
-    <main id="obsah">
-      <slot />
-    </main>
-
-    <Footer lang={lang} />
-
-    <script>
-      import "../scripts/motion";
-      import "../scripts/theme";
-      import "../scripts/openState";
-    </script>
-  </body>
+<script is:inline src="/vendor/lenis/lenis.min.js"></script>
+<script is:inline src="/vendor/gsap/gsap.min.js"></script>
+<script is:inline src="/vendor/gsap/ScrollTrigger.min.js"></script>
+<script is:inline src="/js/app.js"></script>
+</body>
 </html>

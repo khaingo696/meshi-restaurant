@@ -1,37 +1,49 @@
----
-import { Icon } from "astro-icon/components";
-import { site } from "../data/site";
-import { t, type Lang } from "../data/i18n";
+<section class="section bg-canvas" id="poukaz">
+  <div class="wrap">
+    <div class="voucher-grid">
+      <div>
+        <span class="eyebrow" data-rv="fade-right">Darujte zážitek</span>
+        <h2 data-rv="fade-up" style="margin-top:.7rem">Dárkový poukaz do MESHi</h2>
+        <p class="lead" data-rv="fade-up" style="margin-top:.8rem">
+          Chcete udělat radost svým blízkým a dopřát jim kousek ráje na talíři? Pořiďte jim dárkový
+          poukaz do MESHi. Vyplňte hodnotu a kontakt — ozveme se obratem s platebními údaji.
+        </p>
 
-interface Props {
-  lang: Lang;
-}
-const { lang } = Astro.props;
-const copy = t[lang];
----
+        <figure class="gift" data-rv="fade-up">
+          <img src="/assets/voucher.webp" width="1600" height="800" alt="Dárkový poukaz MESHi: jméno, hodnota a platnost" loading="lazy" />
+        </figure>
+      </div>
 
-{/*
-  Dárkový poukaz. V zadání je jako položka navigace vedoucí na Hatsu.cz,
-  proto sekce jen představí nabídku a pošle hosta na jejich platformu.
-*/}
-<section class="border-y border-line">
-  <div class="wrap flex flex-wrap items-center justify-between gap-x-10 gap-y-6 py-12 md:py-16">
-    <div class="min-w-0 flex-1 basis-[32rem]">
-      <h2 data-split class="font-display text-[clamp(1.8rem,3.4vw,2.6rem)] leading-none text-fg">
-        {copy.voucher.heading}
-      </h2>
-      <p class="mt-4 max-w-[62ch] text-[0.98rem] leading-[1.75] text-fg-muted">{copy.voucher.body}</p>
+      <div class="card" style="padding:clamp(1.4rem,3vw,2.2rem)" data-rv="fade-up">
+        <h3>Darujte poukaz</h3>
+        <p class="small" style="color:var(--muted); margin-top:.3rem">Vyplňte hodnotu a kontakt. Ozveme se s platebními údaji a možnostmi předání.</p>
+
+        <form class="stack" id="vForm" style="margin-top:1.2rem" novalidate>
+          <div class="field">
+            <label>Požadovaná hodnota poukazu</label>
+            <div class="vals">
+              <label><input type="radio" name="val" value="500" /><span>500 Kč</span></label>
+              <label><input type="radio" name="val" value="1000" checked /><span>1 000 Kč</span></label>
+              <label><input type="radio" name="val" value="2000" /><span>2 000 Kč</span></label>
+            </div>
+          </div>
+          <div class="field"><label for="v-phone">Vaše telefonní číslo *</label><input id="v-phone" type="tel" placeholder="+420 777 000 000" required /></div>
+          <div class="field"><label for="v-mail">Váš e-mail *</label><input id="v-mail" type="email" placeholder="vas@email.cz" required /></div>
+          <div class="field">
+            <label>Jak poukaz doručit</label>
+            <div class="radio-rows">
+              <label><input type="radio" name="doruceni" checked /><span>Pošlete mi poukaz e-mailem v PDF k tisku</span></label>
+              <label><input type="radio" name="doruceni" /><span>Vyzvednu si ho osobně v dárkovém balení</span></label>
+            </div>
+          </div>
+          <div class="consent">
+            <input id="v-gdpr" type="checkbox" required />
+            <label for="v-gdpr">Souhlasím se zpracováním osobních údajů pro vyřízení objednávky.</label>
+          </div>
+          <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center; padding:.85rem 1.4rem">Objednat dárkový poukaz</button>
+          <p class="ok-box" id="vOk" role="status">Děkujeme! Ozveme se vám do hodiny s instrukcemi k platbě a vyzvednutí.</p>
+        </form>
+      </div>
     </div>
-
-    <a
-      href={site.giftVoucherUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      data-magnetic
-      class="inline-flex items-center gap-2.5 rounded-full border border-accent-deep px-7 py-3.5 text-[0.76rem] tracking-[0.14em] whitespace-nowrap uppercase text-accent-deep transition-colors duration-300 hover:btn-primary hover:text-btn-fg"
-    >
-      {copy.voucher.cta}
-      <Icon name="ph:arrow-up-right" class="size-4" />
-    </a>
   </div>
 </section>

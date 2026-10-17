@@ -1,77 +1,54 @@
----
-import { Image } from "astro:assets";
-import interier from "../assets/interier.jpg";
-import ramen from "../assets/ramen.jpg";
-import poke from "../assets/poke.jpg";
-import Leaves from "./Leaves.astro";
-import { alts } from "../data/site";
-import { sections, t, type Lang } from "../data/i18n";
+<section class="section bg-canvas" id="galerie">
+  <div class="kanji-bg jp" style="left:-4rem; bottom:-2rem; font-size:26rem" data-drift="55" aria-hidden="true">間</div>
 
-interface Props {
-  lang: Lang;
-}
-const { lang } = Astro.props;
-const copy = t[lang];
-
-/*
-  Galerie. Text je ze zadání majitelky doslova. Pod ním snímek prostoru a
-  vedle něj menší fotky jídla, tak jak zadání popisuje.
-
-  TODO(majitelka): sem přijdou nové fotky, včetně skupinových záběrů více
-  pokrmů. Mřížka je stavěná tak, aby snesla šest až osm snímků.
-*/
----
-
-<section id={sections.gallery} class="relative overflow-hidden py-(--spacing-section)">
-  <Leaves corner="tl" />
-
-  <div class="wrap relative z-10">
-    <div class="max-w-[46rem]">
-      <h2 data-split class="display-lg text-fg">{copy.gallery.heading}</h2>
-      <p data-split="words" class="mt-6 text-[1.04rem] leading-[1.8] text-fg-muted">
-        {copy.gallery.body}
-      </p>
-    </div>
-
-    <div data-frame-group class="mt-14 grid gap-5 md:mt-20 md:grid-cols-12 md:gap-7">
-      {/* Prostor restaurace, hlavní snímek */}
-      <figure data-frame class="relative aspect-[4/5] overflow-hidden rounded-[var(--radius-card)] md:col-span-7 md:aspect-[4/3]">
-        <Image
-          data-frame-img
-          src={interier}
-          alt={alts.interier[lang]}
-          widths={[640, 960, 1440]}
-          sizes="(min-width: 768px) 58vw, 92vw"
-          loading="lazy"
-          class="size-full object-cover will-change-transform"
-        />
-      </figure>
-
-      {/* Jídlo ve dvou menších polích vedle */}
-      <div class="grid gap-5 md:col-span-5 md:gap-7">
-        <figure data-frame class="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)]">
-          <Image
-            data-frame-img
-            src={ramen}
-            alt={alts.ramen[lang]}
-            widths={[400, 640]}
-            sizes="(min-width: 768px) 40vw, 92vw"
-            loading="lazy"
-            class="size-full object-cover will-change-transform"
-          />
-        </figure>
-        <figure data-frame class="relative aspect-[4/3] overflow-hidden rounded-[var(--radius-card)]">
-          <Image
-            data-frame-img
-            src={poke}
-            alt={alts.poke[lang]}
-            widths={[400, 640]}
-            sizes="(min-width: 768px) 40vw, 92vw"
-            loading="lazy"
-            class="size-full object-cover will-change-transform"
-          />
-        </figure>
+  <div class="wrap">
+    <div class="gal-head">
+      <div class="section-head">
+        <span class="eyebrow" data-rv="fade-right">Galerie</span>
+        <h2 data-rv="fade-up">Jak to u nás vypadá</h2>
+        <p data-rv="fade-up">
+          V útulném prostoru Meshi, plném dřeva a zeleně, chceme našim hostům
+          přiblížit autentickou asijskou kuchyni – prostou, poctivou a plnou výrazných chutí.
+          Srdcem v každém pokrmu.
+        </p>
       </div>
     </div>
+
+    <div class="gal" id="gal">
+      <button class="frame gal-print gal-a" type="button" style="--p: 50% 34%"
+        aria-label="Hlavní sál restaurace MESHi se závěsnými lampami, zelení a ukiyo-e">
+        <img src="/assets/space/interior.webp" alt="" />
+      </button>
+      <button class="frame gal-print gal-b" type="button" style="--p: 50% 42%"
+        aria-label="Prostřený stůl s jídelními lístky MESHi">
+        <img src="/assets/space/table.webp" alt="" loading="lazy" />
+      </button>
+      <button class="frame gal-print gal-c" type="button" style="--p: 36% 78%"
+        aria-label="Zátiší s javorem, kočkou maneki-neko a lahví sake">
+        <img src="/assets/space/maple.webp" alt="" loading="lazy" />
+      </button>
+      <button class="frame gal-print gal-d" type="button" style="--p: 50% 52%"
+        aria-label="Otevřený vchod s noren závěsem a výhledem na noční náměstí Republiky">
+        <img src="/assets/space/door-night.webp" alt="" loading="lazy" />
+      </button>
+      <button class="frame gal-print gal-e" type="button" style="--p: 42% 68%"
+        aria-label="Modrý noren závěs s nápisem MESHi a závěsnou zelení">
+        <img src="/assets/space/noren.webp" alt="" loading="lazy" />
+      </button>
+      <button class="frame gal-print gal-f" type="button" style="--p: 20% 48%"
+        aria-label="Stěna s panenkami daruma a dřevěnými tabulkami ema">
+        <img src="/assets/space/daruma.webp" alt="" loading="lazy" />
+      </button>
+      <button class="frame gal-print gal-g" type="button" style="--p: 34% 50%"
+        aria-label="Police s lahvemi saké, daruma a výhledem do noci">
+        <img src="/assets/space/shelves.webp" alt="" loading="lazy" />
+      </button>
+    </div>
+
+    <p class="gal-foot">
+      <a class="link-u" href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener">
+        Instagram <svg><use href="#ic-ext"/></svg>
+      </a>
+    </p>
   </div>
 </section>
