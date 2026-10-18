@@ -12,6 +12,7 @@
       Přechod na astro:assets (srcset, AVIF) je samostatný krok.
 */
 import "../styles/global.css";
+import rating from "../../public/google-rating.json";
 
 interface Props {
   title?: string;
@@ -22,6 +23,50 @@ const {
   title = "MESHi | Asijská kuchyně a prémiové sushi v Plzni",
   description = "MESHi — tradiční asijská kuchyně a prémiové sushi na náměstí Republiky v Plzni. Rezervace stolu, dárkové poukazy.",
 } = Astro.props;
+
+const site = Astro.site ?? new URL("https://meshi-restaurant.eu");
+const canonical = new URL(Astro.url.pathname, site).href;
+const ogImage = new URL("/assets/og-cover.jpg", site).href;
+const MAPS = "https://maps.app.goo.gl/UFdjuugsRDGuJuGq6";
+
+/* Hodnocení se bere z google-rating.json, aby strukturovaná data ukazovala
+   totéž číslo jako stránka — jinak si Google všimne rozporu. */
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  name: "MESHi",
+  description,
+  url: site.href,
+  image: [ogImage, new URL("/assets/space/interior.webp", site).href],
+  telephone: "+420778585688",
+  email: "info@meshi-restaurant.cz",
+  priceRange: "$$",
+  currenciesAccepted: "CZK",
+  servesCuisine: ["Japonská", "Asijská", "Sushi"],
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "nám. Republiky 107/14",
+    addressLocality: "Plzeň",
+    postalCode: "301 00",
+    addressCountry: "CZ",
+  },
+  geo: { "@type": "GeoCoordinates", latitude: 49.7466407, longitude: 13.3785312 },
+  hasMap: MAPS,
+  openingHoursSpecification: [
+    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday"], opens: "11:00", closes: "22:00" },
+    { "@type": "OpeningHoursSpecification", dayOfWeek: ["Friday", "Saturday"], opens: "11:00", closes: "23:00" },
+    { "@type": "OpeningHoursSpecification", dayOfWeek: "Sunday", opens: "12:00", closes: "22:00" },
+  ],
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: String(rating.rating),
+    reviewCount: String(rating.count),
+    bestRating: "5",
+  },
+  hasMenu: new URL("/docs/menu.pdf", site).href,
+  acceptsReservations: "True",
+  sameAs: ["https://www.instagram.com/meshi_restaurant.cz/", "https://www.facebook.com/profile.php?id=61578757887900"],
+};
 ---
 
 <html lang="cs" class="no-js">
@@ -30,8 +75,40 @@ const {
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>{title}</title>
 <meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="theme-color" content="#7c4a2d" />
 
-<script is:inline>document.documentElement.className = 'js';</script>
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+<!-- Náhled při sdílení odkazu. Jazyk se přepíná až za běhu, takže scrapery
+     vždycky dostanou českou verzi. -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="MESHi" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="Dřevěná loď plná sushi v restauraci MESHi" />
+<meta property="og:locale" content="cs_CZ" />
+<meta property="og:locale:alternate" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(schema)}></script>
+
+<script is:inline>
+document.documentElement.className = 'js';
+try {
+  var storedLang = localStorage.getItem('meshi-lang');
+  if (storedLang === 'en') document.documentElement.lang = 'en';
+} catch (e) {}
+</script>
 
 <link rel="preload" as="image" href="/assets/hero-poster.webp" />
 <link rel="preload" as="image" href="/assets/meshi_logo_hero.png?v=gold" />
@@ -50,6 +127,7 @@ const {
 <script is:inline src="/vendor/lenis/lenis.min.js"></script>
 <script is:inline src="/vendor/gsap/gsap.min.js"></script>
 <script is:inline src="/vendor/gsap/ScrollTrigger.min.js"></script>
+<script is:inline src="/js/i18n.js"></script>
 <script is:inline src="/js/app.js"></script>
 </body>
 </html>

@@ -9,3 +9,4 @@ node_modules/
 .env.local
 mockup/
 restaurant_images/
+__pycache__/

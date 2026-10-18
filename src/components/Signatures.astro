@@ -1,4 +1,21 @@
-<section class="section bg-sand" id="signatures">
+---
+/*
+  Signatures — nadpis, odstavec a tři karty kategorií.
+
+  Japonský rejstřík, ale měkký: pečeť hanko přes roh fotky, sumi vlnka pod
+  nadpisem, washi vlákno pod celou sekcí. Motivy ano, ostré hrany ne.
+
+  Karty jsou stejně velké a jen posazené do různé výšky — tři kategorie jsou
+  si rovny, žádná nesmí vypadat důležitěji než ostatní. Štítek s názvem
+  přesahuje přes spodní hranu fotky, stejné vrstvení jako v sekci O nás.
+
+  Kliknutí otevře překryv <MenuOverlay>, obsluhu dělá app.js.
+*/
+import { categories } from "../data/menu";
+import Rule from "./Rule.astro";
+---
+
+<section class="section bg-sand paper" id="signatures">
   <div class="kanji-bg jp" style="left:-2rem; top:4rem; font-size:26rem" data-drift="-60" aria-hidden="true">匠</div>
   <div class="kanji-bg jp" style="right:-1rem; bottom:4rem; font-size:20rem; opacity:.03" data-drift="50" aria-hidden="true">味</div>
   <div class="glow" style="width:28rem;height:28rem;top:18%;left:28%;background:rgba(200,150,80,.14)"></div>
@@ -7,10 +24,10 @@
   <div class="wrap">
     <div class="sig-head">
       <div class="section-head">
-        <h2 data-rv="fade-up">Naše signatures
-          <span class="sub" data-rv="fade-up">Harmonie poctivé chuti v každém soustu</span>
+        <h2 data-rv="fade-up"><span data-i18n="sig.title">Naše signatures</span>
+          <span class="sub" data-rv="fade-up" data-i18n="sig.sub">Harmonie poctivé chuti v každém soustu</span>
         </h2>
-        <p data-rv="fade-up">
+        <p data-rv="fade-up" data-i18n="sig.body">
           Pečlivě vybíráme kvalitní suroviny a každý den používáme čerstvé potraviny.
           Každému pokrmu věnujeme čas, péči a srdce, protože věříme, že právě na kvalitě surovin a poctivé přípravě záleží.
           V MESHi můžete ochutnat výrazné a poctivé asijské polévky, naše speciální předkrmy, charakteristický ramen,
@@ -18,145 +35,47 @@
         </p>
       </div>
       <div class="sig-actions" data-rv="fade-up">
-        <a class="btn btn-primary" href="/docs/menu.pdf" target="_blank" rel="noopener"><svg><use href="#ic-menu-book"/></svg>Zobrazit celé menu<svg><use href="#ic-arrow"/></svg></a>
+        <a class="btn btn-primary" href="/docs/menu.pdf" target="_blank" rel="noopener"><svg><use href="#ic-menu-book"/></svg><span data-i18n="sig.full">Zobrazit celé menu</span><svg><use href="#ic-arrow"/></svg></a>
       </div>
     </div>
 
-    <div class="sig-grid">
-      <!-- Scéna -->
-      <div class="stage" data-rv="fade-up">
-        <span class="glow glow-a"></span><span class="glow glow-b"></span>
+    <Rule />
 
-        <div class="stage-top">
-          <span class="chip chip-gold"><svg width="13" height="13"><use href="#ic-spark"/></svg><span id="stBadge">Chef's signature</span></span>
-          <span class="stage-kanji jp" id="stKanji">竜巻</span>
-        </div>
+    <div class="cats">
+      {categories.map((cat, i) => (
+        <button
+          class="cat"
+          type="button"
+          data-cat={cat.slug}
+          data-n={cat.items.length}
+          data-rv="rise"
+          aria-haspopup="dialog"
+          aria-expanded="false"
+        >
+          <span class="cat-seal" aria-hidden="true"><b>{String(i + 1).padStart(2, "0")}</b></span>
 
-        <figure class="stage-figure">
-          <img id="stImg" src="/assets/dishes/dragon-roll.webp" alt="Dragon roll — osm kusů s úhořem a avokádem" />
-          <span class="stage-price"><em>Cena</em><b id="stPrice">269 Kč</b></span>
-        </figure>
-
-        <div class="stage-body">
-          <h3 id="stTitle">Dragon roll (8 ks)</h3>
-          <p class="desc" id="stDesc">Krevety v tempuře obalené v avokádu se sezamem a omáčkou unagi. Křupavost a jemnost v jedinečné rovnováze.</p>
-
-          <span class="ing-label">Klíčové suroviny &amp; profil chuti</span>
-          <div class="ings" id="stIngs">
-            <span class="chip"><i class="dot"></i>Tygří krevety v tempuře</span>
-            <span class="chip"><i class="dot"></i>Zralé avokádo</span>
-            <span class="chip"><i class="dot"></i>Domácí omáčka unagi</span>
-            <span class="chip"><i class="dot"></i>Pražený sezam</span>
-          </div>
-
-          <p class="stage-profile">
-            <svg><use href="#ic-palette"/></svg>Chuťový profil: <b id="stNotes">bohaté umami, krémové a křupavé</b>
-          </p>
-        </div>
-
-        <div class="stage-foot">
-          <a class="btn btn-primary btn-sm" href="#rezervace">Objednat tento chod<svg><use href="#ic-arrow"/></svg></a>
-        </div>
-      </div>
-
-      <!-- Seznam -->
-      <div class="dishes" id="dishes" role="tablist" aria-label="Naše signatures">
-        <button class="dish" type="button" role="tab" aria-selected="true" data-rv="fade-left"
-          data-img="/assets/dishes/dragon-roll.webp"
-          data-title="Dragon roll (8 ks)" data-price="269 Kč" data-kanji="竜巻"
-          data-badge="Chef's signature"
-          data-notes="bohaté umami, krémové a křupavé"
-          data-desc="Krevety v tempuře obalené v avokádu se sezamem a omáčkou unagi. Křupavost a jemnost v jedinečné rovnováze."
-          data-ings="Tygří krevety v tempuře|Zralé avokádo|Domácí omáčka unagi|Pražený sezam">
-          <span class="ph"><img src="/assets/thumb/dragon-roll.webp" alt="" loading="lazy" /></span>
-          <span>
-            <span class="no">01 · Chef's pick · Sushi</span>
-            <h4>Dragon roll (8 ks)</h4>
-            <p>Krevety v tempuře obalené v avokádu se sezamem a omáčkou unagi.</p>
+          <span class="cat-shot">
+            <img
+              src={cat.cover}
+              srcset={`${cat.cover} 900w, ${cat.cover.replace(".webp", "@2x.webp")} 1800w`}
+              sizes="(max-width: 700px) 92vw, (max-width: 1100px) 44vw, 360px"
+              alt={cat.coverAlt}
+              data-i18n-alt={`cat.${cat.slug}Alt`}
+              width="900"
+              height="1125"
+              loading="lazy"
+              decoding="async"
+            />
           </span>
-          <span class="right"><span class="price">269 Kč</span><span class="arr"><svg><use href="#ic-arrow"/></svg></span></span>
-        </button>
 
-        <button class="dish" type="button" role="tab" aria-selected="false" data-rv="fade-left"
-          data-img="/assets/dishes/ramen.webp"
-          data-title="Meshi speciál ramen" data-price="289 Kč" data-kanji="拉麺"
-          data-badge="Ikonický chod"
-          data-notes="hluboké masové umami, hřejivé a syté"
-          data-desc="Náš vlajkový ramen s dlouho taženým vepřovým vývarem a marinovaným bůčkem chashu."
-          data-ings="Vývar tonkotsu|Bůček chashu|Vejce ajitsuke tamago|Nori a menma">
-          <span class="ph"><img src="/assets/thumb/ramen.webp" alt="" loading="lazy" /></span>
-          <span>
-            <span class="no">02 · Ikonický · Ramen</span>
-            <h4>Meshi speciál ramen</h4>
-            <p>Dlouho tažený vepřový vývar, marinovaný bůček chashu a domácí nudle.</p>
+          <span class="cat-plate">
+            <span class="cat-plate-txt">
+              <span class="cat-name" data-i18n={`cat.${cat.slug}`}>{cat.label}</span>
+            </span>
+            <span class="cat-arr" aria-hidden="true"><svg><use href="#ic-arrow"/></svg></span>
           </span>
-          <span class="right"><span class="price">289 Kč</span><span class="arr"><svg><use href="#ic-arrow"/></svg></span></span>
         </button>
-
-        <button class="dish" type="button" role="tab" aria-selected="false" data-rv="fade-left"
-          data-img="/assets/dishes/curry-salmon.webp"
-          data-title="Červené kari s lososem" data-price="279 Kč" data-kanji="咖喱"
-          data-badge="Aromatický klenot"
-          data-notes="krémové, jemně pálivé, aromatické"
-          data-desc="Grilovaný losos v červeném kari s kokosovým mlékem, thajskou bazalkou a jasmínovou rýží."
-          data-ings="Filet z lososa|Červená kari pasta|Kokosové mléko|Thajská bazalka">
-          <span class="ph"><img src="/assets/thumb/curry-salmon.webp" alt="" loading="lazy" /></span>
-          <span>
-            <span class="no">03 · Pikantní · Hlavní chod</span>
-            <h4>Červené kari s lososem</h4>
-            <p>Grilovaný losos v kokosovém kari s thajskou bazalkou a jasmínovou rýží.</p>
-          </span>
-          <span class="right"><span class="price">279 Kč</span><span class="arr"><svg><use href="#ic-arrow"/></svg></span></span>
-        </button>
-
-        <button class="dish" type="button" role="tab" aria-selected="false" data-rv="fade-left"
-          data-img="/assets/dishes/padthai.webp"
-          data-title="Pad thai" data-price="239 Kč" data-kanji="炒粉"
-          data-badge="Wok specialita"
-          data-notes="sladkokyselé s tamarindem, křupavé oříšky"
-          data-desc="Smažené rýžové nudle s vejcem, tofu, drcenými arašídy, klíčky a čerstvou limetkou."
-          data-ings="Rýžové nudle|Tamarindová omáčka|Tofu a vejce|Pražené arašídy">
-          <span class="ph"><img src="/assets/thumb/padthai.webp" alt="" loading="lazy" /></span>
-          <span>
-            <span class="no">04 · Wok klasika · Nudle</span>
-            <h4>Pad thai</h4>
-            <p>Rýžové nudle s vejcem, tofu, arašídy, klíčky a čerstvou limetkou.</p>
-          </span>
-          <span class="right"><span class="price">239 Kč</span><span class="arr"><svg><use href="#ic-arrow"/></svg></span></span>
-        </button>
-
-        <button class="dish" type="button" role="tab" aria-selected="false" data-rv="fade-left"
-          data-img="/assets/dishes/poke.webp"
-          data-title="Sake bowl" data-price="259 Kč" data-kanji="鮭丼"
-          data-badge="Denně čerstvá ryba"
-          data-notes="svěží, čisté a lehké"
-          data-desc="Miska marinovaného lososa s avokádem, edamame, řasou wakame a sushi rýží."
-          data-ings="Čerstvý losos|Máslové avokádo|Edamame a wakame|Sezamový dresink">
-          <span class="ph"><img src="/assets/thumb/poke.webp" alt="" loading="lazy" /></span>
-          <span>
-            <span class="no">05 · Čerstvá ryba · Bowl</span>
-            <h4>Sake bowl</h4>
-            <p>Marinovaný losos, avokádo, edamame a wakame na ochucené sushi rýži.</p>
-          </span>
-          <span class="right"><span class="price">259 Kč</span><span class="arr"><svg><use href="#ic-arrow"/></svg></span></span>
-        </button>
-
-        <button class="dish" type="button" role="tab" aria-selected="false" data-rv="fade-left"
-          data-img="/assets/dishes/tuna-tataki.webp"
-          data-title="Tuna tataki" data-price="249 Kč" data-kanji="鮪"
-          data-badge="Japonský předkrm"
-          data-notes="jemné, kouřové a citrusové"
-          data-desc="Krátce opečený tuňák v sezamu s omáčkou ponzu, chilli a čerstvou pažitkou."
-          data-ings="Tuňák sashimi kvality|Pražený sezam|Omáčka ponzu|Chilli a pažitka">
-          <span class="ph"><img src="/assets/thumb/tuna-tataki.webp" alt="" loading="lazy" /></span>
-          <span>
-            <span class="no">06 · Předkrm · Sashimi</span>
-            <h4>Tuna tataki</h4>
-            <p>Krátce opečený tuňák v sezamu s ponzu, chilli a čerstvou pažitkou.</p>
-          </span>
-          <span class="right"><span class="price">249 Kč</span><span class="arr"><svg><use href="#ic-arrow"/></svg></span></span>
-        </button>
-      </div>
+      ))}
     </div>
   </div>
 </section>

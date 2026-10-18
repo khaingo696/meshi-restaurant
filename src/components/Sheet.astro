@@ -1,12 +1,37 @@
+---
+/*
+  Mobilní panel. Odkazy mají šipku a plnou výšku řádku, aby se trefovaly
+  palcem; aktivní sekci značí stejná tečka jako v liště na desktopu.
+  Zavírá se pilulkou „Zavřít“ v liště nad panelem — viz Header.astro.
+*/
+const links = [
+  { href: "#top", key: "nav.home", label: "Domů" },
+  { href: "#o-nas", key: "nav.about", label: "O nás" },
+  { href: "#signatures", key: "nav.menu", label: "Menu" },
+  { href: "#galerie", key: "nav.gallery", label: "Galerie" },
+  { href: "#poukaz", key: "nav.gift", label: "Dárkový poukaz" },
+  { href: "#kontakt", key: "nav.contact", label: "Kontakt" },
+];
+---
+
 <div class="sheet" id="sheet">
-  <a href="#top">Domů</a>
-  <a href="#o-nas">O nás</a>
-  <a href="#galerie">Galerie</a>
-  <a href="#poukaz">Dárkový poukaz</a>
-  <a href="#kontakt">Kontakt</a>
+  <nav class="sheet-nav" aria-label="Mobilní nabídka" data-i18n-aria="nav.main">
+    {links.map((l) => (
+      <a href={l.href}>
+        <span data-i18n={l.key}>{l.label}</span>
+        <svg class="sheet-arr" aria-hidden="true"><use href="#ic-arrow"/></svg>
+      </a>
+    ))}
+  </nav>
+
   <div class="sheet-foot">
-    <a class="btn btn-primary" href="#rezervace">Rezervovat stůl</a>
-    <button class="btn btn-ghost btn-order" type="button">Online objednávka</button>
-    <a class="btn btn-ghost" href="tel:+420778585688"><svg><use href="#ic-phone"/></svg>Zavolat</a>
+    <div class="lang" role="group" aria-label="Jazyk" data-i18n-aria="nav.lang">
+      <button type="button" class="on" data-lang="cs" aria-pressed="true">CZ</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <a class="btn btn-primary" href="#rezervace" data-i18n="nav.reserveTable">Rezervovat stůl</a>
+    <a class="btn btn-ghost" href="tel:+420778585688"><svg><use href="#ic-phone"/></svg><span data-i18n="nav.call">Zavolat</span></a>
+    <!-- PŘEDÁVKA: bez obsluhy, viz Header.astro -->
+    <button class="btn btn-ghost btn-order" type="button" data-i18n="nav.order">Online objednávka</button>
   </div>
 </div>

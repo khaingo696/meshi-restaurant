@@ -1,8 +1,12 @@
-/* shippori-mincho-japanese-400-normal */
+/* shippori-mincho-japanese-400-normal — podmnožina.
+   Plný japonský řez váží 1,3 MB a web z něj používá 24 znaků: vodoznaky
+   v sekcích a pás pod sekcí O nás. Subset drží kromě nich celou kanu
+   a interpunkci, aby se dal japonský text doplnit bez nového exportu.
+   Nová podmnožina: scripts/build-jp-subset.sh */
 @font-face {
   font-family: 'Shippori Mincho';
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url(./files/shippori-mincho-japanese-400-normal.woff2) format('woff2'), url(./files/shippori-mincho-japanese-400-normal.woff) format('woff');
+  src: url(./files/shippori-mincho-japanese-400-normal.subset.woff2) format('woff2');
 }

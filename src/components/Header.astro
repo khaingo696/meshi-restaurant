@@ -1,22 +1,31 @@
 <header class="header" id="header">
   <div class="bar">
-    <nav class="nav" id="nav" aria-label="Hlavní nabídka">
-      <a href="#top" class="active">Domů</a>
-      <a href="#o-nas">O nás</a>
-      <a href="#galerie">Galerie</a>
-      <a href="#poukaz">Dárkový poukaz</a>
-      <a href="#kontakt">Kontakt</a>
+    <a class="bar-brand" href="#top" aria-label="MESHI — domů" data-i18n-aria="nav.brandHome">MESHI</a>
+
+    <nav class="nav" id="nav" aria-label="Hlavní nabídka" data-i18n-aria="nav.main">
+      <a href="#top" class="active" data-i18n="nav.home">Domů</a>
+      <a href="#o-nas" data-i18n="nav.about">O nás</a>
+      <a href="#galerie" data-i18n="nav.gallery">Galerie</a>
+      <a href="#poukaz" data-i18n="nav.gift">Dárkový poukaz</a>
+      <a href="#kontakt" data-i18n="nav.contact">Kontakt</a>
     </nav>
 
     <div class="head-right">
-      <div class="lang" role="group" aria-label="Jazyk">
-        <button type="button" class="on" aria-pressed="true">CZ</button>
-        <button type="button" aria-pressed="false">EN</button>
+      <div class="lang" role="group" aria-label="Jazyk" data-i18n-aria="nav.lang">
+        <button type="button" class="on" data-lang="cs" aria-pressed="true">CZ</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
       </div>
-      <a class="tel" href="tel:+420778585688"><svg><use href="#ic-phone"/></svg><span>+420 778 585 688</span></a>
-      <button class="btn btn-ghost btn-sm btn-order" id="objednavka" type="button">Online objednávka</button>
-      <a class="btn btn-primary btn-sm" href="#rezervace">Rezervovat stůl</a>
-      <button class="burger" id="burger" type="button" aria-label="Otevřít nabídku" aria-expanded="false" aria-controls="sheet"><span></span></button>
+      <a class="tel" href="tel:+420778585688" aria-label="Zavolat +420 778 585 688" data-i18n-aria="nav.callNumber"><svg><use href="#ic-phone"/></svg><span>+420 778 585 688</span></a>
+      <!-- PŘEDÁVKA: tlačítko zatím nemá obsluhu — chybí odkaz na rozvozovou
+           platformu nebo vlastní objednávkový tok. Totéž v Sheet.astro. -->
+      <button class="btn btn-ghost btn-sm btn-order" id="objednavka" type="button" data-i18n="nav.order">Online objednávka</button>
+      <a class="btn btn-primary btn-sm btn-reserve" href="#rezervace" data-i18n="nav.reserveTable">Rezervovat stůl</a>
+      <!-- Zavřeno = hamburger, otevřeno = pilulka „✕ Zavřít“. Samotný křížek
+           se na světlém panelu hledal dlouho, popisek ho udělá nepřehlédnutelným. -->
+      <button class="burger" id="burger" type="button" aria-label="Otevřít nabídku" data-i18n-aria="nav.openMenu" aria-expanded="false" aria-controls="sheet">
+        <span class="burger-ico" aria-hidden="true"></span>
+        <span class="burger-lbl" aria-hidden="true" data-i18n="nav.close">Zavřít</span>
+      </button>
     </div>
   </div>
 </header>
