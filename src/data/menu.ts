@@ -21,8 +21,13 @@ export interface Dish {
 
 export interface Category {
   slug: string;
-  /** Název na kartě i v hlavičce překryvu. */
+  /** Název na záložce i v hlavičce překryvu. */
   label: string;
+  /**
+   * Obálka kategorie. Současný layout ji nikde nevykresluje — dřív visela na
+   * kartách v sekci Signatures, ty nahradila ukázka vyříznutých jídel.
+   * Fotky v public/assets/menu/covers/ zůstávají, kdyby se obálky vrátily.
+   */
   cover: string;
   /** Alt text obálky — popisuje konkrétní fotku, ne kategorii. */
   coverAlt: string;

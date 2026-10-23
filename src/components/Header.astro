@@ -1,31 +1,40 @@
-<header class="header" id="header">
-  <div class="bar">
-    <a class="bar-brand" href="#top" aria-label="MESHI — domů" data-i18n-aria="nav.brandHome">MESHI</a>
+---
+/*
+  Lišta.
 
-    <nav class="nav" id="nav" aria-label="Hlavní nabídka" data-i18n-aria="nav.main">
-      <a href="#top" class="active" data-i18n="nav.home">Domů</a>
-      <a href="#o-nas" data-i18n="nav.about">O nás</a>
-      <a href="#galerie" data-i18n="nav.gallery">Galerie</a>
-      <a href="#poukaz" data-i18n="nav.gift">Dárkový poukaz</a>
-      <a href="#kontakt" data-i18n="nav.contact">Kontakt</a>
-    </nav>
+  V liště je tlačítko Menu vlevo, logo na střed a vpravo přepínač jazyka
+  s rezervací. Celá navigace žije v panelu <Sheet>, a to na všech šířkách —
+  ne jen na telefonu. Odkazy, telefon i online objednávka jsou tam.
 
-    <div class="head-right">
+  Rezervace je jediná akce, která zůstala v liště, a je tu schválně:
+  v panelu je vidět až po otevření, kdežto tady visí nad celou stránkou.
+  V <Sheet> proto stejné tlačítko není — jedna akce, jedno místo.
+
+  Přepínač jazyka je vedle ní jen na širokém displeji: CZ/EN je stav,
+  ne cíl. Pod 810 px odchází do panelu.
+*/
+---
+
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <!-- Zavřeno = tři linky, otevřeno = kříž (CSS) a popisek „Zavřít“ (app.js). -->
+    <button class="nav__burger" id="burger" type="button"
+            aria-label="Otevřít nabídku" data-i18n-aria="nav.openMenu"
+            aria-expanded="false" aria-controls="sheet">
+      <span class="nav__bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="nav__burgerLabel" data-i18n="nav.menu">Menu</span>
+    </button>
+
+    <a class="nav__logo" href="#top" aria-label="MESHi — domů" data-i18n-aria="nav.brandHome">
+      <img src="/assets/meshi_logo_hero.png?v=gold" width="593" height="421" alt="MESHi" />
+    </a>
+
+    <div class="nav__right">
       <div class="lang" role="group" aria-label="Jazyk" data-i18n-aria="nav.lang">
         <button type="button" class="on" data-lang="cs" aria-pressed="true">CZ</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
       </div>
-      <a class="tel" href="tel:+420778585688" aria-label="Zavolat +420 778 585 688" data-i18n-aria="nav.callNumber"><svg><use href="#ic-phone"/></svg><span>+420 778 585 688</span></a>
-      <!-- PŘEDÁVKA: tlačítko zatím nemá obsluhu — chybí odkaz na rozvozovou
-           platformu nebo vlastní objednávkový tok. Totéž v Sheet.astro. -->
-      <button class="btn btn-ghost btn-sm btn-order" id="objednavka" type="button" data-i18n="nav.order">Online objednávka</button>
-      <a class="btn btn-primary btn-sm btn-reserve" href="#rezervace" data-i18n="nav.reserveTable">Rezervovat stůl</a>
-      <!-- Zavřeno = hamburger, otevřeno = pilulka „✕ Zavřít“. Samotný křížek
-           se na světlém panelu hledal dlouho, popisek ho udělá nepřehlédnutelným. -->
-      <button class="burger" id="burger" type="button" aria-label="Otevřít nabídku" data-i18n-aria="nav.openMenu" aria-expanded="false" aria-controls="sheet">
-        <span class="burger-ico" aria-hidden="true"></span>
-        <span class="burger-lbl" aria-hidden="true" data-i18n="nav.close">Zavřít</span>
-      </button>
+      <a class="btn btn--gold" href="#rezervace" data-i18n="nav.reserve">Rezervace</a>
     </div>
   </div>
 </header>

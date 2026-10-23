@@ -1,1519 +1,1763 @@
 /* ==========================================================================
-   MESHi — styly webu
-   "Artisanal Wabi-Sabi Sanctuary" podle stitch DESIGN.md, ale jemněji:
-   menší typografické stupně, klidnější fotografie, víc vzduchu.
-   Immersive / parallax: vrstvy se hýbou, text ne.
+   MESHi — vzhled webu.
+
+   Převzato z mockupu (mockup/style.css), layout i hodnoty beze změny.
+   Proti předchozí podobě webu se změnilo tohle a je to úmyslné:
+
+     · velké logo a slogan uprostřed hera  → hero drží levý dolní rok,
+       tři řádky po schodech, logo zůstalo jen v liště
+     · béžová plocha celého webu           → tmavá, se zlatým písmem
+     · plochá sekce O nás                  → podmalba tušové krajiny
+     · nadpisy bez důrazu                  → viz „STUPNICE PÍSMA“
+     · chybělo tlačítko zpět nahoru        → .toTop
+
+   Ručně psané CSS, ne Tailwind — stejné rozhodnutí jako dřív: přepis
+   selektorů by znamenal vizuální posun na odsouhlasené podobě.
+
+   Obsah
+     1  Tokeny
+     2  Základ dokumentu
+     3  Stupnice písma
+     4  Tlačítka
+     5  Lišta
+     6  Hero
+     7  Podmalba sekcí
+     8  O nás
+     9  Signatures — ukázka jídel
+    10  Galerie
+    11  Rezervace a formuláře
+    12  Dárkový poukaz
+    13  Kontakt
+    14  Patička
+    15  Zpět nahoru
+    16  Mobilní panel
+    17  Jídelní lístek a lightbox
+    18  Responsive
+    19  Omezený pohyb
    ========================================================================== */
 
-/* ---------- 1. Tokeny ---------------------------------------------------- */
+/* ==========================================================================
+   1 · TOKENY
+   ========================================================================== */
 :root {
-  /* Papírová hierarchie — pražená pšenice, dašvi, vařená rýže */
-  --canvas:        #fbf7f0;
-  --surface:       #f6f1e7;
-  --surface-2:     #efe7d9;
-  --elevated:      #ffffff;
-  --elevated-warm: #fffdf8;
-  --line:          #e5dac9;
-  --line-soft:     #ece3d5;
+  --ink:   #1e140b;
+  --ink-2: #160e07;
+  --ink-3: #2a1c10;
+  --brown: #6d4a2a;
 
-  /* Inkoust */
-  --ink:      #2a1a12;
-  --body:     #574136;
-  --muted:    #8a7465;
-  --muted-2:  #a08c7d;
+  --gold:       #d8ae69;
+  --gold-light: #f1d292;
+  --gold-deep:  #bc8c4c;
+  --gold-dim:   #9c7340;
+  --cream:      #f8f2e7;
+  --vermilion:  #c23b2e;
 
-  /* Kaštan / terakota / okr */
-  --primary:        #7c4a2d;
-  --primary-deep:   #5d3519;
-  --primary-soft:   #f3e3d6;
-  --secondary:      #b85d38;
-  --secondary-soft: #fbe3d6;
-  --gold:           #c89650;
-  /* rumělka pečeti hanko — jediný studenější akcent v jinak teplé paletě */
-  --vermilion:      #c0392b;
-  --gold-soft:      #f7e8cd;
+  --t-1: #f1d292;
+  --t-2: rgba(248, 242, 231, .86);
+  --t-3: rgba(248, 242, 231, .58);
+  /* V mockupu .36. Na tmavém podkladu to dávalo 3,1:1 a nese to drobný
+     doprovodný text (citace, řádky v patičce), takže by to nesplnilo AA.
+     .50 drží 4,8:1 a proti --t-3 (6,1:1) je pořád o stupeň tišší. */
+  --t-4: rgba(248, 242, 231, .50);
 
-  --on-dark:        #f8f2e7;
-  --dark:           #231a14;
-  --dark-2:         #1a120d;
+  --hair:      rgba(248, 242, 231, .12);
+  --hair-gold: rgba(216, 174, 105, .28);
 
-  /* Rádiusy — oblázek, nikdy hrana */
-  --r-xs: 10px;
-  --r-sm: 14px;
+  /* Hero (sekce 6) jede na písmech z prototypu, viz public/fonts/. */
+  --font-display: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+  --font-sans:    'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  --serif: 'Shippori Mincho', 'Hiragino Mincho ProN', serif;
+  --kanji: 'Yuji Syuku', 'Shippori Mincho', serif;
+  --sans:  'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
+  --fine:  'Noto Serif', Georgia, serif;
+
+  --pad: clamp(1.25rem, 5vw, 5.5rem);
+  --sec: clamp(6rem, 12vw, 12rem);
+  --max: 1240px;
+
+  --r-sm: 12px;
   --r:    20px;
-  --r-md: 26px;
-  --r-lg: 32px;
-  --r-xl: 40px;
+  --r-lg: 30px;
   --pill: 999px;
 
-  /* Stíny — teplý okrový nádech, žádná studená šedá */
-  --sh-1: 0 2px 10px -2px rgba(84,61,49,.06), 0 1px 3px rgba(84,61,49,.04);
-  --sh-2: 0 10px 30px -10px rgba(84,61,49,.14), 0 2px 8px -2px rgba(84,61,49,.05);
-  --sh-3: 0 24px 60px -24px rgba(42,26,18,.26), 0 6px 18px -8px rgba(84,61,49,.08);
-  --sh-float: 0 30px 70px -30px rgba(42,26,18,.34);
+  --ease: cubic-bezier(.16, 1, .3, 1);
 
-  /* Rytmus */
-  --pad:     clamp(1.15rem, 4vw, 2.5rem);
-  --section: clamp(5.25rem, 8.5vw, 8.5rem);
-  --max:     1180px;
-
-  /* Písmo */
-  --serif: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
-  --sans:  'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --jp:    'Shippori Mincho', 'Hiragino Mincho ProN', serif;
-
-  --ease:     cubic-bezier(.22,.61,.36,1);
-  --ease-out: cubic-bezier(.16,1,.3,1);
+  /* Dotykové cíle. Mockup je kreslený na myš, na telefonu by se části lišty
+     trefovaly špatně — min-height se proto dopisuje tam, kde se klepá. */
+  --tap: 44px;
 }
 
-/* ---------- 2. Reset ----------------------------------------------------- */
+/* ==========================================================================
+   2 · ZÁKLAD DOKUMENTU
+   ========================================================================== */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; }
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 
 body {
-  margin: 0;
-  background: var(--canvas);
-  color: var(--body);
-  font-family: var(--sans);
-  font-size: 15px;
-  line-height: 1.68;
-  letter-spacing: .01em;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  margin: 0; background: var(--ink); color: var(--t-2);
+  font-family: var(--serif); font-size: 18px; line-height: 1.68;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
-img, video { max-width: 100%; display: block; }
+/* height: auto je povinné. Fotky nesou width/height v HTML kvůli rezervaci
+   místa (CLS), jenže ty atributy jsou pro prohlížeč rovnou CSS, takže by
+   přebily šířku z šablony stylů — logo v liště pak bylo 62 × 421 px.
+   Kde se výška opravdu řídí, přepíše to selektor s třídou. */
+img, video { display: block; max-width: 100%; }
+img { height: auto; }
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
-::selection { background: var(--primary-soft); color: var(--primary-deep); }
+::selection { background: var(--gold); color: var(--ink); }
 
-:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 3px;
-  border-radius: 6px;
+/* Mockup obrys fokusu neřeší. Bez něj se web nedá projít klávesnicí. */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+
+.wrap { width: min(var(--max), 100% - var(--pad) * 2); margin-inline: auto; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
 
-/* Papírové zrno přes celou stránku — velmi slabé, jen aby plocha dýchala */
+/* Zrno starého papíru přes celou stránku — viz ASSET-CREDITS.md */
 .grain {
-  position: fixed; inset: 0; z-index: 1; pointer-events: none;
-  opacity: .5; mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E");
+  position: fixed; inset: 0; z-index: 90; pointer-events: none;
+  background: url("/assets/grain.png") repeat; background-size: 220px 220px;
+  opacity: .13; mix-blend-mode: overlay;
 }
 
 /* Ukazatel postupu čtení */
 .progress {
   position: fixed; top: 0; left: 0; height: 2px; width: 100%;
   transform: scaleX(0); transform-origin: 0 50%;
-  background: linear-gradient(90deg, var(--primary), var(--secondary), var(--gold));
-  z-index: 90; pointer-events: none;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold), var(--gold-light));
+  z-index: 91; pointer-events: none;
 }
 
-/* ---------- 3. Typografie ------------------------------------------------ */
-figure, figcaption, blockquote, fieldset, dl, dd { margin: 0; }
-q { quotes: '\201E' '\201C'; }
+/* ==========================================================================
+   3 · STUPNICE PÍSMA — „důraz“: každý stupeň jiná VELIKOST, jiná BARVA,
+   a jiný ŘEZ. Bez toho se celá stránka čte jedním tónem.
+   ========================================================================== */
+.kanji { display: block; font-family: var(--kanji); font-weight: 400;
+  font-size: clamp(30px, 3.2vw, 44px); letter-spacing: .08em; line-height: 1; color: var(--gold); }
 
-h1, h2, h3, h4 {
-  font-family: var(--serif);
-  color: var(--ink);
-  font-weight: 400;
+.eyebrow { display: block; font-family: var(--sans); font-weight: 500;
+  font-size: 12px; letter-spacing: .26em; text-transform: uppercase; color: var(--gold-dim); }
+.eyebrow--gold { color: var(--gold); }
+
+.h2 { margin: 0; font-size: clamp(28px, 3vw, 42px); font-weight: 700;
+  letter-spacing: -.018em; line-height: 1.14; color: var(--t-1);
+  /* Česká složeniny jsou dlouhé a na telefonu přetékaly přes pravý okraj. */
+  text-wrap: balance; overflow-wrap: break-word; }
+/* druhá polovina nadpisu: kurzíva, tenčí, jiná barva — nejsilnější důraz */
+.h2 em { font-style: italic; font-weight: 400; color: var(--cream); }
+
+.lead { margin: 0; font-size: clamp(16px, 1.3vw, 18.5px); line-height: 1.78; color: var(--t-2); }
+.lead strong { font-weight: 600; color: var(--gold-light); }
+/* --- stupnice pro SVĚTLOU plochu (sekce Poukaz) --- */
+.eyebrow--onLight { color: #8a6038; }
+.h2--onLight { color: #2a1b0e; }
+.h2--onLight em { color: #7a5330; }
+.lead--onLight { color: rgba(42, 27, 14, .82); }
+.lead--onLight strong { color: #5a3a18; }
+
+.secHead { display: grid; justify-items: center; text-align: center; gap: .85rem; }
+
+.rule--v { display: block; width: 1px; height: clamp(34px, 5vw, 64px); background: linear-gradient(var(--gold), transparent); }
+
+.wm { position: absolute; z-index: 0; pointer-events: none; user-select: none;
+  font-family: var(--kanji); line-height: 1; color: var(--cream); opacity: .03; }
+
+.inlineLink { color: var(--gold-light); border-bottom: 1px solid var(--hair-gold); }
+.inlineLink:hover { border-color: var(--gold); }
+
+/* řádek textu vyjíždí zespodu za okrajem výřezu */
+.ml { display: block; overflow: hidden; padding-inline: .09em; margin-inline: -.09em; }
+.ml__i { display: block; }
+
+/* ==========================================================================
+   4 · TLAČÍTKA
+   ========================================================================== */
+/* background a appearance musí být tady: .btn--line žádné pozadí nenastavuje
+   a na <button> by se vzalo výchozí od prohlížeče — tlačítko „Zobrazit celé
+   menu“ bylo bílé a text v něm nečitelný. */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .6em;
+  appearance: none; background: transparent;
+  min-height: var(--tap);
+  font-family: var(--serif); font-weight: 700; font-size: 13.5px;
+  letter-spacing: .12em; text-transform: uppercase;
+  padding: 1em 2em; border-radius: var(--pill); border: 1px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: transform .4s var(--ease), background .4s var(--ease), border-color .4s var(--ease), color .4s var(--ease); }
+.btn:hover { transform: translateY(-2px); }
+.btn svg { width: 16px; height: 16px; flex: none; }
+.btn__arrow { transition: transform .4s var(--ease); }
+.btn:hover .btn__arrow { transform: translateX(3px); }
+
+.btn--gold { background: linear-gradient(150deg, var(--gold-light), var(--gold) 48%, var(--gold-deep)); color: var(--ink);
+  box-shadow: 0 14px 32px -18px rgba(216, 174, 105, .9); }
+.btn--ink { background: var(--ink); color: var(--gold-light); }
+.btn--line { color: var(--cream); border-color: rgba(248, 242, 231, .34); }
+.btn--line:hover { background: rgba(248, 242, 231, .08); border-color: var(--cream); }
+.btn--ghost { background: rgba(248, 242, 231, .07); color: var(--cream); border-color: var(--hair); backdrop-filter: blur(8px); }
+.btn--ghost:hover { background: rgba(248, 242, 231, .14); }
+.btn--lg { padding: 1.08em 2.2em; }
+
+/* ==========================================================================
+   5 · LIŠTA
+   Hlavní navigace je i na desktopu v panelu pod tlačítkem Menu — tak to
+   mockup kreslí. V liště zůstaly jen dvě akce a přepínač jazyka.
+   ========================================================================== */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 70; padding: 1.1rem var(--pad);
+  transition: opacity .5s var(--ease), transform .5s var(--ease); }
+.nav.is-hidden { opacity: 0; transform: translateY(-110%); pointer-events: none; }
+.nav__in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.nav__burger { display: inline-flex; align-items: center; gap: .7rem; min-height: var(--tap);
+  background: none; border: 0; cursor: pointer; color: var(--cream); padding: .4rem 0; }
+.nav__bars { display: grid; gap: 4px; width: 21px; }
+.nav__bars i { display: block; height: 2px; background: currentColor; border-radius: 2px;
+  transition: transform .35s var(--ease), opacity .25s var(--ease), width .35s var(--ease); }
+.nav__bars i:nth-child(2) { width: 74%; }
+.nav__burgerLabel { font-family: var(--serif); font-weight: 600; font-size: 18px; }
+/* Otevřeno = kříž. Popisek se mění v app.js, ať je stav čitelný i slovy. */
+body.menu-open .nav__bars i:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+body.menu-open .nav__bars i:nth-child(2) { opacity: 0; width: 100%; }
+body.menu-open .nav__bars i:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+.nav__logo { position: absolute; left: 50%; transform: translateX(-50%); }
+.nav__logo img { width: 62px; }
+.nav__right { display: flex; align-items: center; gap: .55rem; margin-left: auto; }
+/* Lišta leží přes fotku v heru, takže akce v ní musí být drobná — bez
+   tohohle si tlačítko vezme výchozí .btn (13.5px VERZÁLKAMI, padding 2em)
+   a je z něj knoflík přes třetinu šířky. Malá písmena, ne verzálky:
+   „Rezervace“ je kratší a lehčí než „REZERVACE“. */
+.nav__right .btn { font-size: 11.5px; padding: .62em 1.15em; letter-spacing: .06em;
+  text-transform: none; min-height: 34px; }
+
+/* Sekce Poukazu je jediná světlá plocha na webu. Krémová lišta přes ni
+   zmizí — zůstane jen zlaté tlačítko a nejde se nikam proklikat. Pod
+   světlou plochou se proto přebarví do tuše; třídu nasazuje app.js.
+   Logo se nechává být, to na krémové drží. */
+.nav.is-onLight .nav__burger { color: #2a1b0e; }
+.nav.is-onLight .lang { background: rgba(42, 27, 14, .08); border-color: rgba(42, 27, 14, .16); }
+.nav.is-onLight .lang button { color: rgba(42, 27, 14, .62); }
+.nav.is-onLight .lang button.on { background: #8a6038; color: #fffdf8; }
+
+/* Přepínač jazyka */
+.lang { display: flex; padding: 2px; border-radius: var(--pill);
+  background: rgba(248, 242, 231, .08); border: 1px solid var(--hair); }
+.lang button { border: 0; background: none; cursor: pointer; border-radius: var(--pill);
+  min-height: 34px; padding: .3rem .62rem;
+  font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .1em;
+  color: var(--t-3); transition: background .3s var(--ease), color .3s var(--ease); }
+.lang button.on { background: var(--gold); color: var(--ink); font-weight: 700; }
+
+/* ==========================================================================
+   6 · HERO — „cinema lower-third“, navázané na dveře meshi-door
+
+   Převzaté z hotového prototypu (meshi-hero/style.css), hodnoty beze změny.
+   Popis podoby je v meshi-hero/meshi-door/INTEGRATION.md, část 2. Klientem
+   odsouhlasené, takže se tady nic „nezjednodušuje“.
+
+   Co se proti prototypu liší, a proč (prototyp běží na samostatné stránce,
+   kde je video pozadí celého dokumentu a lišta stojí v toku):
+     · .hero::before je absolute, ne fixed — video i závoj patří sekci,
+       jinak by gradient ležel přes celou stránku i při rolování
+     · min-height 100dvh, ne 100dvh − 76px — zdejší lišta je fixed
+     · vodorovné odsazení je var(--pad), ne clamp(20px, 5vw, 68px), aby
+       hero lícovalo s lištou nad sebou i se sekcemi pod sebou
+     · pod 900 px se přidává odsazení shora: .hero-meta se tam stěhuje
+       nahoru a jinak by zalezlo pod fixed lištu
+     · zůstává .hero__video a .hero__edge ze zdejšího webu (video v sekci,
+       přechod do tmy další sekce)
+   Omezený pohyb řeší globálně sekce 19, proto tady žádný vlastní blok není.
+   ========================================================================== */
+.hero {
+  /* Paleta a písma prototypu. Drží se na .hero, ne v :root — zbytek webu má
+     vlastní tokeny (--cream je tu o chlup jiné) a nemá se posunout. */
+  --cream: #f7efe2;
+  --cream-soft: rgba(247, 239, 226, .84);
+  --muted: rgba(232, 216, 193, .68);
+  --gold-bright: #ecd09c;
+
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* Vyvážené dýchání lower-third u dolní hrany na desktopu */
+  padding: clamp(20px, 3vw, 40px) var(--pad) clamp(82px, 10.5vh, 118px);
+  isolation: isolate;
+}
+
+.hero__video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  filter: brightness(.76) contrast(1.03) saturate(1.02); }
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(95% 75% at 50% 38%, rgba(14, 8, 5, 0) 0%, rgba(10, 6, 3, .34) 100%),
+    linear-gradient(
+      180deg,
+      rgba(10, 6, 3, .4) 0%,
+      rgba(10, 6, 3, .02) 24%,
+      rgba(10, 6, 3, .05) 54%,
+      rgba(10, 6, 3, .84) 100%
+    );
+}
+
+/* Přechod do tmy následující sekce */
+.hero__edge { position: absolute; left: 0; right: 0; bottom: 0; height: 26%; pointer-events: none;
+  background: linear-gradient(transparent, var(--ink)); }
+
+.sr-svg-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
+
+.hero-stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.hero-copy {
+  position: relative;
+  text-align: left;
+  max-width: 780px;
+}
+
+/* ==========================================================================
+   KICKER JEN HLOUBKOU OSTROSTI: „TASTE    Feel    CONNECT“
+   Žádné dekorativní linky. Slova dělí prázdno (ma) a přeostřování jako
+   u filmového objektivu (rozostřené ⇄ ostré), takže jediná kresba na
+   celé ploše je porcelánový talíř pod „Plate“.
+   ========================================================================== */
+
+.hero-kicker {
+  --door-p: 1;
+  --inv-p: calc(1 - var(--door-p));
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: clamp(22px, 3.2vw, 38px);
+  margin: 0 0 clamp(14px, 2vh, 22px);
+  padding: 2px 0;
+  color: var(--gold-bright);
+  user-select: none;
+}
+
+/* Jedno slovo = jedno tlačítko. Ve výchozím stavu rozostřené, jako při f/1.4 */
+.kicker-node {
+  position: relative;
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 2px 0;
   margin: 0;
-  letter-spacing: -.005em;
-}
-h1 { font-size: clamp(2.05rem, 4.2vw, 3.15rem); line-height: 1.08; }
-h2 { font-size: clamp(1.7rem, 2.9vw, 2.35rem); line-height: 1.15; }
-h3 { font-size: clamp(1.1rem, 1.5vw, 1.3rem);  line-height: 1.3; font-weight: 500; }
-h4 { font-size: 1.02rem; line-height: 1.35; font-weight: 500; }
-p  { margin: 0; }
-
-.jp      { font-family: var(--jp); font-weight: 400; }
-
-.eyebrow {
-  display: inline-flex; align-items: center; gap: .6rem;
-  font-size: .688rem; font-weight: 600; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--secondary);
-}
-.eyebrow::before {
-  content: ''; width: 1.6rem; height: 1px; background: currentColor;
-  transform-origin: 0 50%; opacity: .7;
-}
-.eyebrow.center::after {
-  content: ''; width: 1.6rem; height: 1px; background: currentColor; opacity: .7;
-}
-.eyebrow .jp { letter-spacing: .1em; font-size: .78rem; opacity: .9; }
-
-.lead { font-size: .97rem; line-height: 1.8; color: var(--body); }
-.small { font-size: .813rem; line-height: 1.6; }
-
-/* ---------- 4. Layout ---------------------------------------------------- */
-.wrap { width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--pad); }
-.section { position: relative; padding-block: var(--section); }
-/* fixní lišta nesmí překrýt začátek sekce při skoku na kotvu */
-section[id], footer, #poukaz { scroll-margin-top: 5.5rem; }
-#galerie { scroll-margin-top: 6.5rem; }
-.section > .wrap { position: relative; z-index: 2; }
-
-.bg-canvas  { background: var(--canvas); }
-.bg-surface { background: var(--surface); }
-.bg-sand    { background: linear-gradient(180deg, var(--canvas) 0%, var(--surface) 42%, var(--canvas) 100%); }
-
-/* Kaligrafický vodoznak na pozadí sekce */
-.kanji-bg {
-  position: absolute; z-index: 0; pointer-events: none; user-select: none;
-  font-family: var(--jp); color: var(--primary);
-  line-height: .78; opacity: .035; will-change: transform;
+  font: 400 clamp(9.5px, .88vw, 11px) / 1.1 var(--font-sans);
+  letter-spacing: .38em;
+  text-transform: uppercase;
+  color: rgba(236, 208, 156, .34);
+  filter: blur(.65px);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .72);
+  cursor: pointer;
+  outline: none;
+  transition:
+    color .7s cubic-bezier(.16, 1, .3, 1),
+    transform .7s cubic-bezier(.16, 1, .3, 1),
+    letter-spacing .7s cubic-bezier(.16, 1, .3, 1),
+    filter .7s cubic-bezier(.16, 1, .3, 1),
+    text-shadow .3s ease,
+    opacity .55s ease;
 }
 
-/* Měkké teplé světlo pod obsahem */
-.glow {
-  position: absolute; border-radius: 50%; filter: blur(80px);
-  pointer-events: none; z-index: 0;
+/* Prostřední slovo („Feel“) kontrastuje kurzivou Cormorantu */
+.kicker-node.is-serif {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(14.5px, 1.3vw, 17.5px);
+  letter-spacing: .16em;
+  text-transform: none;
+  color: rgba(247, 239, 226, .38);
 }
 
-.section-head { max-width: 40rem; }
-.section-head h2 { margin-top: .7rem; }
-.section-head .sub {
-  display: block; font-style: italic; color: var(--primary);
-  font-size: clamp(1.05rem, 1.7vw, 1.4rem); margin-top: .25rem; font-weight: 400;
+/* Aktivní slovo se přeostří doostra — a nepotřebuje k tomu ani jednu linku */
+.hero[data-active-word="0"] .kicker-node[data-word="0"],
+.hero[data-active-word="1"] .kicker-node[data-word="1"],
+.hero[data-active-word="2"] .kicker-node[data-word="2"],
+.kicker-node:hover,
+.kicker-node:focus-visible {
+  color: rgba(255, 249, 238, .96);
+  filter: blur(0);
+  transform: translateY(-1px);
+  text-shadow:
+    0 0 18px rgba(236, 208, 156, .72),
+    0 2px 12px rgba(0, 0, 0, .85);
 }
-.section-head p { margin-top: .9rem; }
 
-/* ---------- 5. Tlačítka -------------------------------------------------- */
-.btn {
-  position: relative; display: inline-flex; align-items: center; gap: .55rem;
-  padding: .72rem 1.4rem; border-radius: var(--pill); border: 1px solid transparent;
-  font-size: .8rem; font-weight: 600; letter-spacing: .03em; cursor: pointer;
-  transition: background-color .3s var(--ease), color .3s var(--ease),
-              transform .3s var(--ease), box-shadow .3s var(--ease), border-color .3s var(--ease);
+/* Když si návštěvník vybere slovo sám, ostatní dvě zajdou ještě dál */
+.hero.is-word-hovered .kicker-node:not(:hover):not(:focus-visible) {
+  opacity: .28;
+  filter: blur(1.1px);
+}
+
+.kicker-node:hover .kicker-node-text,
+.kicker-node:focus-visible .kicker-node-text {
+  filter: url(#aroma-vapor);
+}
+
+/* ==========================================================================
+   CHOREOGRAFIE PRAHU: SLOVA VYJEDOU ZE SPÁRY MEZI KŘÍDLY ŠÓDŽI
+   Řídí --door-p (0 na začátku otvírání → 1 při otevřeno), plní app.js
+   z intro.progress.
+   ========================================================================== */
+
+.hero-kicker.is-door-sync .kicker-node {
+  animation: none;
+  transition: none;
+}
+
+.hero-kicker.is-door-sync .kicker-node[data-word="0"] {
+  transform:
+    translate3d(
+      calc(var(--inv-p) * 28vw),
+      calc(var(--inv-p) * -28vh),
+      0
+    )
+    scale(calc(1 + var(--inv-p) * .35));
+  filter: blur(calc(var(--inv-p) * 6px));
+}
+
+.hero-kicker.is-door-sync .kicker-node[data-word="1"] {
+  transform:
+    translate3d(
+      calc(var(--inv-p) * 18vw),
+      calc(var(--inv-p) * -19vh),
+      0
+    )
+    scale(calc(1 + var(--inv-p) * .45));
+  filter: blur(calc(var(--inv-p) * 4px));
+}
+
+.hero-kicker.is-door-sync .kicker-node[data-word="2"] {
+  transform:
+    translate3d(
+      calc(var(--inv-p) * 8vw),
+      calc(var(--inv-p) * -10vh),
+      0
+    )
+    scale(calc(1 + var(--inv-p) * .35));
+  filter: blur(calc(var(--inv-p) * 6px));
+}
+
+/* ==========================================================================
+   ROZLOŽENÝ NADPIS + TALÍŘ S HŮLKAMI + TLAČÍTKO Z KOUŘOVÉHO SKLA
+   ========================================================================== */
+
+.hero-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 300;
+  color: var(--cream);
+  text-shadow: 0 4px 32px rgba(6, 3, 1, .68);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero-title-line { display: block; }
+
+/* Řádek 1: předehra („A Taste of Home.“) — čistý, bez vlečky linek */
+.hero-title-line.is-prelude {
+  display: block;
+  font-size: clamp(28px, 4.1vw, 52px);
+  line-height: 1.1;
+  letter-spacing: .02em;
+  color: rgba(247, 239, 226, .88);
+}
+
+/* Řádek 2: vrchol („On Your Plate“) — krok po schodu vpravo, velký */
+.hero-title-line.is-italic.is-climax {
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(46px, 7.6vw, 98px);
+  line-height: .98;
+  letter-spacing: -.015em;
+  color: #f5e2c6;
+  margin-top: clamp(2px, .5vh, 8px);
+  margin-left: clamp(28px, 6.8vw, 108px);
+  padding-bottom: .18em;
+  transition: transform .65s cubic-bezier(.16, 1, .3, 1);
+}
+
+.on-your-text {
+  font-size: .78em;
+  color: rgba(242, 221, 192, .84);
+  margin-right: .08em;
+}
+
+.plate-token {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  transition: transform .55s cubic-bezier(.16, 1, .3, 1);
+}
+
+.plate-word-text {
+  position: relative;
+  z-index: 1;
+  transition:
+    color .45s ease,
+    text-shadow .45s ease;
+}
+
+/* Plochý porcelánový talíř + kódai (noha) + hůlky pod slovem „Plate“ */
+.plate-art-hashi {
+  display: block;
+  position: absolute;
+  left: -6%;
+  bottom: -.31em;
+  width: 126%;
+  height: .52em;
+  pointer-events: none;
+  overflow: visible;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, .6));
+  transition:
+    transform .6s cubic-bezier(.16, 1, .3, 1),
+    filter .5s ease;
+}
+
+/* Fyzika jednotlivé hůlky, když kurzor míří na „Plate“ nebo na tlačítko */
+.hashi-stick {
+  transform-box: fill-box;
+  transform-origin: 20% 50%;
+  transition:
+    transform .55s cubic-bezier(.16, 1, .3, 1),
+    stroke .45s ease;
+}
+
+/* Stoupající pára, zakotvená přímo nad „a“ ve slově „Plate“ */
+.plate-art-steam {
+  display: block;
+  position: absolute;
+  left: 53%;
+  top: -.06em;
+  width: .64em;
+  height: .38em;
+  transform: translateX(-50%);
+  pointer-events: none;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px rgba(236, 208, 156, .38));
+  transition:
+    transform .55s cubic-bezier(.16, 1, .3, 1),
+    filter .55s ease;
+}
+
+.steam-wisp {
+  stroke-dasharray: 28 18;
+  animation:
+    steam-flow 2.8s linear infinite,
+    steam-sway 3.2s ease-in-out infinite alternate;
+  transform-origin: center bottom;
+}
+
+.wisp-1 { animation-duration: 2.7s, 3.1s; animation-delay: 0s, -.4s; }
+.wisp-2 { animation-duration: 2.3s, 2.8s; animation-delay: -.9s, -1.2s; }
+.wisp-3 { animation-duration: 3.1s, 3.5s; animation-delay: -1.7s, -2.1s; }
+
+@keyframes steam-flow {
+  0%   { stroke-dashoffset: 46; opacity: .25; }
+  50%  { opacity: .95; }
+  100% { stroke-dashoffset: 0; opacity: .25; }
+}
+
+@keyframes steam-sway {
+  0%   { transform: translateY(3px) translateX(-1.5px) scaleY(.94); }
+  100% { transform: translateY(-5px) translateX(2px) scaleY(1.06); }
+}
+
+/* ==========================================================================
+   TLAČÍTKO Z KOUŘOVÉHO SKLA („Prozkoumat menu“) A SOUHRA S HŮLKAMI
+   Hmotné tlačítko bez jediné zbloudilé linky, aby nekonkurovalo kresbě
+   talíře nad sebou.
+   ========================================================================== */
+
+.hero-cta-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: clamp(24px, 3.4vh, 38px);
+  margin-left: clamp(28px, 6.8vw, 108px);
+}
+
+.hero-cta {
+  --mag-x: 0px;
+  --mag-y: 0px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 15px 30px;
+  border-radius: 4px;
+  border: 1px solid rgba(216, 178, 116, .46);
+  background: linear-gradient(
+    135deg,
+    rgba(22, 14, 9, .78) 0%,
+    rgba(12, 7, 4, .66) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, .45),
+    inset 0 1px 0 rgba(255, 242, 216, .14);
+  color: var(--cream);
+  font: 400 11.5px/1 var(--font-sans);
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transform: translate3d(var(--mag-x), var(--mag-y), 0);
+  transition:
+    background .4s ease,
+    border-color .4s ease,
+    color .4s ease,
+    box-shadow .4s ease,
+    transform .25s cubic-bezier(.16, 1, .3, 1);
+  /* Jediný přídavek k hodnotám prototypu: 15px + 15px + 11.5px je 41 px,
+     pod hranicí dotykového cíle. Stejné rozhodnutí jako u lišty (--tap). */
+  min-height: var(--tap);
+}
+
+/* Drobný zlatý kosočtverec uvnitř tlačítka */
+.hero-cta-gem {
+  width: 5px;
+  height: 5px;
+  background: var(--gold-bright);
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(236, 208, 156, .8);
+  flex-shrink: 0;
+  transition:
+    transform .5s cubic-bezier(.16, 1, .3, 1),
+    background .35s ease;
+}
+
+.hero-cta-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--gold-bright);
+  transition:
+    transform .45s cubic-bezier(.16, 1, .3, 1),
+    color .35s ease;
+}
+
+.hero-cta-icon svg { width: 19px; height: 9px; }
+
+.hero-cta:hover,
+.hero-cta:focus-visible {
+  background: linear-gradient(
+    135deg,
+    rgba(216, 178, 116, .96) 0%,
+    rgba(236, 208, 156, .92) 100%
+  );
+  border-color: var(--gold-bright);
+  color: #140c07;
+  box-shadow:
+    0 12px 34px rgba(216, 178, 116, .28),
+    inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+
+.hero-cta:hover .hero-cta-gem,
+.hero-cta:focus-visible .hero-cta-gem {
+  transform: rotate(135deg) scale(1.2);
+  background: #140c07;
+  box-shadow: none;
+}
+
+.hero-cta:hover .hero-cta-icon,
+.hero-cta:focus-visible .hero-cta-icon {
+  transform: translateX(5px);
+  color: #140c07;
+}
+
+/* ==========================================================================
+   SOUHRA PŘES PLOCHU: KURZOR NA TLAČÍTKU PROBUDÍ HŮLKY
+   Když ruka míří na „Prozkoumat menu“, hůlky pod „Plate“ se o kousek
+   rozevřou, jako by se chystaly vzít první kus.
+   ========================================================================== */
+
+.hero-copy:has(.hero-cta:hover) .plate-word-text,
+.hero-copy:has(.hero-cta:focus-visible) .plate-word-text,
+.plate-token:hover .plate-word-text {
+  color: #fff9ee;
+  text-shadow:
+    0 0 28px rgba(236, 208, 156, .55),
+    0 4px 32px rgba(6, 3, 1, .75);
+}
+
+.hero-copy:has(.hero-cta:hover) .plate-art-hashi,
+.hero-copy:has(.hero-cta:focus-visible) .plate-art-hashi,
+.plate-token:hover .plate-art-hashi {
+  transform: translateY(-2px) scale(1.03);
+  filter: drop-shadow(0 0 12px rgba(236, 208, 156, .55));
+}
+
+.hero-copy:has(.hero-cta:hover) .hashi-upper,
+.hero-copy:has(.hero-cta:focus-visible) .hashi-upper,
+.plate-token:hover .hashi-upper {
+  transform: translate(5px, -3.5px) rotate(-4.2deg);
+  stroke: #fff7e6;
+}
+
+.hero-copy:has(.hero-cta:hover) .hashi-lower,
+.hero-copy:has(.hero-cta:focus-visible) .hashi-lower,
+.plate-token:hover .hashi-lower {
+  transform: translate(7px, 2.5px) rotate(2.8deg);
+  stroke: rgba(247, 239, 226, .9);
+}
+
+.hero-copy:has(.hero-cta:hover) .plate-art-steam,
+.hero-copy:has(.hero-cta:focus-visible) .plate-art-steam,
+.plate-token:hover .plate-art-steam {
+  transform: translateX(-50%) translateY(-4px) scale(1.12);
+  filter: drop-shadow(0 0 12px rgba(255, 243, 219, .75));
+}
+
+/* ==========================================================================
+   TIRÁŽ: SOUHVĚZDÍ HVĚZD U HODNOCENÍ A LAMPIONOVÝ UHLÍK U HODIN
+   Místo obchodních ★★★★★ a zelené tečky „jsme online“.
+   ========================================================================== */
+
+.hero-meta {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 28px;
+  border-top: 1px solid rgba(216, 178, 116, .22);
+  padding-top: 18px;
+  font: 400 12px/1.3 var(--font-sans);
+  letter-spacing: .06em;
+  color: var(--cream-soft);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .75);
+}
+
+/* Vytesané 4,9 /5 a zlatý oblouk souhvězdí */
+.hero-rating {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 2px 0;
+  color: var(--cream);
+  text-decoration: none;
   white-space: nowrap;
 }
-.btn svg { width: 15px; height: 15px; flex: none; }
-.btn-primary {
-  background: var(--primary); color: #fff;
-  box-shadow: 0 8px 22px -10px rgba(124,74,45,.75);
-}
-.btn-primary:hover { background: var(--primary-deep); transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(124,74,45,.8); }
-.btn-ghost {
-  background: rgba(255,255,255,.7); color: var(--ink); border-color: var(--line);
-  backdrop-filter: blur(8px);
-}
-.btn-ghost:hover { background: #fff; border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
-.btn-glass {
-  background: rgba(255,249,238,.14); color: var(--on-dark);
-  border-color: rgba(255,249,238,.26); backdrop-filter: blur(10px);
-}
-.btn-glass:hover { background: rgba(255,249,238,.26); transform: translateY(-2px); }
-.btn-sm { padding: .55rem 1.1rem; font-size: .74rem; }
-.btn:active { transform: translateY(0) scale(.985); }
 
-.link-u {
-  display: inline-flex; align-items: center; gap: .35rem;
-  color: var(--primary); font-size: .8rem; font-weight: 600;
-  position: relative; padding-bottom: 2px;
-}
-.link-u::after {
-  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
-  background: var(--secondary); transform: scaleX(0); transform-origin: 50% 50%;
-  transition: transform .35s var(--ease-out);
-}
-.link-u:hover::after { transform: scaleX(1); }
-.link-u svg { width: 13px; height: 13px; transition: transform .3s var(--ease); }
-.link-u:hover svg { transform: translateX(3px); }
-
-/* Štítky */
-.chip {
-  display: inline-flex; align-items: center; gap: .4rem;
-  padding: .3rem .7rem; border-radius: var(--pill);
-  background: var(--surface-2); border: 1px solid var(--line);
-  font-size: .72rem; font-weight: 500; color: var(--ink);
-}
-/* Adresa je odkaz do Map — chip to musí dát najevo. */
-a.chip-link { transition: border-color .3s var(--ease), background-color .3s var(--ease), color .3s var(--ease); }
-a.chip-link:hover { border-color: #dcc9b6; background: var(--surface); color: var(--primary); }
-.map-card a.l { transition: color .3s var(--ease); }
-.map-card a.l:hover b { color: var(--primary); }
-.chip .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--secondary); flex: none; }
-
-/* Hvězdičky hodnocení */
-.stars { display: inline-flex; gap: 1px; color: var(--gold); }
-.stars svg { width: 14px; height: 14px; flex: none; }
-
-/* Karta */
-.card {
-  background: var(--elevated); border: 1px solid var(--line-soft);
-  border-radius: var(--r-md); box-shadow: var(--sh-1);
+.rating-monolith {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-display);
+  line-height: .88;
 }
 
-/* ---------- 6. Hlavička -------------------------------------------------- */
-.header {
-  position: fixed; inset: .7rem 0 auto; z-index: 80;
-  display: flex; justify-content: center; padding-inline: var(--pad);
-  pointer-events: none;
-}
-.bar {
-  pointer-events: auto;
-  width: max-content; max-width: 100%; height: 58px;
-  display: flex; align-items: center; gap: .65rem;
-  padding: 0 .5rem 0 .75rem; border-radius: var(--pill);
-  background: rgba(251,247,240,.1);
-  border: 1px solid rgba(255,249,238,.18);
-  backdrop-filter: blur(14px) saturate(1.2);
-  transition: background-color .45s var(--ease), border-color .45s var(--ease),
-              box-shadow .45s var(--ease), height .45s var(--ease);
-}
-.header.solid .bar {
-  background: rgba(251,247,240,.9);
-  border-color: var(--line);
-  box-shadow: 0 10px 34px -18px rgba(42,26,18,.35);
-  height: 54px;
-}
-.header:not(.solid) .nav a { color: rgba(248,242,231,.82); }
-.header:not(.solid) .nav a:hover,
-.header:not(.solid) .nav a.active { color: #fff; }
-.header:not(.solid) .nav a.active::after { background: var(--gold); }
-.header:not(.solid) .lang { background: rgba(255,255,255,.12); }
-.header:not(.solid) .lang button { color: rgba(248,242,231,.7); }
-.header:not(.solid) .lang button.on { background: rgba(255,255,255,.9); color: var(--primary); }
-.header:not(.solid) .tel { color: rgba(248,242,231,.9); }
-/* Jen se zavřeným panelem. S otevřeným je za lištou světlý papír, takže
-   světlý křížek na něm mizel — a právě ten se hledal nejdéle. */
-body:not(.menu-open) .header:not(.solid) .burger {
-  background: rgba(255,249,238,.14); border-color: rgba(255,249,238,.28);
-  backdrop-filter: blur(8px);
-}
-body:not(.menu-open) .header:not(.solid) .burger-ico,
-body:not(.menu-open) .header:not(.solid) .burger-ico::before,
-body:not(.menu-open) .header:not(.solid) .burger-ico::after { background: var(--on-dark); }
-body:not(.menu-open) .header:not(.solid) .bar-brand { color: var(--on-dark); }
-/* Značka se ukazuje až tam, kde se odkazy schovají pod hamburger — jinak
-   by lišta na telefonu byly dvě ikony bez kotvy. */
-.bar-brand {
-  display: none; flex: none; margin-right: auto;
-  padding: .3rem .1rem;
-  font-family: var(--serif); font-size: 1.12rem; font-weight: 500;
-  letter-spacing: .1em; color: var(--ink);
-  transition: color .3s var(--ease);
+.rating-score {
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(32px, 3.2vw, 44px);
+  letter-spacing: -.02em;
+  color: var(--gold-bright);
+  text-shadow:
+    0 0 24px rgba(236, 208, 156, .35),
+    0 2px 14px rgba(0, 0, 0, .8);
+  transition:
+    color .45s ease,
+    transform .55s cubic-bezier(.16, 1, .3, 1),
+    text-shadow .45s ease;
 }
 
-.nav {
-  display: flex; align-items: center;
-  gap: .1rem; flex: none;
-}
-.nav a {
-  position: relative; padding: .4rem .58rem; border-radius: var(--pill);
-  font-size: .875rem; font-weight: 500; color: var(--body);
-  white-space: nowrap; letter-spacing: .01em;
-  transition: color .3s var(--ease);
-}
-.nav a::after {
-  content: ''; position: absolute; left: 50%; bottom: .18rem; translate: -50% 0;
-  width: 3px; height: 3px; border-radius: 50%; background: var(--secondary);
-  opacity: 0; transition: opacity .3s var(--ease);
-}
-.nav a:hover { color: var(--primary); }
-.nav a.active { color: var(--primary); font-weight: 600; }
-.nav a.active::after { opacity: 1; }
-
-.head-right { display: flex; align-items: center; gap: .4rem; flex: none; }
-.head-right .btn-sm { font-size: .78rem; padding: .5rem 1rem; }
-.btn-order { white-space: nowrap; }
-.header:not(.solid) .btn-order {
-  background: rgba(255,249,238,.14); color: var(--on-dark);
-  border-color: rgba(255,249,238,.26); backdrop-filter: blur(10px);
-}
-.header:not(.solid) .btn-order:hover {
-  background: rgba(255,249,238,.26); color: #fff; border-color: rgba(255,249,238,.4);
-}
-.lang {
-  display: flex; padding: 2px; border-radius: var(--pill);
-  background: rgba(138,116,101,.12); border: 1px solid transparent;
-}
-.lang button {
-  border: 0; background: none; cursor: pointer; border-radius: var(--pill);
-  padding: .22rem .55rem; font-size: .66rem; font-weight: 600; letter-spacing: .05em;
-  color: var(--muted); transition: all .3s var(--ease);
-}
-.lang button.on { background: var(--elevated); color: var(--primary); box-shadow: var(--sh-1); }
-.tel {
-  display: inline-flex; align-items: center; gap: .35rem;
-  font-size: .84rem; font-weight: 600; color: var(--primary);
-  padding: .35rem .5rem; transition: color .3s var(--ease);
-}
-.tel svg { width: 14px; height: 14px; }
-
-.burger {
-  display: none; gap: .45rem; min-width: 44px; height: 44px; padding: 0 .55rem;
-  border-radius: var(--pill); border: 1px solid var(--line);
-  background: var(--elevated); cursor: pointer; align-items: center; justify-content: center;
-  transition: background-color .3s var(--ease), border-color .3s var(--ease), padding .3s var(--ease);
-}
-.burger-ico { display: block; width: 16px; height: 1.5px; background: var(--ink); border-radius: 2px; position: relative; transition: all .3s var(--ease); }
-.burger-ico::before, .burger-ico::after {
-  content: ''; position: absolute; left: 0; width: 16px; height: 1.5px; background: var(--ink); border-radius: 2px;
-  transition: all .3s var(--ease);
-}
-.burger-ico::before { top: -5px; }
-.burger-ico::after  { top: 5px; }
-.burger-lbl {
-  display: none; font-size: .74rem; font-weight: 600; letter-spacing: .04em;
-  color: var(--ink); padding-right: .2rem;
+.rating-scale {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(232, 216, 193, .48);
+  margin-left: 2px;
+  letter-spacing: .04em;
 }
 
-/* Otevřeno: křížek dostane popisek a pevnou plochu, ať je vidět na první pohled. */
-body.menu-open .burger {
-  background: var(--primary); border-color: var(--primary); padding: 0 .95rem 0 .75rem;
+.rating-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
-body.menu-open .burger-lbl { display: block; color: #fff; }
-body.menu-open .burger-ico { background: transparent; }
-body.menu-open .burger-ico::before,
-body.menu-open .burger-ico::after { background: #fff; }
-body.menu-open .burger-ico::before { top: 0; transform: rotate(45deg); }
-body.menu-open .burger-ico::after  { top: 0; transform: rotate(-45deg); }
 
-/* Mobilní panel */
-/* Odshora, ne na střed: se šesti odkazy a patičkou se obsah na malém
-   telefonu nevejde a vycentrovaný by přetekl mimo plochu bez rolování. */
+/* Souhvězdí pěti hvězd */
+.rating-constellation {
+  width: 78px;
+  height: 13px;
+  overflow: visible;
+  filter: drop-shadow(0 0 6px rgba(236, 208, 156, .42));
+}
+
+.constellation-pulse {
+  stroke-dasharray: 26 68;
+  animation: constellation-trace 3.8s linear infinite;
+}
+
+@keyframes constellation-trace {
+  0%   { stroke-dashoffset: 94; opacity: .2; }
+  50%  { opacity: .95; }
+  100% { stroke-dashoffset: 0; opacity: .2; }
+}
+
+.c-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform .5s cubic-bezier(.16, 1, .3, 1),
+    fill .4s ease;
+}
+
+/* Popisek se pod kurzorem přetočí („Google Reviews“ ⇄ „Plzeň · Mapa“) */
+.rating-reel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.reel-track {
+  position: relative;
+  display: inline-grid;
+  overflow: hidden;
+  height: 1.25em;
+}
+
+.reel-line {
+  grid-area: 1 / 1;
+  display: block;
+  line-height: 1.25;
+  transition:
+    transform .5s cubic-bezier(.16, 1, .3, 1),
+    opacity .4s ease,
+    color .4s ease;
+}
+
+.reel-line.is-hover {
+  color: #fff8eb;
+  transform: translateY(110%);
+  opacity: 0;
+}
+
+.rating-arrow {
+  font-size: 11px;
+  color: var(--gold-bright);
+  transition: transform .45s cubic-bezier(.16, 1, .3, 1);
+}
+
+/* Co se stane pod kurzorem nebo ve fokusu */
+.hero-rating:hover .rating-score,
+.hero-rating:focus-visible .rating-score {
+  color: #fff9ee;
+  transform: translateY(-2px) scale(1.05);
+  text-shadow:
+    0 0 28px rgba(255, 243, 219, .78),
+    0 2px 14px rgba(0, 0, 0, .85);
+}
+
+.hero-rating:hover .c-node,
+.hero-rating:focus-visible .c-node {
+  fill: #fff9ee;
+  transform: rotate(45deg) scale(1.22);
+}
+
+.hero-rating:hover .c-node.n-2 { transition-delay: .04s; }
+.hero-rating:hover .c-node.n-3 { transition-delay: .08s; }
+.hero-rating:hover .c-node.n-4 { transition-delay: .12s; }
+.hero-rating:hover .c-node.n-5 { transition-delay: .16s; }
+
+.hero-rating:hover .reel-line:not(.is-hover),
+.hero-rating:focus-visible .reel-line:not(.is-hover) {
+  transform: translateY(-110%);
+  opacity: 0;
+}
+
+.hero-rating:hover .reel-line.is-hover,
+.hero-rating:focus-visible .reel-line.is-hover {
+  transform: translateY(0%);
+  opacity: 1;
+}
+
+.hero-rating:hover .rating-arrow,
+.hero-rating:focus-visible .rating-arrow {
+  transform: translate(3px, -3px);
+  color: #fff9ee;
+}
+
+/* Lampionový uhlík („Otevřeno · zavíráme ve 23:00“) */
+.hero-hours {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  font-size: 11.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.lantern-ember {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lantern-core {
+  width: 5px;
+  height: 5px;
+  background: #f5c97b;
+  transform: rotate(45deg);
+  box-shadow:
+    0 0 8px rgba(245, 201, 123, .95),
+    0 0 16px rgba(216, 140, 70, .65);
+}
+
+.lantern-halo {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(245, 201, 123, .6);
+  transform: rotate(45deg);
+  animation: lantern-pulse 3.2s cubic-bezier(.16, 1, .3, 1) infinite;
+}
+
+@keyframes lantern-pulse {
+  0%   { transform: rotate(45deg) scale(.75); opacity: .9; }
+  100% { transform: rotate(45deg) scale(1.65); opacity: 0; }
+}
+
+/* Zavřeno nesmí nést jen barva — text hlásí stav slovy, uhlík ho jen
+   doplňuje. Třídu .is-closed nasazuje app.js. */
+.hero-hours.is-closed .lantern-core { background: #e07a5f;
+  box-shadow: 0 0 8px rgba(224, 122, 95, .9), 0 0 16px rgba(176, 62, 42, .6); }
+.hero-hours.is-closed .lantern-halo { border-color: rgba(224, 122, 95, .55); }
+.hero-hours.is-closed .hours-state { color: #f0a58c; }
+
+.hours-state { color: var(--gold-bright); font-weight: 500; }
+.hours-dot { margin: 0 5px; color: rgba(216, 178, 116, .55); }
+.hours-time { color: var(--cream-soft); }
+
+/* Desktop: dva sloupce na jednom horizontu u dolní hrany */
+@media (min-width: 900px) {
+  .hero-stage {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 32px 56px;
+    padding-top: 30vh;
+  }
+
+  .hero-copy { padding-bottom: 0; }
+
+  .hero-meta {
+    width: auto;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 14px;
+    border-top: none;
+    border-left: 1px solid rgba(216, 178, 116, .28);
+    padding: 6px 0 6px 32px;
+  }
+}
+
+/* ==========================================================================
+   MOBIL — TIRÁŽ NAHORU, DOLNÍ TŘETINA PATŘÍ NADPISU
+   Na úzkých displejích jde .hero-meta (4,9 a hodiny) nahoru pod lištu,
+   aby spodek obrazovky zůstal celý „A Taste of Home. On Your Plate“
+   a tlačítku do menu.
+   ========================================================================== */
+
+@media (max-width: 899px) {
+  /* Lišta je fixed, a tiráž se tu stěhuje k vršku — bez tohohle zaleze pod ni. */
+  .hero { padding-top: clamp(4.9rem, 10vh, 6.4rem); }
+
+  .hero-stage { justify-content: space-between; }
+
+  .hero-meta {
+    order: -1;
+    align-self: flex-end;
+    width: auto;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    padding: 6px 14px 6px 0;
+    border-top: none;
+    border-bottom: none;
+    border-right: 1px solid rgba(216, 178, 116, .28);
+    gap: 6px;
+  }
+
+  .hero-copy { margin-top: auto; padding-bottom: 0; }
+}
+
+@media (max-width: 767px) {
+  .hero { padding-bottom: clamp(44px, 6.5vh, 68px); }
+
+  .hero-copy { padding-top: 12vh; padding-bottom: 0; }
+
+  .hero-kicker { gap: 20px; margin-bottom: 12px; }
+
+  .hero-title-line.is-prelude { font-size: clamp(24px, 6.8vw, 31px); }
+
+  .hero-title-line.is-italic.is-climax {
+    font-size: clamp(42px, 11.6vw, 54px);
+    margin-left: clamp(18px, 6vw, 36px);
+  }
+
+  .hero-cta-wrap { margin-top: 24px; margin-left: clamp(18px, 6vw, 36px); }
+
+  .hero-cta { padding: 13px 24px; font-size: 11px; letter-spacing: .22em; gap: 12px; }
+
+  .hero-meta { padding: 4px 12px 4px 0; font-size: 10.5px; }
+
+  .hero-rating { gap: 10px; }
+  .rating-score { font-size: 24px; }
+  .rating-scale { font-size: 11px; }
+  .rating-detail { gap: 2px; }
+  .rating-constellation { width: 58px; height: 10px; }
+  .rating-reel { font-size: 8.5px; letter-spacing: .15em; }
+
+  .hero-hours { font-size: 9.5px; letter-spacing: .06em; gap: 7px; }
+}
+
+@media (max-width: 380px) {
+  .hero-meta { font-size: 9.5px; }
+  .hours-dot,
+  .hours-time { display: none; }
+}
+
+/* ==========================================================================
+   7 · PODMALBA SEKCÍ
+   Tušové krajiny převedené do tónu tuše (viz public/assets/bg/).
+   Předlohy mají jen ~736 px, proto jdou pod silný závoj — rozostření se
+   pak čte jako atmosféra, ne jako chyba.
+   ========================================================================== */
+.secbg { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.secbg img { width: 100%; height: 100%; object-fit: cover; opacity: .72; will-change: transform; }
+.gift .secbg img { opacity: .8; }
+.gift .secbg::after { background:
+  radial-gradient(82% 64% at 50% 48%, rgba(244,235,218,.44) 0%, rgba(244,235,218,.68) 60%, rgba(244,235,218,.88) 100%) !important; }
+.secbg::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(78% 60% at 50% 46%, rgba(30, 20, 11, .62) 0%, rgba(30, 20, 11, .80) 60%, rgba(30, 20, 11, .94) 100%),
+    linear-gradient(var(--ink) 0%, rgba(30, 20, 11, .3) 14%, rgba(30, 20, 11, .3) 86%, var(--ink) 100%);
+}
+
+/* ==========================================================================
+   8 · O NÁS
+   ========================================================================== */
+.about { position: relative; overflow: hidden; background: var(--brown); padding: calc(var(--sec) * 1.1) 0 0; }
+.about__bgWrap { position: absolute; inset: -8% 0; }
+.about__bg { width: 100%; height: 100%; object-fit: cover; object-position: 72% 46%; opacity: .88; }
+.about__top { position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(62% 44% at 50% 34%, rgba(22, 14, 7, .62) 0%, rgba(22, 14, 7, .22) 58%, rgba(0, 0, 0, 0) 100%),
+    linear-gradient(var(--ink) 0%, rgba(30, 20, 11, .35) 16%, rgba(0, 0, 0, 0) 46%, rgba(22, 14, 7, .52) 100%); }
+
+.about__in { position: relative; z-index: 2; width: min(760px, 100% - var(--pad) * 2); margin-inline: auto; }
+.about__body { margin-top: clamp(2.4rem, 5vw, 4rem); display: grid; gap: 1.7rem; text-align: center; }
+.about__body .lead { font-size: clamp(16.5px, 1.45vw, 19.5px); color: rgba(248, 242, 231, .9); }
+/* Slova se rozsvěcují podle rolování. Třídu .w rozdává app.js, a jen když
+   běží GSAP — bez něj v HTML žádná .w není a odstavec je prostě vidět. */
+.splitwords .w { opacity: .16; transition: opacity .12s linear; }
+
+.pull { margin: .4rem 0; padding: 1.5rem 0;
+  border-top: 1px solid var(--hair-gold); border-bottom: 1px solid var(--hair-gold);
+  font-size: clamp(19px, 2.2vw, 28px); font-style: italic; line-height: 1.48; color: var(--gold-light); }
+
+/* Vícestupňová alfa — přechod mezi plochami se nesmí zlomit do hrany. */
+.toInk {
+  position: relative; z-index: 3; height: 300px; margin-top: 0;
+  background: linear-gradient(
+    rgba(30,20,11,0.0) 0.0%,
+    rgba(30,20,11,0.015) 7.1%,
+    rgba(30,20,11,0.055) 14.3%,
+    rgba(30,20,11,0.118) 21.4%,
+    rgba(30,20,11,0.198) 28.6%,
+    rgba(30,20,11,0.292) 35.7%,
+    rgba(30,20,11,0.394) 42.9%,
+    rgba(30,20,11,0.5) 50.0%,
+    rgba(30,20,11,0.606) 57.1%,
+    rgba(30,20,11,0.708) 64.3%,
+    rgba(30,20,11,0.802) 71.4%,
+    rgba(30,20,11,0.882) 78.6%,
+    rgba(30,20,11,0.945) 85.7%,
+    rgba(30,20,11,0.985) 92.9%,
+    rgba(30,20,11,1.0) 100.0%);
+}
+
+/* ==========================================================================
+   9 · SIGNATURES — vyříznuté fotky jídel, připíchnutá obrazovka a vodorovné
+   rolování. Fotky jsou WebP s alfa kanálem, takže drop-shadow() obkresluje
+   skutečný obrys jídla, ne obdélník.
+   ========================================================================== */
+.show { position: relative; padding: var(--sec) 0 0;
+  /* Jen barva, žádná fotka. Horní hrana je přesně var(--ink), takže navazuje
+     na konec přechodu .toInk a nevzniká mezi nimi vodorovná linka. */
+  background: linear-gradient(var(--ink) 0%, #241810 38%, #241810 62%, var(--ink) 100%); }
+.show__head { position: relative; z-index: 3; display: grid; justify-items: center; text-align: center; gap: .85rem; }
+
+/* Tady NESMÍ být grid + place-items: vycentroval by .show__stage a offsetLeft
+   každého jídla by přestal odpovídat skutečné souřadnici → vybrané jídlo by
+   neskončilo uprostřed. */
+.show__pin { position: relative; z-index: 2; height: 100svh; overflow: hidden; }
+
+/* kruh a zář tvoří podstavec pro jídlo, které je právě uprostřed */
+.show__ring {
+  position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
+  width: clamp(290px, 34vw, 470px); aspect-ratio: 1; border-radius: 50%;
+  border: 1px solid rgba(216, 174, 105, .2);
+  box-shadow: inset 0 0 90px rgba(216, 174, 105, .07);
+}
+.show__glow {
+  position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
+  width: clamp(360px, 46vw, 660px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, rgba(216, 174, 105, .16) 0%, rgba(216, 174, 105, .05) 46%, transparent 70%);
+  filter: blur(14px);
+}
+
+/* Oficiální logo zapuštěné do kruhu. Zlatá zůstává, jen se stáhne krytí —
+   působí to jako slepotisk na ploše, ne jako nalepené logo. */
+.show__mark {
+  position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
+  width: clamp(200px, 23vw, 320px); height: auto; z-index: 1;
+  opacity: .16; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 0 28px rgba(216, 174, 105, .26));
+}
+
+.show__stage { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center;
+  gap: clamp(3rem, 9vw, 9.5rem); padding-inline: 50vw; will-change: transform; }
+.dish { margin: 0; flex: 0 0 auto; transform-origin: 50% 60%; }
+.dish img { width: clamp(260px, 32vw, 460px); height: auto;
+  filter: drop-shadow(0 34px 42px rgba(0, 0, 0, .78)) drop-shadow(0 6px 14px rgba(0, 0, 0, .5)); }
+
+/* název se mění podle jídla uprostřed */
+.show__meta { position: absolute; z-index: 4; left: 0; right: 0; bottom: clamp(5rem, 11vh, 9rem);
+  display: grid; justify-items: center; gap: .45rem; text-align: center; pointer-events: none; }
+.show__kicker { font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; color: var(--gold-dim); }
+.show__name { font-size: clamp(26px, 3vw, 40px); font-weight: 700; letter-spacing: -.015em; line-height: 1.1; color: var(--t-1); }
+/* Ceny ještě nejsou — prázdný řádek nesmí zabírat místo, viz src/data/menu.ts. */
+.show__price { font-size: clamp(15px, 1.4vw, 19px); font-weight: 500; letter-spacing: .05em; color: var(--gold); }
+.show__price:empty { display: none; }
+
+.show__bar { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: clamp(2.6rem, 6vh, 4.6rem);
+  width: clamp(130px, 18vw, 230px); height: 1px; background: rgba(248, 242, 231, .14); }
+.show__bar i { display: block; height: 100%; width: 12%; background: var(--gold); }
+
+.show__cta { position: absolute; z-index: 4; left: var(--pad); bottom: clamp(2.4rem, 6vh, 4.4rem); }
+
+/* Náhradní podoba scény. Platí ve třech případech: prefers-reduced-motion,
+   nenačtený GSAP (obojí nasadí .is-static z app.js) a vypnutý JavaScript
+   (html.no-js z Base.astro, kde žádné app.js neběží).
+
+   Scéna se nepřipíchne a nejede sama; z pásu se stane obyčejný vodorovný
+   seznam, který se roluje prstem a zastavuje na jídle. Bez tohohle by
+   zůstalo vidět jen první jídlo a zbylá by se nedala dostat.
+
+   Třídu nese .show__pin, ne .show__stage — kruh, zář a logo leží v DOM před
+   scénou, takže by se z ní nedaly vybrat. */
+:is(.show__pin.is-static, html.no-js .show__pin) { height: auto; padding-bottom: clamp(2rem, 5vh, 3.5rem); }
+:is(.show__pin.is-static, html.no-js .show__pin) .show__ring,
+:is(.show__pin.is-static, html.no-js .show__pin) .show__glow,
+:is(.show__pin.is-static, html.no-js .show__pin) .show__mark,
+:is(.show__pin.is-static, html.no-js .show__pin) .show__meta,
+:is(.show__pin.is-static, html.no-js .show__pin) .show__bar { display: none; }
+:is(.show__pin.is-static, html.no-js .show__pin) .show__stage {
+  position: relative; inset: auto;
+  gap: clamp(1.5rem, 4vw, 3rem); padding: clamp(2rem, 5vh, 4rem) var(--pad);
+  align-items: start;
+  overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+}
+:is(.show__pin.is-static, html.no-js .show__pin) .dish { scroll-snap-align: center; display: grid; gap: 1rem; }
+/* Čtvercový rám: fotky jídel mají každá jiný poměr stran a popisky by se
+   jinak rozsypaly do různých výšek. */
+:is(.show__pin.is-static, html.no-js .show__pin) .dish img { width: clamp(220px, 58vw, 380px); aspect-ratio: 1; object-fit: contain; }
+:is(.show__pin.is-static, html.no-js .show__pin) .show__cta { position: static; margin-inline: var(--pad); }
+
+/* Popisek u jídla. V hlavní podobě scény jméno nese .show__meta, takže je
+   schovaný; ukáže se jen v náhradní podobě. */
+.dish__cap { display: none; }
+:is(.show__pin.is-static, html.no-js .show__pin) .dish__cap { display: grid; justify-items: center; gap: .2rem; text-align: center; }
+.dish__kicker { font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--gold-dim); }
+.dish__name { font-size: 20px; font-weight: 700; color: var(--t-1); line-height: 1.2; }
+.dish__price { font-size: 15px; font-weight: 500; color: var(--gold); }
+
+/* ==========================================================================
+   10 · GALERIE — připíchnutá obrazovka, dva pruhy fotek jdou proti sobě,
+   popis stojí uprostřed. Výška sekce určuje, jak dlouho pruhy jedou.
+   ========================================================================== */
+.tick { position: relative; background: var(--ink); height: 430vh; }
+.tick__pin { position: sticky; top: 0; height: 100svh; overflow: hidden; }
+
+.tick__col { position: absolute; top: 0; width: clamp(180px, 23vw, 340px);
+  display: grid; gap: clamp(.9rem, 2vw, 1.8rem); will-change: transform; }
+.tick__col--l { left: var(--pad); }
+.tick__col--r { right: var(--pad); }
+.tick__col figure { margin: 0; overflow: hidden; border-radius: var(--r); }
+.tick__col img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover;
+  box-shadow: 0 34px 64px -38px rgba(0, 0, 0, .9); }
+
+.tick__label { position: absolute; inset: 0; z-index: 3; display: grid; place-content: center;
+  justify-items: center; gap: .7rem; text-align: center; pointer-events: none; }
+.kanji--big { font-size: clamp(44px, 5vw, 70px); color: var(--gold-deep); }
+.tick__sub { font-size: clamp(17px, 1.7vw, 23px); font-style: italic; color: rgba(248, 242, 231, .62); }
+.tick__foot { position: absolute; z-index: 4; left: 0; right: 0; bottom: clamp(2rem, 5vh, 3.4rem);
+  margin: 0; display: flex; justify-content: center; }
+
+/* ==========================================================================
+   11 · REZERVACE A FORMULÁŘE
+   ========================================================================== */
+.res { position: relative; overflow: hidden; background: var(--ink-2); padding: var(--sec) 0; }
+.wm--res { right: -2rem; bottom: 6%; font-size: clamp(12rem, 20vw, 20rem); }
+.res__in { position: relative; z-index: 2; display: grid; grid-template-columns: .85fr 1.15fr; gap: clamp(2rem, 5vw, 5rem); align-items: start; }
+.res__copy { display: grid; justify-items: start; gap: .85rem; }
+.res__copy .lead { margin-top: .5rem; }
+
+.hours { display: grid; gap: .1rem; width: 100%; }
+.hours--compact { margin-top: 1.6rem; max-width: 360px; }
+.hours__row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid var(--hair); }
+.hours__row span { font-family: var(--sans); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--t-3); }
+.hours__row b { font-size: 16px; font-weight: 600; color: var(--gold-light); }
+.hours__row a:hover { color: var(--gold); }
+
+.panel { background: var(--ink-3); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: clamp(1.5rem, 3vw, 2.4rem); }
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 1.3rem 1.1rem; }
+.field { display: grid; gap: .45rem; min-width: 0; }
+.field--full { grid-column: 1 / -1; }
+/* .field má display:grid, a ten přebíjí [hidden] z prohlížeče — pole pro
+   poznámku by svítilo i zavřené. */
+.field[hidden] { display: none; }
+.field__label { font-family: var(--sans); font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
+.field__label i { font-style: normal; letter-spacing: .08em; text-transform: none; color: var(--t-4); }
+.field > input, .field > select, .field > textarea {
+  width: 100%; min-height: var(--tap);
+  background: transparent; border: 0; border-bottom: 1px solid rgba(248, 242, 231, .24); border-radius: 0;
+  padding: .72rem 0; font-size: 15px; color: var(--cream);
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease); }
+.field > textarea { resize: vertical; }
+.field > input::placeholder, .field > textarea::placeholder { color: rgba(248, 242, 231, .36); }
+.field > input:hover, .field > select:hover, .field > textarea:hover { border-color: rgba(216, 174, 105, .58); }
+.field > input:focus, .field > select:focus, .field > textarea:focus {
+  outline: none; border-color: var(--gold); box-shadow: 0 1px 0 var(--gold); }
+.field > select { appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d8ae69' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right center; background-size: 14px;
+  padding-right: 1.8rem; }
+.field select option { background: var(--ink); }
+.form > h3 { grid-column: 1 / -1; margin: 0; }
+.form .btn { grid-column: 1 / -1; justify-self: start; margin-top: .3rem; }
+/* <p class="ok-box"> i <p class="field"> nesou výchozí margin odstavce */
+.form > p { margin: 0; }
+
+/* Poznámka je nepovinná — ukážeme ji, až o ni někdo stojí. */
+.note-toggle {
+  grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: .55rem;
+  min-height: var(--tap); padding: 0; background: none; border: 0; cursor: pointer;
+  font-family: var(--sans); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.note-toggle .opt { letter-spacing: .06em; text-transform: none; color: var(--t-4); }
+.note-toggle .plus { position: relative; width: 20px; height: 20px; flex: none; border-radius: var(--pill);
+  border: 1px solid var(--hair-gold); transition: transform .3s var(--ease), background .3s var(--ease); }
+.note-toggle .plus::before, .note-toggle .plus::after {
+  content: ''; position: absolute; inset: 50% 25%; height: 1px; margin-top: -.5px; background: currentColor; }
+.note-toggle .plus::after { rotate: 90deg; transition: opacity .3s var(--ease); }
+.note-toggle[aria-expanded="true"] .plus { transform: rotate(180deg); background: rgba(216, 174, 105, .16); }
+.note-toggle[aria-expanded="true"] .plus::after { opacity: 0; }
+.note-toggle:hover .plus { background: rgba(216, 174, 105, .16); }
+
+.consent { grid-column: 1 / -1; display: flex; gap: .65rem; align-items: flex-start; }
+.consent input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--gold); flex: none; cursor: pointer; }
+.consent label { font-family: var(--fine); font-size: 13px; line-height: 1.6; color: var(--t-3); cursor: pointer; }
+.consent a { color: var(--gold-light); border-bottom: 1px solid var(--hair-gold); }
+
+.ok-box {
+  grid-column: 1 / -1; display: none; margin: 0; padding: .9rem 1.1rem; border-radius: var(--r-sm);
+  background: rgba(216, 174, 105, .12); border: 1px solid var(--hair-gold); color: var(--gold-light);
+  font-family: var(--sans); font-size: 12.5px; font-weight: 500; line-height: 1.6; }
+.ok-box.on { display: block; }
+
+/* přepínače hodnoty poukazu */
+.vals { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+.vals label { cursor: pointer; }
+.vals input { position: absolute; opacity: 0; pointer-events: none; }
+.vals span { display: flex; align-items: center; justify-content: center; min-height: var(--tap);
+  border-radius: var(--pill); border: 1px solid rgba(248, 242, 231, .16);
+  font-size: 14px; font-weight: 600; color: var(--t-2);
+  transition: background .3s var(--ease), border-color .3s var(--ease), color .3s var(--ease); }
+.vals input:checked + span { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.vals input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.radio-rows { display: grid; gap: .5rem; }
+.radio-rows label { display: flex; align-items: center; gap: .65rem; min-height: var(--tap);
+  padding: .5rem .85rem; border-radius: var(--r-sm); border: 1px solid rgba(248, 242, 231, .13);
+  font-size: 14px; color: var(--t-3); cursor: pointer; transition: border-color .3s var(--ease); }
+.radio-rows label:hover { border-color: var(--hair-gold); }
+.radio-rows input { accent-color: var(--gold); width: 16px; height: 16px; flex: none; }
+.radio-rows input:checked ~ span { color: var(--cream); }
+
+/* ==========================================================================
+   12 · DÁRKOVÝ POUKAZ — světlá plocha, jediné prosvětlení stránky
+   Mezi řadou tmavých sekcí mění vzduch. Oba okraje se rozplývají přesně do
+   barvy sekce nad a pod, takže nevzniká žádná linka.
+   ========================================================================== */
+.gift { position: relative; overflow: hidden; background: #f4ebda; color: #2a1b0e;
+  padding: calc(var(--sec) + 70px) 0; }
+.gift::before, .gift::after { content: ""; position: absolute; left: 0; right: 0; height: 280px; z-index: 3; pointer-events: none; }
+.gift::before { top: 0; background: linear-gradient(
+  var(--ink) 0%, rgba(30,20,11,.93) 12%, rgba(30,20,11,.78) 26%, rgba(30,20,11,.56) 42%,
+  rgba(30,20,11,.34) 58%, rgba(30,20,11,.16) 74%, rgba(30,20,11,.04) 88%, rgba(30,20,11,0) 100%); }
+.gift::after { bottom: 0; background: linear-gradient(
+  rgba(30,20,11,0) 0%, rgba(30,20,11,.04) 12%, rgba(30,20,11,.16) 26%, rgba(30,20,11,.34) 42%,
+  rgba(30,20,11,.56) 58%, rgba(30,20,11,.78) 74%, rgba(30,20,11,.93) 88%, var(--ink) 100%); }
+.giftIn { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr .9fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+.giftCopy { display: grid; justify-items: start; gap: 1rem; }
+.giftShot { margin: 1rem 0 0; }
+.giftShot img { width: 100%; border-radius: var(--r-lg); box-shadow: 0 44px 86px -42px rgba(0, 0, 0, .5); }
+
+/* Formulář poukazu zůstává — mockup na jeho místě kreslí jen tlačítko, ale
+   objednávka poukazu je funkce, kterou web má. Panel je proto ve světlé
+   variantě, aby na prosvětlené ploše nedělal tmavou díru. */
+.panel--light { background: rgba(255, 253, 248, .72); border-color: rgba(42, 27, 14, .14);
+  backdrop-filter: blur(6px); color: #2a1b0e; }
+.panel--light h3 { margin: 0; font-size: 22px; font-weight: 700; color: #2a1b0e; }
+.panel--light .field__label { color: #8a6038; }
+.panel--light .field__label i { color: rgba(42, 27, 14, .5); }
+.panel--light .field > input,
+.panel--light .field > select,
+.panel--light .field > textarea {
+  background: transparent; border-color: rgba(42, 27, 14, .28); color: #2a1b0e; }
+.panel--light .field > input::placeholder,
+.panel--light .field > textarea::placeholder { color: rgba(42, 27, 14, .42); }
+.panel--light .field > input:hover,
+.panel--light .field > select:hover,
+.panel--light .field > textarea:hover { border-color: rgba(138, 96, 56, .68); }
+.panel--light .field > input:focus,
+.panel--light .field > select:focus,
+.panel--light .field > textarea:focus { border-color: #8a6038; box-shadow: 0 1px 0 #8a6038; }
+.panel--light .field > select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a6038' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
+.panel--light .vals span { border-color: rgba(42, 27, 14, .18); color: #4a3118; }
+.panel--light .vals input:checked + span { background: #8a6038; border-color: #8a6038; color: #fffdf8; }
+.panel--light .radio-rows label { border-color: rgba(42, 27, 14, .15); color: rgba(42, 27, 14, .76); }
+.panel--light .radio-rows label:hover { border-color: #8a6038; }
+.panel--light .radio-rows input:checked ~ span { color: #2a1b0e; }
+.panel--light .consent label { color: rgba(42, 27, 14, .78); }
+.panel--light .consent a { color: #7a5330; border-bottom-color: rgba(122, 83, 48, .4); }
+.panel--light .consent input,
+.panel--light .radio-rows input,
+.panel--light .vals input { accent-color: #8a6038; }
+.panel--light .ok-box { background: rgba(138, 96, 56, .1); border-color: rgba(138, 96, 56, .3); color: #5a3a18; }
+.panel--light .note-toggle { color: #8a6038; }
+.panel--light .note-toggle .opt { color: rgba(42, 27, 14, .5); }
+.panel--light :focus-visible { outline-color: #8a6038; }
+
+/* ==========================================================================
+   13 · KONTAKT
+   ========================================================================== */
+.con { position: relative; background: var(--ink); display: grid; grid-template-columns: 1fr 1fr; }
+.con__copy { position: relative; z-index: 2; padding: var(--sec) var(--pad); display: grid; align-content: center; justify-items: start; gap: 1rem; max-width: 620px; justify-self: end; width: 100%; }
+.con__copy .hours { margin-top: 1.4rem; }
+.con__copy .btn { margin-top: 1.6rem; }
+.con__social { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-top: 1.2rem;
+  font-family: var(--sans); font-size: 12.5px; letter-spacing: .08em; color: var(--t-3); }
+.con__social a { display: inline-flex; align-items: center; gap: .4rem; color: var(--gold-light); border-bottom: 1px solid var(--hair-gold); }
+.con__social a svg { width: 15px; height: 15px; flex: none; }
+.con__social a:hover { border-color: var(--gold); }
+.con__biz { margin: 1.6rem 0 0; font-family: var(--fine); font-size: 13px; line-height: 1.75; color: var(--t-4); }
+/* Mapa nesedí od kraje ke kraji: embed zasazený do rohu sekce je ostrý
+   obdélník a proti zaoblení zbytku webu drhne. Odsadí se proto od okrajů
+   sekce, tmavá podmalba ho obteče ze všech čtyř stran a rohy se zaoblí.
+
+   Odsazení drží padding rodiče a iframe se roztáhne jako flex položka.
+   Absolutní pozicování s `inset` tu nefunguje: iframe je replaced element,
+   a tomu se při height/width: auto nepoužije protilehlý offset — spadne
+   zpátky na vlastní rozměr 300 × 150 a z mapy zbude vizitka v rohu. */
+.con__map { position: relative; z-index: 2; display: flex; align-items: center;
+  padding: clamp(2rem, 4.5vw, 4.5rem) var(--pad) clamp(2rem, 4.5vw, 4.5rem) 0; }
+/* Výška je daná, ne natažená přes celý sloupec: text vedle je vysoký a
+   mapa roztažená na jeho výšku vycházela jako úzký svislý pruh. Takhle
+   stojí uprostřed sloupce a drží zhruba čtvercový formát, ve kterém se
+   mapa čte. */
+.con__map iframe { flex: 1; width: 100%; height: clamp(340px, 52svh, 520px);
+  border: 0; border-radius: var(--r-lg);
+  filter: sepia(.45) saturate(.78) brightness(.8) contrast(1.05);
+  /* Vlas místo rámečku: border by iframu přičetl šířku k rozměru. */
+  box-shadow: 0 0 0 1px var(--hair-gold), 0 44px 80px -54px rgba(0, 0, 0, .95); }
+
+/* ==========================================================================
+   14 · PATIČKA
+   ========================================================================== */
+.foot { position: relative; overflow: hidden; padding-top: var(--sec);
+  /* bez fotky — jen barva, tmavne ke dnu stránky */
+  background: linear-gradient(var(--ink) 0%, var(--ink-2) 42%, #120b05 100%); }
+.wm--foot { right: 5%; top: 5%; font-size: clamp(14rem, 25vw, 25rem); }
+.foot__top { position: relative; z-index: 2; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.15fr; gap: clamp(1.5rem, 4vw, 3.5rem); align-items: start; }
+.foot__logo { width: 112px; margin-bottom: 1rem; }
+.foot__blurb { margin: 0; max-width: 32ch; font-size: 14.5px; line-height: 1.75; color: var(--t-3); }
+.foot__blurb em { font-style: italic; color: var(--gold); }
+.fcol { display: grid; gap: .3rem; align-content: start; }
+.fcol h5 { margin: 0 0 .75rem; font-size: 16px; font-weight: 600; color: var(--gold-light); }
+.fcol a, .fcol p { margin: 0; font-family: var(--sans); font-size: 12.5px; font-weight: 400; letter-spacing: .07em; line-height: 2; color: var(--t-3); }
+.fcol a { display: block; }
+.fcol a:hover { color: var(--gold-light); }
+
+.foot__bottom { position: relative; z-index: 2; margin-top: clamp(3rem, 6vw, 5rem); padding-top: 1.5rem; border-top: 1px solid var(--hair);
+  display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; justify-content: space-between; }
+.foot__bottom p { margin: 0; font-family: var(--fine); font-size: 12px; color: var(--t-4); }
+.foot__bottom a:hover { color: var(--gold); }
+
+.wordmark { position: relative; z-index: 2; margin-top: clamp(2.5rem, 5vw, 4rem); padding: 0 var(--pad); line-height: .74; overflow: hidden; }
+.wordmark span { display: block; text-align: center; font-size: 21vw; font-weight: 800; letter-spacing: -.025em;
+  color: transparent; -webkit-text-stroke: 1px rgba(241, 210, 146, .3); white-space: nowrap; }
+
+/* ==========================================================================
+   15 · ZPĚT NAHORU
+   ========================================================================== */
+.toTop { position: fixed; right: clamp(1rem, 2.5vw, 2rem); bottom: clamp(1rem, 2.5vw, 2rem); z-index: 80;
+  display: inline-flex; align-items: center; gap: .55rem; min-height: var(--tap);
+  padding: .85rem 1.2rem; border-radius: var(--pill); cursor: pointer;
+  background: rgba(22, 14, 7, .8); backdrop-filter: blur(14px); border: 1px solid var(--hair-gold); color: var(--gold-light);
+  font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase;
+  opacity: 0; transform: translateY(14px); pointer-events: none;
+  transition: opacity .45s var(--ease), transform .45s var(--ease), background .35s var(--ease), border-color .35s var(--ease), color .35s var(--ease); }
+.toTop.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.toTop:hover { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+.toTop__arrow { font-size: 13px; transition: transform .35s var(--ease); }
+.toTop:hover .toTop__arrow { transform: translateY(-3px); }
+
+/* ==========================================================================
+   16 · MOBILNÍ PANEL
+   Hlavní navigace webu — otevírá ji tlačítko Menu v liště, a to na všech
+   šířkách. Odshora, ne na střed: se šesti odkazy a patičkou se obsah na
+   malém telefonu nevejde a vycentrovaný by přetekl mimo plochu.
+   ========================================================================== */
 .sheet {
-  position: fixed; inset: 0; z-index: 79; display: flex; flex-direction: column;
-  gap: .2rem;
-  padding: 5.5rem var(--pad) calc(1.5rem + env(safe-area-inset-bottom));
-  background: var(--canvas);
+  position: fixed; inset: 0; z-index: 69; display: flex; flex-direction: column;
+  padding: 6.5rem var(--pad) calc(1.5rem + env(safe-area-inset-bottom));
+  background: rgba(16, 10, 5, .97); backdrop-filter: blur(18px);
   overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
-  clip-path: circle(0% at calc(100% - 3rem) 2.5rem);
-  transition: clip-path .7s var(--ease-out);
+  clip-path: circle(0% at 2.5rem 2.5rem);
+  transition: clip-path .7s var(--ease);
   pointer-events: none;
 }
-body.menu-open .sheet { clip-path: circle(145% at calc(100% - 3rem) 2.5rem); pointer-events: auto; }
+body.menu-open .sheet { clip-path: circle(155% at 2.5rem 2.5rem); pointer-events: auto; }
 /* Panel překryje stránku celou, takže ji pod sebou zamkneme — jinak se
    na dotyku roluje obsah schovaný za ním. */
 body.menu-open { overflow: hidden; }
 
 .sheet-nav { display: flex; flex-direction: column; }
-.sheet a {
-  font-family: var(--serif); font-size: 1.42rem; color: var(--ink);
-  min-height: 56px; padding: .35rem 0;
-  border-bottom: 1px solid var(--line-soft);
+.sheet-nav a {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  min-height: 60px; padding: .4rem 0;
+  border-bottom: 1px solid var(--hair);
+  font-size: clamp(22px, 4vw, 30px); font-weight: 600; color: var(--cream);
+  transition: color .3s var(--ease);
 }
-.sheet-arr {
-  width: 15px; height: 15px; flex: none; color: var(--muted-2);
-  transition: transform .3s var(--ease), color .3s var(--ease);
-}
-.sheet a:hover .sheet-arr { transform: translateX(3px); color: var(--primary); }
-.sheet a.active { color: var(--primary); }
-.sheet a.active .sheet-arr { color: var(--primary); }
-.sheet .sheet-foot { margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: .55rem; }
-.sheet .lang { width: 100%; margin: 0 0 .15rem; background: rgba(138,116,101,.1); }
-.sheet .lang button { flex: 1; font-size: .78rem; padding: .55rem .75rem; }
-.sheet .sheet-foot a,
-.sheet .sheet-foot .btn {
-  font-family: var(--sans); font-size: .83rem; font-weight: 600;
-  flex: 1 1 9rem; min-height: 48px;
-  padding: .8rem 1.4rem; border-bottom: 0; display: inline-flex;
-  align-items: center; justify-content: center;
-}
-/* Rezervace je hlavní akce panelu, ať má celý řádek. */
-.sheet .sheet-foot .btn-primary { flex: 1 1 100%; }
+.sheet-nav a:hover, .sheet-nav a.active { color: var(--gold-light); }
+.sheet-arr { width: 16px; height: 16px; flex: none; color: var(--gold-dim);
+  transition: transform .3s var(--ease), color .3s var(--ease); }
+.sheet-nav a:hover .sheet-arr, .sheet-nav a.active .sheet-arr { transform: translateX(4px); color: var(--gold); }
 
-/* ---------- 7. Hero ------------------------------------------------------ */
-.hero {
-  position: relative; overflow: hidden; isolation: isolate;
-  z-index: 2;
-  min-height: 100svh; display: flex; align-items: center;
-  background: var(--dark-2);
-  padding-block: clamp(7rem, 10vw, 9rem) clamp(5rem, 8vw, 7rem);
-}
-/* Hero je celoplošný: copy ve středu, karta hodnocení v pravém horním rohu. */
-.hero > .wrap { width: 100%; max-width: none; padding-inline: clamp(1.15rem, 3.5vw, 3.5rem); }
+/* Patička sedí hned pod odkazy, ne přilepená ke dnu: s margin-top:auto
+   mezi nimi zůstávalo přes 400 px prázdna a tlačítka visela úplně dole.
+   Volné místo teď zbyde pod nimi, kde nevadí.
 
-/* Video přes celou plochu. Hýbe se pomaleji než obsah. */
-.hero-media { position: absolute; inset: -7% 0; z-index: 0; will-change: transform; }
-.hero-media video {
-  width: 100%; height: 100%; object-fit: cover;
-  filter: brightness(.76) contrast(1.05) saturate(1.04);
-}
-.hero-veil { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-/* svislý závoj — čitelnost pod hlavičkou i nad patou sekce */
-/* středový závoj — copy ve středu zůstává čitelný, video po stranách dýchá */
-.hero-veil.v2 {
-  background:
-    radial-gradient(58% 52% at 50% 48%, rgba(18,12,8,.62) 0%, rgba(18,12,8,.28) 58%, rgba(18,12,8,.42) 100%);
-}
-/* teplé světlo, aby obraz nebyl jen ztmavený */
-.hero-veil.v3 {
-  background: radial-gradient(62% 52% at 72% 42%, rgba(200,150,80,.2) 0%, transparent 72%);
-  mix-blend-mode: screen;
-}
-.hero::after {
-  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2.4rem; z-index: 2;
-  background: linear-gradient(0deg, #412514 0%, rgba(251,247,240,0) 100%);
-  pointer-events: none;
-}
-.hero-grid {
-  position: relative; z-index: 3;
-  display: flex; justify-content: center; align-items: center;
-  width: 100%;
-}
-.hero-copy {
-  max-width: 42rem; text-align: center;
-  margin-top: 40px;
-}
+   Mřížka 2 × 2 se stejně širokými poli. Žádné tlačítko přes celou šířku —
+   z toho byl dlouhý pruh — a žádná šířka podle délky popisku. */
+.sheet-foot { padding-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
+.sheet-foot .btn { min-height: 38px; font-size: 10.5px; letter-spacing: .06em; padding: .7em .6em; min-width: 0; }
+.sheet-foot .btn svg { width: 13px; height: 13px; }
+/* Vlastní řádek, ale jen tak široká, jak je potřeba — roztažená přes obě
+   pole působila jako další tlačítko. */
+.sheet-foot .lang { grid-column: 1 / -1; justify-self: start; width: auto; margin: 0 0 .3rem; }
+.sheet-foot .lang button { min-height: 32px; padding: .25rem .95rem; font-size: 11px; }
 
-.hero-logo {
-  display: block; margin: 0 auto .95rem;
-  width: min(20rem, 78vw);
-}
-.hero-logo img {
-  width: 100%; height: auto; display: block;
-}
-
-.hero h1 {
-  margin-top: 1.6rem; color: #fff;
-  font-size: clamp(2rem, 3.9vw, 2.95rem); line-height: 1.12; font-weight: 400;
-  letter-spacing: -.015em;
-  text-shadow: 0 2px 24px rgba(16,10,6,.35);
-}
-.hero h1 .ital {
-  display: inline-block; font-style: italic; color: #ffcfae; font-size: .92em;
-}
-/* Kosočtverec mezi slovy — typografický ornament, ne interpunkce */
-.hero h1 .dv {
-  display: inline-block; width: .2em; height: .2em; margin: 0 .06em;
-  vertical-align: .32em; rotate: 45deg;
-  background: var(--gold); opacity: .8;
-  box-shadow: 0 0 10px rgba(200,150,80,.45);
-}
-.hero h1 .mask-line + .mask-line { margin-top: .2em; }
-
-.hero-rating {
-  display: flex; align-items: center; gap: .7rem;
-  transition: opacity .3s var(--ease);
-}
-.hero-rating:hover { opacity: .82; }
-.hero-rating .score {
-  width: 36px; height: 36px; border-radius: 50%; flex: none;
-  display: grid; place-items: center;
-  border: 1.5px solid rgba(255,207,174,.65); color: #ffcfae;
-  font-family: var(--serif); font-size: .92rem; font-weight: 600;
-}
-.hero-rating .rt { display: flex; flex-direction: column; gap: .05rem; min-width: 0; }
-.hero-rating .rt-top { display: flex; align-items: center; gap: .45rem; }
-.hero-rating .rt-top b { font-size: .8rem; color: #fff; font-weight: 600; }
-.hero-rating .stars svg { width: 12px; height: 12px; }
-.hero-rating .rt-sub { font-size: .71rem; color: rgba(248,242,231,.68); }
-.hero-rating .go {
-  width: 24px; height: 24px; border-radius: 50%; flex: none; margin-left: auto;
-  display: grid; place-items: center;
-  background: rgba(255,249,238,.16); color: #ffe4cd; transition: transform .3s var(--ease);
-}
-.hero-rating .go svg { width: 11px; height: 11px; }
-.hero-rating:hover .go { transform: translateX(3px); }
-
-.hero-cta { margin-top: 1.5rem; display: flex; flex-wrap: wrap; justify-content: center; gap: .7rem; }
-.hero-cta .btn { padding: .85rem 1.6rem; font-size: .83rem; }
-.hero-cta .dn { transform: rotate(90deg); }
-
-.hero-note {
-  display: flex; align-items: center; gap: .45rem;
-  margin: 0 0 .75rem; padding: 0 0 .75rem;
-  border-bottom: 1px solid rgba(255,249,238,.16);
-  font-size: .72rem; line-height: 1.45; color: rgba(248,242,231,.82);
-}
-.hero-note .dot {
-  width: 7px; height: 7px; border-radius: 50%; flex: none;
-  background: #9fb882; box-shadow: 0 0 0 0 rgba(159,184,130,.6);
-  animation: pulse-open 3s infinite;
-}
-.hero-note.is-closed .dot { background: var(--secondary); animation: none; }
-@keyframes pulse-open {
-  0%   { box-shadow: 0 0 0 0 rgba(159,184,130,.55); }
-  70%  { box-shadow: 0 0 0 7px rgba(159,184,130,0); }
-  100% { box-shadow: 0 0 0 0 rgba(159,184,130,0); }
-}
-
-/* Karta sedí ve stejném sloupci jako lišta, hned pod ní. */
-.hero-art {
-  position: absolute; z-index: 4;
-  top: calc(.7rem + 58px + .55rem + 20px);
-  left: 50%; width: min(1240px, calc(100% - 2 * var(--pad)));
-  translate: -50% 0;
-  display: flex; justify-content: flex-end;
-  pointer-events: none;
-}
-.hero-float {
-  pointer-events: auto;
-  width: min(21rem, 100%);
-  padding: .85rem 1rem .85rem 1.05rem;
-  border-radius: var(--r-md);
-  background: rgba(28,19,13,.42); border: 1px solid rgba(255,249,238,.18);
-  backdrop-filter: blur(14px) saturate(1.2);
-  box-shadow: 0 24px 50px -28px rgba(0,0,0,.7);
-}
-
-/* ---------- 8. O nás ----------------------------------------------------- */
-.about-grid {
-  display: grid; grid-template-columns: 1.02fr 1fr; gap: clamp(2.5rem, 5vw, 4.5rem);
-  align-items: center;
-}
-.about-art { position: relative; padding-bottom: 2.5rem; }
-.frame {
-  position: relative; overflow: hidden; border-radius: var(--r-lg);
-  background: var(--surface-2); box-shadow: var(--sh-3);
-}
-.frame img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
-.frame::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); pointer-events: none;
-}
-/* Hlavní rám je na šířku: loď se sushi je široká fotka a na výšku
-   by z ní zbyl prostředek bez přídě i zádi. 3/2 je skoro poměr
-   originálu, takže se ořezává minimálně. */
-/* Loď se sushi je široká fotka — na výšku by z ní zbyl prostředek
-   bez přídě i zádi, proto 3/2, skoro poměr originálu. */
-.about-main { width: 88%; aspect-ratio: 3/2; max-height: 400px; }
-.about-sub {
-  position: absolute; right: 0; bottom: 0; width: 46%; aspect-ratio: 4/3;
-  border-radius: var(--r-md); z-index: 2; box-shadow: var(--sh-float);
-  border: 5px solid var(--canvas);
-}
-.about-copy > * + * { margin-top: 1rem; }
-.about-copy strong { color: var(--primary); font-weight: 600; }
-.quote {
-  position: relative; margin-block: 1.4rem; padding: 1.5rem 1.6rem 1.5rem 2.6rem;
-  border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line-soft);
-}
-.quote::before {
-  content: '“'; position: absolute; left: .85rem; top: .1rem;
-  font-family: var(--serif); font-size: 3.4rem; line-height: 1; color: var(--primary); opacity: .22;
-}
-.quote p {
-  font-family: var(--serif); font-style: italic; font-size: 1.1rem; line-height: 1.55;
-  color: var(--primary-deep);
-}
-.about-foot { margin-top: 1.6rem; display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; }
-
-/* ---------- 9. Signatures ------------------------------------------------ */
-/* Japonský rejstřík, ale měkký: washi vlákno, pečeť hanko a sumi vlnka.
-   Žádný ostrý roh — motivy si bereme, tvrdost ne. */
-.sig-head {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 2rem; flex-wrap: wrap; margin-bottom: 1.1rem;
-}
-.sig-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
-
-/* Sumi tah pod nadpisem — dělí hlavičku od karet. Tvar sám je v 13b. */
-#signatures .sig-rule { margin-bottom: 3.4rem; }
-
-#signatures > .wrap { position: relative; z-index: 1; }
-
-/* Tři karty stejné váhy, jen posazené do různé výšky — kategorie jsou si
-   rovny, nesmí jedna vypadat důležitěji. */
-.cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.7rem; align-items: start; }
-.cat {
-  position: relative; display: block; width: 100%; text-align: left; cursor: pointer;
-  background: none; border: 0; padding: 0; font: inherit; color: inherit;
-}
-.cat:nth-child(2) { margin-top: 3.4rem; }
-.cat:nth-child(3) { margin-top: 1.2rem; }
-.cat:focus-visible { outline: 2px solid var(--primary); outline-offset: 6px; border-radius: var(--r-lg); }
-
-.cat-shot {
-  position: relative; display: block; overflow: hidden;
-  aspect-ratio: 4 / 5; border-radius: var(--r-lg);
-  background: var(--surface-2); box-shadow: var(--sh-3);
-  transition: box-shadow .5s var(--ease), transform .5s var(--ease);
-}
-.cat-shot img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-  transition: transform .8s var(--ease-out);
-}
-/* Vnitřní vlasová linka — stejný trik jako .frame u sekce O nás. */
-.cat-shot::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.28);
-}
-.cat:hover .cat-shot { box-shadow: var(--sh-float); transform: translateY(-5px); }
-.cat:hover .cat-shot img { transform: scale(1.055); }
-
-/* Pečeť hanko — rumělkový kotouč, přesahuje přes roh fotky. */
-.cat-seal {
-  position: absolute; top: -.85rem; right: -.6rem; z-index: 3;
-  width: 62px; height: 62px; flex: none;
-  display: grid; place-items: center; border-radius: 50%;
-  background: var(--vermilion); color: #fff;
-  box-shadow: 0 10px 24px -10px rgba(140,40,28,.6);
-  transform: rotate(-7deg);
-  transition: transform .45s var(--ease);
-}
-.cat:hover .cat-seal { transform: rotate(0deg) scale(1.05); }
-.cat-seal::before {
-  content: ''; position: absolute; inset: 5px; border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.55);
-}
-.cat-seal b {
-  font-family: var(--serif); font-size: 1.12rem; font-weight: 600;
-  letter-spacing: .02em; line-height: 1;
-}
-
-/* Štítek s názvem přesahuje přes spodní hranu fotky — vrstvení ze sekce O nás. */
-.cat-plate {
-  position: relative; z-index: 2; margin: -2.3rem .9rem 0;
-  display: flex; align-items: center; gap: .7rem;
-  padding: .85rem 1rem; border-radius: var(--r);
-  background: var(--elevated-warm); border: 1px solid var(--line-soft);
-  box-shadow: var(--sh-2);
-  transition: border-color .35s var(--ease), box-shadow .35s var(--ease);
-}
-.cat:hover .cat-plate { border-color: #e0cdb6; box-shadow: var(--sh-3); }
-.cat-plate-txt { min-width: 0; }
-.cat-name {
-  display: block; font-family: var(--serif); font-size: 1.26rem; font-weight: 500;
-  color: var(--ink); line-height: 1.25; transition: color .3s var(--ease);
-}
-.cat:hover .cat-name { color: var(--primary); }
-.cat-arr {
-  margin-left: auto; width: 34px; height: 34px; flex: none;
-  display: grid; place-items: center; border-radius: var(--pill);
-  background: var(--surface-2); color: var(--primary);
-  transition: background-color .3s var(--ease), color .3s var(--ease), transform .3s var(--ease);
-}
-.cat-arr svg { width: 13px; height: 13px; }
-.cat:hover .cat-arr { background: var(--primary); color: #fff; transform: translateX(3px); }
-
-/* ---------- 9b. Překryv s jídelním lístkem ------------------------------- */
-/* Krémová plocha, ne tmavá: fotky jídel jsou focené na světlém stole, na
-   tmavé by každá svítila jako ostrov. Hlavičku uzavírá sumi vlnka. */
-.menu-ov {
-  position: fixed; inset: 0; z-index: 92;
-  display: grid; place-items: center;
-  opacity: 0; transition: opacity .32s var(--ease);
-}
+/* ==========================================================================
+   17 · JÍDELNÍ LÍSTEK A LIGHTBOX
+   Překryv otevírá tlačítko v sekci Signatures. Plocha je krémová, ne tmavá:
+   fotky jídel jsou skoro všechny focené na světlém stole, takže na tmavé by
+   každá svítila jako samostatný ostrov; na krémové splynou do jedné strany.
+   ========================================================================== */
+.menu-ov { position: fixed; inset: 0; z-index: 92; display: grid; place-items: center;
+  opacity: 0; transition: opacity .32s var(--ease); }
 .menu-ov.on { opacity: 1; }
 .menu-ov[hidden] { display: none; }
 body.ov-open { overflow: hidden; }
-.menu-ov-scrim { position: absolute; inset: 0; background: rgba(26,18,13,.62); backdrop-filter: blur(6px); }
+.menu-ov-scrim { position: absolute; inset: 0; background: rgba(12, 7, 3, .78); backdrop-filter: blur(8px); }
 
 .menu-ov-panel {
   position: relative; z-index: 2;
   width: min(1180px, 94vw); max-height: 92vh;
   display: flex; flex-direction: column;
-  background: var(--canvas); color: var(--body);
-  border-radius: var(--r-lg); box-shadow: var(--sh-float); overflow: hidden;
+  background: #f4ebda; color: #2a1b0e;
+  border-radius: var(--r-lg); box-shadow: 0 60px 120px -50px rgba(0, 0, 0, .95); overflow: hidden;
   transform: translateY(16px) scale(.985);
-  transition: transform .42s var(--ease-out);
+  transition: transform .42s var(--ease);
 }
 .menu-ov.on .menu-ov-panel { transform: none; }
-.menu-ov-panel::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: url('/assets/art/paper-texture.svg') repeat;
-  background-size: 420px 420px; opacity: .55; mix-blend-mode: multiply;
-}
 
 .menu-ov-bar {
   position: relative; z-index: 3; flex: none;
   display: flex; align-items: center; gap: 1.2rem;
-  padding: 1.15rem clamp(1rem, 3vw, 1.8rem) 1.3rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  padding: 1.15rem clamp(1rem, 3vw, 1.8rem);
+  background: var(--ink); color: var(--cream);
 }
-
-.menu-ov-id { display: flex; align-items: center; gap: .8rem; min-width: 0; }
-.menu-ov-mon { width: 32px; height: 32px; flex: none; color: var(--primary); opacity: .75; }
-.menu-ov-mon svg { width: 100%; height: 100%; display: block; }
-.menu-ov-bar h2 {
-  font-family: var(--serif); font-size: 1.42rem; font-weight: 500;
-  line-height: 1.2; color: var(--ink);
-}
+.menu-ov-id { display: flex; align-items: center; gap: .85rem; min-width: 0; }
+.menu-ov-kanji { font-family: var(--kanji); font-size: 30px; line-height: 1; color: var(--gold); flex: none; }
+.menu-ov-bar h2 { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2; color: var(--t-1); }
 .menu-ov-bar p {
-  margin-top: .1rem; font-size: .68rem; letter-spacing: .13em; text-transform: uppercase;
-  color: var(--muted);
+  margin: .1rem 0 0; font-family: var(--sans); font-size: 11px; font-weight: 500;
+  letter-spacing: .22em; text-transform: uppercase; color: var(--gold-dim);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-
 .menu-ov-tabs { margin-left: auto; display: flex; gap: .45rem; flex: none; }
 .menu-ov-tab {
-  padding: .5rem 1rem; min-height: 38px;
-  border-radius: var(--pill); border: 1px solid rgba(124,74,45,.28);
-  background: rgba(255,253,248,.6); color: var(--primary-deep);
-  font-size: .8rem; font-weight: 500; cursor: pointer; white-space: nowrap;
-  transition: background-color .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
+  min-height: var(--tap); padding: .5rem 1.1rem;
+  border-radius: var(--pill); border: 1px solid var(--hair);
+  background: rgba(248, 242, 231, .06); color: var(--t-2);
+  font-family: var(--sans); font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
+  transition: background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
 }
-.menu-ov-tab:hover { border-color: var(--primary); background: var(--elevated); }
-.menu-ov-tab[aria-pressed="true"] {
-  background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600;
-}
-.menu-ov-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.menu-ov-tab:hover { border-color: var(--hair-gold); background: rgba(248, 242, 231, .12); }
+.menu-ov-tab[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: var(--ink); font-weight: 700; }
 
 .menu-ov-close {
-  flex: none; width: 44px; height: 44px; display: grid; place-items: center;
-  border-radius: var(--pill); border: 1px solid rgba(124,74,45,.28);
-  background: rgba(255,253,248,.6); color: var(--primary-deep); cursor: pointer;
-  transition: background-color .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
+  flex: none; width: var(--tap); height: var(--tap); display: grid; place-items: center;
+  border-radius: var(--pill); border: 1px solid var(--hair);
+  background: rgba(248, 242, 231, .06); color: var(--cream); cursor: pointer;
+  transition: background .3s var(--ease), color .3s var(--ease), border-color .3s var(--ease);
 }
 .menu-ov-close svg { width: 17px; height: 17px; }
-.menu-ov-close:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
-.menu-ov-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.menu-ov-close:hover { background: var(--gold); border-color: var(--gold); color: var(--ink); }
 
 .menu-ov-body {
   position: relative; z-index: 1;
   /* min-height: 0 — bez toho flexový prvek neposlechne overflow a roztáhne panel */
-  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
   padding: clamp(1.9rem, 3.4vw, 2.6rem) clamp(1.2rem, 3vw, 2rem) clamp(1.4rem, 3vw, 2rem);
 }
 .menu-pane[hidden] { display: none; }
-.menu-ov-body { overflow-x: hidden; }
 
-.menu-grid {
-  list-style: none; margin: 0; padding: 0;
-  display: grid; gap: 1.6rem 1.3rem;
-  grid-template-columns: repeat(3, 1fr);
-}
+.menu-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.6rem 1.3rem; grid-template-columns: repeat(3, 1fr); }
 /* Všechny dlaždice stejně velké — mřížka má držet klid, ne hierarchii. */
 .dish-card { display: grid; grid-template-rows: auto auto; min-width: 0; }
 .dish-zoom {
   position: relative; display: block; width: 100%; padding: 0; border: 0; cursor: zoom-in;
-  background: var(--surface-2); overflow: hidden;
-  aspect-ratio: 4 / 3; border-radius: var(--r-md);
-  box-shadow: var(--sh-1);
+  background: rgba(42, 27, 14, .08); overflow: hidden;
+  aspect-ratio: 4 / 3; border-radius: var(--r);
+  box-shadow: 0 18px 34px -24px rgba(42, 27, 14, .55);
   transition: box-shadow .45s var(--ease), transform .45s var(--ease);
 }
-.dish-zoom img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s var(--ease-out); }
-.dish-zoom::after {
-  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.34);
-}
-.dish-zoom:hover { transform: translateY(-4px); box-shadow: var(--sh-3); }
+.dish-zoom img { width: 100%; height: 100%; object-fit: cover; transition: transform .7s var(--ease); }
+.dish-zoom:hover { transform: translateY(-4px); box-shadow: 0 30px 50px -26px rgba(42, 27, 14, .6); }
 .dish-zoom:hover img { transform: scale(1.06); }
-.dish-zoom:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.dish-zoom:focus-visible { outline: 2px solid #8a6038; outline-offset: 3px; }
 
-.dish-line {
-  display: flex; align-items: baseline; gap: .75rem;
-  padding: .75rem .25rem 0;
-}
-.dish-line h3 {
-  font-family: var(--serif); font-size: 1.06rem; font-weight: 500;
-  color: var(--ink); line-height: 1.3;
-}
-.dish-price {
-  margin-left: auto; flex: none;
-  font-family: var(--serif); font-size: 1rem; font-weight: 600; color: var(--primary);
-}
+.dish-line { display: flex; align-items: baseline; gap: .75rem; padding: .75rem .25rem 0; }
+.dish-line h3 { margin: 0; font-size: 17px; font-weight: 600; color: #2a1b0e; line-height: 1.3; }
+.dish-price { margin-left: auto; flex: none; font-size: 16px; font-weight: 700; color: #8a6038; }
 
-/* ---------- 10. Recenze -------------------------------------------------- */
-
-.rev-top { text-align: center; max-width: 38rem; margin: 0 auto 2.8rem; }
-.rev-score {
-  display: inline-flex; align-items: center; gap: .95rem;
-  margin-top: 1.15rem; padding: .55rem 1.25rem .55rem .9rem;
-  background: var(--elevated); border: 1px solid #e5cfc0; border-radius: var(--pill);
-  box-shadow: var(--sh-2);
-}
-.rev-score > b {
-  font-family: var(--serif); font-size: 2.15rem; color: var(--primary); font-weight: 600; line-height: 1;
-}
-.rev-score-meta { display: flex; flex-direction: column; align-items: flex-start; gap: .12rem; text-align: left; }
-.rev-score .stars svg { width: 15px; height: 15px; }
-.rev-score-meta > span { font-size: .8rem; color: var(--muted); }
-.rev-score-meta b {
-  font-family: var(--sans); font-size: .8rem; color: var(--ink); font-weight: 700;
-}
-.revs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
-.rev {
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding: 1.35rem 1.4rem; border-radius: var(--r-md);
-  background: var(--elevated); border: 1px solid var(--line-soft); box-shadow: var(--sh-2);
-  transition: transform .4s var(--ease), box-shadow .4s var(--ease);
-}
-.rev:nth-child(1),
-.rev:nth-child(4) { grid-column: span 2; }
-/* Čtyři stejné bílé krabice vedle sebe byly nejnudnější místo stránky.
-   Teď každá sedí na jiném odstínu papíru a první nese velkou serifovou
-   uvozovku — stejný ornament jako citace v sekci O nás. */
-.rev:nth-child(1) {
-  position: relative;
-  background: linear-gradient(152deg, var(--elevated-warm), #fbeedb);
-  border-color: #e2c9ac;
-}
-.rev:nth-child(1)::before {
-  /* vlevo pod hvězdičkami, ne vpravo nahoře — tam sedí štítek Google */
-  content: '“'; position: absolute; left: .55rem; top: 1.5rem; pointer-events: none;
-  font-family: var(--serif); font-size: 5.6rem; line-height: 1;
-  color: var(--primary); opacity: .1;
-}
-.rev:nth-child(1) q { font-size: 1.18rem; }
-.rev:nth-child(2) { background: var(--elevated); }
-.rev:nth-child(3) { background: linear-gradient(160deg, var(--elevated), var(--surface)); }
-.rev:nth-child(4) {
-  background: linear-gradient(200deg, var(--elevated-warm), var(--primary-soft));
-  border-color: #e9d2c0;
-}
-.rev:hover { transform: translateY(-6px); box-shadow: var(--sh-3); }
-.rev-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
-.rev-head .stars svg { width: 14px; height: 14px; }
-.src {
-  padding: .18rem .55rem; border-radius: var(--pill); background: var(--surface-2);
-  font-size: .62rem; font-weight: 600; letter-spacing: .04em; color: var(--muted);
-}
-.rev q {
-  display: block; font-family: var(--serif); font-size: 1.02rem; font-style: italic;
-  line-height: 1.6; color: var(--ink); quotes: '„' '“';
-}
-.rev-foot { margin-top: 1.2rem; padding-top: .9rem; border-top: 1px solid var(--line-soft); display: flex; align-items: center; gap: .7rem; }
-.rev-foot .av {
-  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
-  font-size: .7rem; font-weight: 700; letter-spacing: .02em; line-height: 1;
-  color: var(--primary-deep); background: #eedbca; flex: none; flex-shrink: 0;
-  overflow: hidden;
-}
-.rev-foot b { display: block; font-size: .82rem; color: var(--ink); font-weight: 600; line-height: 1.2; }
-.rev-foot > span:not(.av) { min-width: 0; }
-.rev-foot > span:not(.av) span { display: block; font-size: .7rem; color: var(--muted-2); }
-
-/* ---------- 12. Galerie — 7-cell bento ----------------------------------- */
-.gal-head { margin-bottom: 1.5rem; }
-.gal {
-  display: grid;
-  grid-template-columns: 1fr 1fr 0.88fr;
-  grid-template-rows: 21.5rem 10.75rem 11.5rem;
-  grid-template-areas:
-    "a a b"
-    "c d b"
-    "e f g";
-  gap: 1rem;
-}
-.gal-a { grid-area: a; }
-.gal-b { grid-area: b; }
-.gal-c { grid-area: c; }
-.gal-d { grid-area: d; }
-.gal-e { grid-area: e; }
-.gal-f { grid-area: f; }
-.gal-g { grid-area: g; }
-.gal-print {
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: zoom-in;
-  color: inherit;
-  font: inherit;
-  touch-action: manipulation;
-}
-.gal-print img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
-  object-position: var(--p, 50% 50%);
-  pointer-events: none;
-  transform: scale(1);
-  transition: transform .55s var(--ease);
-}
-.gal-print:hover img,
-.gal-print:focus-visible img { transform: scale(1.02); }
-.gal-print:focus-visible {
-  outline: 2px solid var(--gold);
-  outline-offset: 3px;
-}
-.gal-foot {
-  display: flex;
-  justify-content: center;
-  margin-top: 1.25rem;
-}
-
-/* Lightbox */
 .lb {
   position: fixed; inset: 0; z-index: 95; display: grid; place-items: center;
-  background: rgba(26,18,13,.9); backdrop-filter: blur(6px);
+  background: rgba(12, 7, 3, .92); backdrop-filter: blur(6px);
   opacity: 0; pointer-events: none; transition: opacity .4s var(--ease);
   padding: 4vmin;
 }
 .lb.on { opacity: 1; pointer-events: auto; }
-.lb img { max-width: min(1100px, 92vw); max-height: 86vh; border-radius: var(--r-md); box-shadow: var(--sh-float); }
+.lb img { max-width: min(1100px, 92vw); max-height: 86vh; border-radius: var(--r); box-shadow: 0 50px 100px -40px rgba(0, 0, 0, .9); }
 .lb-close {
-  position: absolute; top: 1.4rem; right: 1.4rem; width: 40px; height: 40px;
-  border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
-  color: #fff; cursor: pointer; display: grid; place-items: center;
+  position: absolute; top: 1.4rem; right: 1.4rem; width: var(--tap); height: var(--tap);
+  border-radius: 50%; border: 1px solid var(--hair-gold); background: rgba(22, 14, 7, .8);
+  color: var(--gold-light); cursor: pointer; display: grid; place-items: center;
 }
 .lb-close svg { width: 18px; height: 18px; }
+.lb-close:hover { background: var(--gold); border-color: var(--gold); color: var(--ink); }
 
-/* ---------- 13. Rezervace ------------------------------------------------ */
-
-.res-card {
-  position: relative; max-width: 840px; margin-inline: auto;
-  padding: clamp(1.8rem, 3.4vw, 2.85rem);
-  background: var(--elevated);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-xl);
-  box-shadow: var(--sh-3);
-}
-.res-top { text-align: center; max-width: 34rem; margin: 0 auto 1.7rem; }
-.res-top h2 { margin-top: .55rem; font-size: clamp(1.85rem, 3.2vw, 2.55rem); }
-.res-top .small { margin-top: .55rem; color: var(--muted); }
-.res-phone {
-  margin-top: .95rem; display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  padding: .55rem 1.15rem; border-radius: var(--pill);
-  background: var(--primary-soft); color: var(--primary-deep);
-  font-size: .86rem; font-weight: 700; border: 1px solid #e4c4ae;
-  min-height: 44px;
-  transition: background-color .3s var(--ease), transform .3s var(--ease);
-}
-.res-phone svg { width: 15px; height: 15px; }
-.res-phone:hover { background: #f3d8c6; transform: translateY(-1px); }
-.res-cta { display: flex; justify-content: center; margin-top: .3rem; }
-.res-cta .btn { padding: .9rem 2.35rem; font-size: .88rem; min-height: 48px; }
-.fgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem .9rem; }
-.field { display: flex; flex-direction: column; gap: .35rem; min-width: 0; }
-/* .field má display:flex, a ten přebíjel [hidden] z prohlížeče — pole pro
-   poznámku proto svítilo i zavřené. */
-.field[hidden] { display: none; }
-.field > label { font-size: .72rem; font-weight: 600; color: var(--ink); letter-spacing: .02em; }
-.field > label .opt { font-weight: 400; color: var(--muted-2); }
-.field input, .field select, .field textarea {
-  width: 100%; padding: .62rem 1rem; border-radius: var(--pill);
-  background: var(--canvas); border: 1px solid var(--line);
-  font-size: .85rem; color: var(--ink);
-  transition: border-color .3s var(--ease), box-shadow .3s var(--ease), background-color .3s var(--ease);
-}
-.field textarea { border-radius: var(--r); resize: vertical; min-height: 68px; }
-.field input::placeholder, .field textarea::placeholder { color: var(--muted-2); }
-.field input:focus, .field select:focus, .field textarea:focus {
-  outline: none; background: #fff; border-color: var(--gold);
-  box-shadow: 0 0 0 3.5px rgba(200,150,80,.18);
-}
-.field select { appearance: none; cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a7465' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 1rem center; background-size: 14px;
-  padding-right: 2.4rem;
-}
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-}
-.note-toggle {
-  display: inline-flex; align-items: center; gap: .5rem;
-  padding: .4rem 0; border: 0; background: none; cursor: pointer;
-  font-size: .78rem; font-weight: 600; color: var(--primary);
-}
-.note-toggle .opt { font-weight: 400; color: var(--muted-2); }
-.note-toggle .plus {
-  position: relative; width: 17px; height: 17px; border-radius: 50%; flex: none;
-  background: var(--surface-2); border: 1px solid var(--line);
-  transition: transform .3s var(--ease), background-color .3s var(--ease);
-}
-.note-toggle .plus::before, .note-toggle .plus::after {
-  content: ''; position: absolute; inset: 50% 3px auto; height: 1.5px; translate: 0 -50%;
-  background: var(--primary); border-radius: 2px;
-}
-.note-toggle .plus::after { rotate: 90deg; transition: opacity .3s var(--ease); }
-.note-toggle[aria-expanded="true"] .plus { transform: rotate(180deg); background: var(--primary-soft); }
-.note-toggle[aria-expanded="true"] .plus::after { opacity: 0; }
-.note-toggle:hover .plus { background: var(--primary-soft); }
-
-.consent { display: flex; gap: .65rem; align-items: flex-start; margin-top: .4rem; }
-.consent input { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--primary); flex: none; cursor: pointer; }
-.consent label { font-size: .75rem; color: var(--muted); line-height: 1.55; cursor: pointer; }
-.consent a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
-.ok-box {
-  display: none; margin-top: 1rem; padding: .9rem 1.1rem; border-radius: var(--r);
-  background: var(--gold-soft); border: 1px solid #ecd6ab; color: #6b4a12;
-  font-size: .8rem; font-weight: 600; text-align: center;
-}
-.ok-box.on { display: block; }
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1rem;
-}
-
-
-/* ---------- 13b. Vzory v sekcích ----------------------------------------- */
-/* Dvakrát jsem se spálil na tomtéž. Vzor na plné ploše vybledlý do ztracena
-   vypadá jako špína. A výřez vzoru položený doprostřed plochy — i se
-   zakulacenými rohy — vypadá jako nedojetý obrázek; rohy se neuplatní,
-   protože vzor je kresba, ne plocha, takže se čte jen ten obdélníkový střih.
-
-   Co funguje, ukazuje pás pod rezervací:
-     1. vzor sedí na HRANĚ a jde od kraje ke kraji — má důvod tam být,
-        totiž předěl mezi dvěma plochami, ne ozdoba pro ozdobu,
-     2. je PLNÝ (plochy + světlý lem), ne drátěný model z linek; stejný
-        motiv jen obtažený se čte jako milimetrový papír,
-     3. nic nepluje volně v prázdnu — ani vzor, ani malá značka.
-
-   Prázdnou plochu tedy neřeší kresba, ale materiál: .paper dá béžové ploše
-   washi vlákno a .wash tonální přechod. Oboje je neviditelné a přitom to
-   plochu rozdýchá. */
-
-.m-seigaiha { --pat-img: url('/assets/art/seigaiha.svg'); --tw: 64px;       --th: 64px; }
-.m-asanoha  { --pat-img: url('/assets/art/asanoha.svg');  --tw: 100.459px;  --th: 174px; }
-.m-kikko    { --pat-img: url('/assets/art/kikko.svg');    --tw: 79.674px;   --th: 138px; }
-.m-shippo   { --pat-img: url('/assets/art/shippo.svg');   --tw: 65.054px;   --th: 65.054px; }
-
-.band { position: relative; }
-.band::after {
-  content: ''; position: absolute; inset-inline: 0; bottom: 0; z-index: 1;
-  height: clamp(44px, 5vw, 66px); pointer-events: none;
-  background-image: var(--pat-img);
-  background-repeat: repeat;
-  background-size: calc(var(--tw) * var(--pat-scale, 1)) calc(var(--th) * var(--pat-scale, 1));
-  background-position: var(--pat-x, 0px) 0;
-  border-top: 1px solid var(--line);
-}
-
-/* Washi vlákno — plocha přestane být plochým béžovým polem a začne být papír. */
-.paper::before {
-  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: url('/assets/art/paper-texture.svg') repeat;
-  background-size: 420px 420px; opacity: .5; mix-blend-mode: multiply;
-}
-
-/* Měkký tonální přechod zaplní plochu, aniž by na ni cokoli kreslil. */
-.wash {
-  background-image: radial-gradient(ellipse 72% 78% at 50% 38%, #fdfaf4 0%, rgba(241,233,220,0) 72%);
-}
-
-/* Sumi tah — ozdoba, která se váže na nadpis, ne na prázdno. */
-.sig-rule {
-  display: block; width: min(100%, 22rem); height: 14px;
-  color: var(--gold); opacity: .55;
-}
-.sig-rule svg { width: 100%; height: 100%; display: block; }
-.sig-rule.center { margin-inline: auto; }
-
-/* ---------- 14. Dárkový poukaz ------------------------------------------- */
-.voucher-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.6rem, 3.5vw, 3rem); align-items: center; }
-.gift {
-  margin: 1.6rem 0 0;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #f3ead8;
-  border: 1px solid var(--line);
-  box-shadow: var(--sh-2);
-}
-.gift img { display: block; width: 100%; height: auto; }
-.vals { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
-.vals label { cursor: pointer; }
-.vals input { position: absolute; opacity: 0; pointer-events: none; }
-.vals span {
-  display: block; text-align: center; padding: .62rem .3rem; border-radius: var(--r-sm);
-  background: var(--canvas); border: 1px solid var(--line);
-  font-size: .78rem; font-weight: 600; color: var(--body);
-  transition: all .3s var(--ease);
-}
-.vals input:checked + span { background: var(--primary); border-color: var(--primary); color: #fff; }
-.vals input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 2px; }
-.radio-rows { display: flex; flex-direction: column; gap: .5rem; }
-.radio-rows label {
-  display: flex; align-items: center; gap: .65rem; padding: .7rem .9rem;
-  border-radius: var(--r-sm); background: var(--canvas); border: 1px solid var(--line);
-  font-size: .78rem; cursor: pointer; transition: all .3s var(--ease);
-}
-.radio-rows label:hover { border-color: #dcc9b6; }
-.radio-rows input { accent-color: var(--primary); width: 15px; height: 15px; flex: none; }
-.radio-rows input:checked ~ span { color: var(--ink); font-weight: 500; }
-
-/* ---------- 15. Kontakt -------------------------------------------------- */
-.kontakt-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.2rem; align-items: stretch; }
-.map {
-  position: relative; border-radius: var(--r-lg); overflow: hidden;
-  box-shadow: var(--sh-2); border: 1px solid var(--line); min-height: 400px; background: var(--surface-2);
-}
-.map iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; filter: saturate(.86) sepia(.1); }
-.map-card {
-  position: absolute; left: 1rem; right: 1rem; bottom: 1rem; z-index: 2;
-  padding: .9rem 1.1rem; border-radius: var(--r); background: rgba(251,247,240,.95);
-  backdrop-filter: blur(10px); box-shadow: var(--sh-2);
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
-}
-.map-card .l { display: flex; align-items: center; gap: .7rem; }
-.map-card .ico {
-  width: 36px; height: 36px; border-radius: 50%; background: var(--secondary-soft);
-  display: grid; place-items: center; color: var(--primary); flex: none;
-}
-.map-card .ico svg { width: 17px; height: 17px; }
-/* Zúženo na .l — dřív to byl holý `.map-card span`, který měl vyšší váhu
-   (0,1,1) než .btn-primary (0,1,0) a přebarvoval i popisek v tlačítku
-   „Otevřít v Mapách“ na šedou. */
-.map-card .l b { display: block; font-size: .84rem; color: var(--ink); font-weight: 600; }
-.map-card .l span { display: block; font-size: .72rem; color: var(--muted); }
-.info { padding: clamp(1.4rem, 2.6vw, 2rem); display: flex; flex-direction: column; }
-.info h3 { display: flex; align-items: center; gap: .5rem; font-size: 1.05rem; }
-.info h3 svg { width: 16px; height: 16px; color: var(--secondary); }
-.hours { margin: 1.1rem 0 1rem; }
-.hours div {
-  display: flex; justify-content: space-between; padding: .5rem 0;
-  border-bottom: 1px solid var(--line-soft); font-size: .82rem;
-}
-.hours div:last-child { border-bottom: 0; }
-.hours span { color: var(--muted); }
-.hours b { color: var(--ink); font-weight: 600; }
-.hours div.now b { color: var(--secondary); }
-.contacts { display: flex; flex-direction: column; gap: .6rem; margin-top: 1rem; font-size: .8rem; }
-.contacts a { display: inline-flex; align-items: center; gap: .55rem; color: var(--body); transition: color .3s var(--ease); }
-.contacts a:hover { color: var(--primary); }
-.contacts svg { width: 15px; height: 15px; color: var(--primary); flex: none; }
-.ico-row { display: flex; gap: .55rem; align-items: center; }
-.biz { margin-top: auto; padding-top: 1.4rem; border-top: 1px solid var(--line-soft); font-size: .72rem; color: var(--muted-2); line-height: 1.6; }
-.biz b { display: block; color: var(--ink); font-weight: 600; }
-
-/* ---------- 16. Pás s kanji ---------------------------------------------- */
-.marquee {
-  position: relative; overflow: hidden; padding-block: 1.1rem;
-  border-block: 1px solid var(--line-soft); background: var(--surface);
-}
-.marquee-row { display: flex; gap: 2.6rem; width: max-content; will-change: transform; }
-.marquee-row span {
-  display: inline-flex; align-items: center; gap: 2.6rem;
-  font-family: var(--serif); font-size: .95rem; font-style: italic; color: var(--muted);
-  white-space: nowrap;
-}
-.marquee-row span::after {
-  content: '✦'; font-style: normal; font-size: .6rem; color: var(--gold);
-}
-
-/* ---------- 17. Patička -------------------------------------------------- */
-.footer {
-  position: relative; overflow: hidden; color: rgba(248,242,231,.72);
-  background: linear-gradient(180deg, #241a13 0%, #1a120d 100%);
-  padding-block: clamp(3rem, 6vw, 4.5rem) 1.8rem;
-}
-.footer .kanji-bg { left: -2rem; bottom: -6rem; font-size: 18rem; color: #ffd9bd; opacity: .04; }
-.f-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 2rem; position: relative; z-index: 2; }
-.f-brand img { display: block; width: min(7.25rem, 46%); height: auto; }
-.f-brand p { margin-top: 1rem; font-size: .78rem; line-height: 1.7; max-width: 30ch; color: rgba(248,242,231,.55); }
-.footer h4 { color: #ffd9bd; font-size: .92rem; font-weight: 500; margin-bottom: .9rem; letter-spacing: .02em; }
-.f-list { display: flex; flex-direction: column; gap: .45rem; font-size: .78rem; }
-.f-list a:hover { color: #fff; }
-.f-row { display: flex; justify-content: flex-start; gap: 1.15rem; font-size: .78rem; }
-.f-row > span { min-width: 4.4em; }
-.f-row b { color: rgba(255,255,255,.9); font-weight: 500; }
-.f-links { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem .8rem; font-size: .78rem; }
-.f-bottom {
-  margin-top: 2.6rem; padding-top: 1.4rem; border-top: 1px solid rgba(248,242,231,.12);
-  display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
-  font-size: .72rem; color: rgba(248,242,231,.42); position: relative; z-index: 2;
-}
-.f-bottom a:hover { color: rgba(255,255,255,.8); }
-
-/* ---------- 18. Animace -------------------------------------------------- */
-/* Nadpis rozpadlý na řádky: maska ořízne, vnitřek vyjede zespodu.
-   Třídy sází app.js (splitLines) až za běhu. */
-.line-mask { display: block; overflow: hidden; }
-.line-in { display: block; will-change: transform; }
-.section-head h2 .w, .rev-top h2 .w, .res-top h2 .w { display: inline-block; }
-
-/* Fotky uvnitř rámů jsou zvětšené, aby měly kam v rámu cestovat. */
-.gal-print, .cat-shot, .about-main, .about-sub { overflow: hidden; }
-
-/* Naklonění podle rychlosti scrollu nesmí rozbít layout okolo. */
-.revs, .cats, .gal, .fgrid { will-change: transform; }
-
-[data-rv] { opacity: 0; }
-.js [data-rv] { will-change: transform, opacity; }
-.no-js [data-rv], .no-anim [data-rv] { opacity: 1 !important; transform: none !important; }
-
-/* Skripty visí na konci <body>, takže hero se stihne vykreslit dřív, než se
-   vůbec spustí GSAP. Bez tohohle bylo vidět hotový nadpis, ten pak skočil na
-   nulu a teprve odtud se rozjel úvod — přesně to trhnutí při načtení.
-   Prvky proto startují skryté a úvodní sekvence je rozsvítí (fromTo, ne from
-   — from by si za cílovou hodnotu vzal tuhle nulu a nechal je zhasnuté).
-   Když JS nebo GSAP chybí, .no-js / .no-anim je vrátí zpátky. */
-/* Skrývá se PŘESNĚ to, co úvodní sekvence zase rozsvítí. [data-hero="4"] je
-   obal tlačítek a animují se jeho děti — kdyby se skryl i obal, zůstal by
-   zhasnutý navždy. */
-.js .hero [data-hero="logo"],
-.js .hero [data-hero="7"],
-.js .hero [data-hero="4"] > *,
-.js .hero h1 .mask-line > span { opacity: 0; }
-.no-js .hero [data-hero="logo"], .no-anim .hero [data-hero="logo"],
-.no-js .hero [data-hero="7"], .no-anim .hero [data-hero="7"],
-.no-js .hero [data-hero="4"] > *, .no-anim .hero [data-hero="4"] > *,
-.no-js .hero h1 .mask-line > span, .no-anim .hero h1 .mask-line > span {
-  opacity: 1 !important; transform: none !important;
-}
-
-.mask-line { display: block; overflow: hidden; }
-
-/* ---------- 19. Responzivita --------------------------------------------- */
-@media (max-width: 1360px) {
-  .tel span { display: none; }
-}
-@media (max-width: 1180px) {
-  .nav { display: none; }
-  .bar-brand { display: block; }
-  .burger { display: inline-flex; }
-  .tel span { display: none; }
-  .gal {
-    grid-template-rows: 18.75rem 10rem 10.75rem;
-    gap: .85rem;
-  }
-  .fgrid { grid-template-columns: 1fr 1fr; }
-  .revs { grid-template-columns: 1fr 1fr; }
-  .rev:nth-child(1),
-  .rev:nth-child(4) { grid-column: span 2; }
-}
-@media (max-width: 900px) {
-  .about-grid, .voucher-grid, .kontakt-grid { grid-template-columns: 1fr; }
-  .menu-grid { grid-template-columns: repeat(2, 1fr); }
-  .about-art { max-width: 520px; }
-  .f-grid { grid-template-columns: 1fr 1fr; gap: 2rem 1.5rem; }
-  .gal {
-    grid-template-rows: 16.5rem 9.25rem 10rem;
-    gap: .7rem;
-  }
-  .map { min-height: 340px; }
-}
-
-/* Od téhle šířky se čte palcem. Sekce byly stavěné na širokou obrazovku —
-   na telefonu z nich zbývalo pár řádků na jedno rolování, proto se tu
-   zkracuje rytmus, nadpisy i výška fotek. Hustota, ne jiný layout. */
-@media (max-width: 760px) {
-  /* Lišta přes celou šířku: značka vlevo, akce vpravo. Pilulka uprostřed
-     obrazovky se dvěma ikonami se nečetla jako navigace. */
-  .bar { width: 100%; padding-right: .4rem; }
-  body.menu-open .header .bar {
-    background: rgba(251,247,240,.92); border-color: var(--line);
-    box-shadow: 0 10px 34px -18px rgba(42,26,18,.35);
-  }
-
-  :root { --section: clamp(2.75rem, 6.6vw, 4.6rem); }
-  .section-head h2 { margin-top: .5rem; }
-  .stack { gap: .8rem; }
-
-  h2 { font-size: clamp(1.52rem, 5.2vw, 1.95rem); }
-  .section-head .sub { font-size: clamp(1rem, 3.6vw, 1.18rem); }
-  .section-head p { margin-top: .7rem; }
-  .lead { font-size: .94rem; line-height: 1.7; }
-  section[id], footer, #poukaz { scroll-margin-top: 4.75rem; }
-  #galerie { scroll-margin-top: 5.25rem; }
-
-  /* Fotka kategorie na výšku zabrala celý displej a za ní nebylo nic vidět. */
-  .cat-shot { aspect-ratio: 8 / 5; }
-  .cats { gap: 1.05rem; }
-  #signatures .sig-rule { margin-bottom: 1.6rem; }
-  .sig-head { gap: 1.1rem; margin-bottom: .9rem; }
-  .sig-actions { width: 100%; }
-  .sig-actions .btn { flex: 1; justify-content: center; }
-
-  .gal-head { margin-bottom: 1rem; }
-  .gal {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 16rem 11rem 8.25rem 8.25rem;
-    grid-template-areas:
-      "a a"
-      "b c"
-      "d e"
-      "f g";
-    gap: .6rem;
-  }
-  .gal-foot { margin-top: 1rem; }
-
-  .rev-top { margin-bottom: 1.7rem; }
-  .rev-score { margin-top: .9rem; }
-  .revs { gap: .8rem; }
-  .rev { padding: 1.15rem 1.2rem; }
-  .rev-head { margin-bottom: .7rem; }
-  .rev-foot { margin-top: .9rem; padding-top: .75rem; }
-
-  .about-grid { gap: 1.35rem; }
-  .about-art { padding-bottom: 1.1rem; }
-  .about-copy > * + * { margin-top: .85rem; }
-  .quote { margin-block: 1.1rem; padding: 1.15rem 1.2rem 1.15rem 2.2rem; }
-  .quote p { font-size: 1.02rem; }
-  .about-foot { margin-top: 1.1rem; }
-
-  .res-card { padding: 1.5rem 1.25rem; }
-  .res-top { margin-bottom: 1.3rem; }
-  .res-top h2 { font-size: clamp(1.55rem, 5.4vw, 2rem); }
-
-  /* Karta s adresou ukrajovala z mapy tolik, že z ní zbyl pruh. */
-  .map { min-height: 300px; }
-  .map-card { left: .6rem; right: .6rem; bottom: .6rem; padding: .7rem .85rem; gap: .6rem; }
-  .map-card .btn { width: 100%; justify-content: center; }
-  .info { padding: 1.3rem 1.2rem; }
-  .hours { margin: .9rem 0 .8rem; }
-  .hours div { padding: .42rem 0; }
-  .kontakt-grid { gap: .9rem; }
-
-  .gift { margin-top: .9rem; }
-  .voucher-grid { gap: 1.4rem; }
-
-  .marquee { padding-block: .85rem; }
-  .marquee-row { gap: 1.9rem; }
-  .marquee-row span { font-size: .88rem; gap: 1.9rem; }
-
-  .footer { padding-block: 2.4rem 1.3rem; }
-  .footer h4 { margin-bottom: .6rem; }
-  .f-bottom { margin-top: 1.5rem; padding-top: 1rem; }
-}
-
-@media (max-width: 620px) {
-  body { font-size: 14.5px; }
-  .head-right .btn-order, .header .lang { display: none; }
-  /* Zavolat je na telefonu nejkratší cesta k rezervaci, takže zůstává
-     v liště — jako kolečko se stejnou plochou jako tlačítko menu,
-     ne jako holý piktogram, do kterého se nedá trefit. */
-  .tel {
-    display: inline-grid; place-items: center;
-    width: 44px; height: 44px; padding: 0;
-    border-radius: 50%; border: 1px solid var(--line);
-    background: var(--elevated); color: var(--primary);
-  }
-  .tel svg { width: 17px; height: 17px; }
-  body:not(.menu-open) .header:not(.solid) .tel {
-    background: rgba(255,249,238,.14); border-color: rgba(255,249,238,.28);
-    color: var(--on-dark); backdrop-filter: blur(8px);
-  }
-  /* S otevřeným panelem ať je v liště jen značka a „Zavřít“. */
-  body.menu-open .head-right .btn-reserve,
-  body.menu-open .tel { display: none; }
-  /* volat / rezervovat / menu musí mít stejnou výšku, jinak lišta drhne */
-  .head-right .btn-sm { padding: .5rem 1rem; min-height: 44px; }
-  .bar { padding-right: .4rem; padding-left: .85rem; }
-
-  /* --- Hero: menší značka, text na dvě čitelné řádky ------------------- */
-  .hero { padding-block: 5.5rem 3.25rem; }
-  .hero > .wrap { padding-inline: var(--pad); }
-  .hero-copy { padding-top: 5.25rem; margin-top: 0; }
-  .hero-logo { width: min(11rem, 50vw); margin-bottom: .5rem; }
-  .hero h1 {
-    margin-top: .9rem;
-    font-size: clamp(1.6rem, 6.4vw, 2.1rem);
-  }
-  .hero h1 .ital { font-size: .88em; }
-  .hero-cta { margin-top: 1.15rem; gap: .5rem; flex-wrap: nowrap; }
-  .hero-cta .btn {
-    flex: 1 1 0; min-width: 0; justify-content: center; min-height: 48px;
-    padding: .8rem .9rem; font-size: .79rem;
-  }
-  .hero-float { padding: .7rem .8rem; }
-  .hero-note { margin-bottom: .6rem; padding-bottom: .6rem; }
-  .hero-rating { gap: .6rem; padding-right: .8rem; }
-  .hero-rating .score { width: 32px; height: 32px; font-size: .86rem; }
-  .hero-rating .rt-sub { font-size: .68rem; }
-  .hero-rating .addr { display: none; }
-
-  /* --- Sekce ----------------------------------------------------------- */
-  .about-main { width: 100%; }
-  .about-sub { position: relative; width: 64%; margin: -2.6rem 0 0 auto; border-width: 4px; }
-
-  .cats { grid-template-columns: 1fr; gap: 1.15rem; }
-  .cat-plate { margin: -1.9rem .8rem 0; padding: .75rem .9rem; }
-
-  .map-card { flex-direction: column; align-items: flex-start; }
-  /* Čtyři recenze pod sebou zabraly celou obrazovku a víc. Vedle sebe
-     s přichycením na kartu je vidět jedna celá a kus další — ta ukázka je
-     jediné, co o posouvání říká, a stačí to. */
-  .revs {
-    display: flex; grid-template-columns: none; gap: .75rem;
-    overflow-x: auto; scroll-snap-type: x mandatory;
-    overscroll-behavior-x: contain;
-    margin-inline: calc(-1 * var(--pad));
-    padding: .15rem var(--pad) .5rem;
-    scroll-padding-inline: var(--pad);
-    scrollbar-width: none;
-  }
-  .revs::-webkit-scrollbar { display: none; }
-  .rev {
-    flex: 0 0 85%; scroll-snap-align: start;
-    padding: 1.15rem 1.2rem;
-  }
-  .rev:nth-child(1),
-  .rev:nth-child(4) { grid-column: auto; }
-  .rev q { font-size: .96rem; line-height: 1.55; }
-  .rev:nth-child(1) q { font-size: 1.02rem; }
-  .revs:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: var(--r-md); }
-
-  /* Formuláře: dvojice vedle sebe, ať se rezervace vejde na jedno rolování.
-     16px u políček není estetika — pod ním iOS při zaostření přiblíží stránku. */
-  .fgrid { grid-template-columns: 1fr 1fr; gap: .7rem .7rem; }
-  .fgrid .field:nth-child(-n+3),
-  .fgrid .field:nth-child(6) { grid-column: span 2; }
-  .field input, .field select, .field textarea { font-size: 16px; min-height: 44px; }
-  /* ikona kalendáře si bere místo zevnitř pole */
-  .field input[type="date"] { padding-inline: .8rem .6rem; }
-  .field textarea { min-height: 72px; }
-  .res-cta .btn { width: 100%; justify-content: center; }
-  /* Nápověda k poznámce se lámala do dvou řádků vedle dvouřádkového
-     popisku — na telefonu z ní byl čtyřřádkový blok kvůli jedné větě. */
-  .note-toggle { padding: .2rem 0; }
-  .note-toggle .opt { display: none; }
-  .consent label { font-size: .74rem; line-height: 1.5; }
-  .vals span { padding: .68rem .3rem; }
-  .radio-rows label { padding: .68rem .85rem; }
-
-  .gal {
-    grid-template-rows: 10.25rem 10.5rem 7.25rem 7.25rem;
-    gap: .5rem;
-  }
-
-  .f-grid { grid-template-columns: 1fr 1fr; gap: 1.6rem 1.25rem; }
-  .f-brand { grid-column: span 2; }
-  .f-brand p { max-width: 38ch; }
-
-  .lb-close { width: 44px; height: 44px; top: 1rem; right: 1rem; }
-}
-
-/* Nejužší telefony — jen doladění, žádná další změna layoutu. */
-@media (max-width: 400px) {
-  .hero-logo { width: min(9.5rem, 46vw); }
-  .hero h1 { font-size: 1.5rem; }
-  .bar-brand { font-size: 1.02rem; }
-  .head-right .btn-sm { padding: .5rem .8rem; font-size: .74rem; }
-  .sheet a { font-size: 1.3rem; min-height: 52px; }
-}
-
-/* Signatures + překryv s lístkem */
+/* ==========================================================================
+   18 · RESPONSIVE
+   ========================================================================== */
 @media (max-width: 1000px) {
-  .menu-ov-bar { flex-wrap: wrap; row-gap: .9rem; }
-  .menu-ov-tabs { order: 3; margin-left: 0; width: 100%; overflow-x: auto; padding-bottom: 2px; }
-  .menu-ov-tab { white-space: nowrap; }
-  .menu-ov-close { margin-left: auto; }
-}
-@media (max-width: 860px) {
-  .cats { gap: 1rem; }
-  .cat-name { font-size: 1.1rem; }
-  .cat-seal { width: 52px; height: 52px; }
-  .cat-seal b { font-size: .95rem; }
-  .cat-plate { margin-inline: .55rem; padding: .7rem .8rem; }
+  /* Logo je v liště vycentrované absolutně, takže ho pravá skupina dřív
+     nebo později přejede. Přepínač jazyka je i v panelu pod tlačítkem
+     Menu, proto z úzké lišty odchází. */
+  .res__in, .giftIn, .con { grid-template-columns: 1fr; }
+  .con__copy { max-width: none; justify-self: stretch; }
+  /* Pod sebou: mapa se odsadí i zleva, aby lícovala s textem nad ní.
+     Shora nic — text nad ní končí vlastním var(--sec). */
+  .con__map { padding: 0 var(--pad) clamp(2rem, 7vw, 3.5rem); }
+  .con__map iframe { height: clamp(300px, 46svh, 420px); }
+  .foot__top { grid-template-columns: 1fr 1fr; }
+  .tick { height: 320vh; }
+  .tick__col { width: clamp(140px, 30vw, 240px); }
   .menu-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 700px) {
-  /* Tři svislé karty vedle sebe by na telefonu byly úzké proužky. */
-  .cats { grid-template-columns: 1fr; gap: 1.6rem; max-width: 390px; margin-inline: auto; }
-  .cat:nth-child(2), .cat:nth-child(3) { margin-top: 0; }
-  .menu-ov-panel { width: 100vw; max-height: 100vh; height: 100%; border-radius: 0; }
-  .menu-ov-bar p { display: none; }
-  .menu-ov-mon { display: none; }
-  .menu-ov-body { padding-top: 1.7rem; }
-}
-@media (max-width: 620px) {
-  /* Fotka jídla musí zůstat čitelná — radši jeden sloupec než dva útržky. */
-  .menu-grid { grid-template-columns: 1fr; gap: 1.35rem; }
+/* 810, ne 700. Referenční web (cute-lifecycle-993552.framer.app) bere jako
+   mobil všechno pod 810 px a je to správně: mezi 701 a 1000 px se layout
+   už složil do jednoho sloupce, ale typografie zůstávala desktopová —
+   tablet, rozpůlená obrazovka i otočený telefon tam dostaly 30px nadpisy
+   a 96px vycpávky v úzkém sloupci. Přesně to vypadalo „obrovsky“. */
+@media (max-width: 809px) {
+  /* Na telefonu šel celý web o stupeň dolů: sekce měly 96 px vycpávky
+     nahoře i dole, nadpisy 30 px a tlačítko v liště bylo širší než půlka
+     displeje. Výsledek byl natlačený a přitom roztažený přes několik
+     obrazovek — tenhle blok to stahuje na jednu stupnici. */
+  :root { --sec: 3.4rem; }
+  body { font-size: 16px; }
+
+  /* Lišta. „Rezervovat stůl“ přetékalo z obrazovky, proto krátký popisek
+     (nav.reserve) a menší všechno ostatní — lišta má být tenká linka,
+     ne pás s knoflíkem přes třetinu šířky. */
+  .nav { padding: .7rem var(--pad); }
+  .nav__burgerLabel { display: none; }
+  .nav__right .lang { display: none; }
+  .nav__right { gap: .35rem; }
+  /* 32 px je pod doporučených 44 px pro dotyk. Tlačítko je tu ale samo —
+     přepínač jazyka je pod 810 px schovaný — takže vedle něj není do čeho
+     se netrefit. */
+  .nav__right .btn { font-size: 10px; letter-spacing: .04em; padding: .5em .85em; min-height: 32px; }
+  .nav__burger { min-height: 36px; }
+  .nav__bars { width: 18px; }
+  /* .nav__logo je vycentrované absolutně a na úzké liště naráží do tlačítek */
+  .nav__logo img { width: 38px; }
+
+  /* Typografická stupnice pro úzkou obrazovku. */
+  .h2 { font-size: 26px; letter-spacing: -.008em; line-height: 1.2; }
+  .kanji { font-size: 24px; }
+  .eyebrow { font-size: 11px; letter-spacing: .22em; }
+  .lead, .about__body .lead { font-size: 15.5px; line-height: 1.68; }
+  .pull { font-size: 17.5px; line-height: 1.5; padding: 1.1rem 0; margin: .2rem 0; }
+  .secHead { gap: .6rem; }
+  .btn--lg { font-size: 12px; padding: .92em 1.6em; }
+
+  /* O nás: tři odstavce pod sebou přes celou šířku byly ta „zeď textu“. */
+  .about { padding-top: calc(var(--sec) * 1.15); }
+  .about__body { margin-top: 1.8rem; gap: 1.1rem; }
+  .toInk { height: 170px; }
+
+  /* Rezervace: řádky hodin měly vycpávku jako na desktopu a formulář
+     i s nadpisem se roztáhl na půl druhé obrazovky. */
+  .res__copy { gap: .6rem; }
+  .res__copy .lead { margin-top: .25rem; }
+  .hours--compact { margin-top: 1rem; }
+  .con__copy .hours { margin-top: .9rem; }
+  .hours__row { padding: .55rem 0; }
+  .hours__row b { font-size: 15px; }
+  .panel { padding: 1rem; border-radius: var(--r); }
+  .form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem .9rem; }
+  #resForm .res-field--email { grid-column: 1 / -1; }
+  #resForm .res-field--people { grid-column: auto; }
+  .field { gap: .25rem; }
+  .field > input, .field > select, .field > textarea { padding-block: .5rem; }
+  .radio-rows { gap: .3rem; }
+  .radio-rows label { padding: .35rem .65rem; line-height: 1.35; }
+  .consent label { line-height: 1.45; }
+  .form .btn { margin-top: 0; }
+
+  /* Kontakt: mapa brala dvě třetiny obrazovky navíc. */
+  .con__copy { gap: .75rem; }
+  .con__copy .btn { margin-top: 1rem; }
+  .con__social { margin-top: .9rem; }
+  .con__biz { margin-top: 1.1rem; }
+  .con__map iframe { height: clamp(260px, 38svh, 340px); border-radius: var(--r); }
+
+  /* Patička: zachová všechen obsah, ale neskládá čtyři dlouhé bloky pod sebe. */
+  .foot { padding-top: 2.5rem; }
+  .foot__top { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem 1rem; }
+  .foot__brand,
+  .foot__top > nav { grid-column: 1 / -1; }
+  .foot__brand { display: grid; grid-template-columns: 72px 1fr; gap: 1rem; align-items: center; }
+  .foot__logo { width: 72px; margin: 0; }
+  .foot__blurb { max-width: none; font-size: 12.5px; line-height: 1.55; }
+  .foot__top > nav { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .15rem 1rem; }
+  .foot__top > nav h5 { grid-column: 1 / -1; }
+  .fcol { gap: .15rem; min-width: 0; }
+  .fcol h5 { margin-bottom: .35rem; font-size: 14px; }
+  .fcol a, .fcol p { line-height: 1.6; overflow-wrap: anywhere; }
+  .foot__bottom { margin-top: 1.5rem; padding-top: 1rem; gap: .35rem; }
+  .foot__bottom p { font-size: 11.5px; line-height: 1.5; }
+  .wordmark { margin-top: 1rem; }
+  .wordmark span { font-size: 18vw; }
+
+  /* Panel s navigací. Předtím to byl sloupec plotů: jazykový přepínač přes
+     celou šířku, pod ním zlatá deska „Rezervovat stůl“ a další dvě stejně
+     velká tlačítka — na 756 px vysokém displeji se spodek ořízl.
+     Jazyk je stav, ne akce: smrskne se na malou pilulku. Akce zůstávají
+     čitelné, jen přestávají být desky. */
+  .sheet { padding-top: 5rem; }
+  .sheet-foot { padding-top: 1.3rem; }
+
+  /* Signatures: tlačítko viselo v levém dolním rohu přesně přes název
+     jídla a přes ukazatel pod ním. Na úzkém displeji se to srovná do
+     sloupce — název, pruh, teprve pak tlačítko na střed. */
+  .show__meta { bottom: 9.4rem; }
+  .show__bar { bottom: 8.1rem; }
+  .show__cta { left: 50%; transform: translateX(-50%); bottom: 2.4rem; }
+  .show__name { font-size: 24px; }
+  .tick { height: 260vh; }
+  .toTop__label { display: none; }
+  .toTop { padding: .9rem; }
+  .menu-grid { grid-template-columns: 1fr; }
+  .menu-ov-panel { width: 100vw; max-height: 100vh; border-radius: 0; }
+  .menu-ov-bar { flex-wrap: wrap; gap: .8rem; }
+  .menu-ov-tabs { order: 3; width: 100%; margin-left: 0; overflow-x: auto; }
+  .menu-ov-close { margin-left: auto; }
+  /* Vodorovný vstup pole s datem si v Safari bere víc místa, než má. */
+  .field > input[type="date"] { padding-inline: 0 .2rem; }
 }
 
-/* ---------- 20. Reduced motion ------------------------------------------- */
+/* „Online objednávka“ je nejdelší popisek a .btn se nezalamuje. Pod 400 px
+   se do poloviční šířky přestane vejít, tak jdou vedlejší akce pod sebe —
+   pořád stejně široké, což byla ta původní výtka, ne počet řádků. */
+@media (max-width: 345px) {
+  .sheet-foot { grid-template-columns: 1fr; }
+  .form { grid-template-columns: 1fr; }
+}
+
+/* Telefon s lištou prohlížeče má kolem 750 px výšky — tam se panel
+   s odkazy a patičkou přestává vejít a spodní tlačítka se ořežou.
+   Řídí se výškou, ne šířkou: na šířku otočený telefon má stejný problém. */
+@media (max-height: 780px) {
+  .sheet { padding-top: 4.2rem; }
+  .sheet-nav a { min-height: 52px; }
+  .sheet-foot { padding-top: .9rem; }
+  .sheet-foot .btn { min-height: 36px; }
+  .sheet-foot .lang button { min-height: 30px; }
+}
+
+/* ==========================================================================
+   19 · OMEZENÝ POHYB
+   ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .01ms !important; animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important; scroll-behavior: auto !important;
-  }
-  [data-rv] { opacity: 1 !important; transform: none !important; }
-  .line-in { transform: none !important; }
-  .sig-rule svg path { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
-  .revs, .cats, .gal, .fgrid { transform: none !important; }
-  .menu-ov-panel { transform: none !important; }
-  .cat-seal { transform: rotate(-7deg) !important; }
-}
-
-@media print {
-  .header, .sheet, .grain, .progress, .lb, .menu-ov { display: none !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  .splitwords .w { opacity: 1 !important; }
 }

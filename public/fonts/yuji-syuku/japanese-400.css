@@ -1,0 +1,12 @@
+/* Yuji Syuku — podmnožina japonského řezu.
+   Štětcové kanji v nadpisech sekcí a vodoznaky (匠席心評間飯).
+   Plný řez váží 3,6 MB a web z něj používá 6 znaků; podmnožina drží kromě
+   nich celou kanu a interpunkci, aby se dal japonský text doplnit bez
+   nového exportu. Nová podmnožina: scripts/build-jp-subset.sh */
+@font-face {
+  font-family: 'Yuji Syuku';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url(./files/yuji-syuku-japanese-400-normal.subset.woff2) format('woff2');
+}

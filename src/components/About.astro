@@ -1,39 +1,53 @@
-<section class="section bg-canvas paper" id="o-nas">
-  <div class="kanji-bg jp" style="left:-3rem; top:3rem; font-size:24rem" data-drift="-40" aria-hidden="true">心</div>
+---
+/*
+  O nás.
 
-  <div class="wrap about-grid">
-    <div class="about-art">
-      <div class="frame about-main" data-tilt>
-        <img src="/assets/space/onas-boat.webp" alt="Obsluha nese dřevěnou loď plnou sushi — maki, nigiri i sashimi" data-i18n-alt="about.altMain" width="1200" height="800" data-parallax="-7" loading="lazy" decoding="async" />
-      </div>
-      <div class="frame about-sub" data-rv="fade-up">
-        <img src="/assets/space/onas-ramen.webp" alt="Dvě misky ramenu na dřevěných podnosech MESHi" data-i18n-alt="about.altSub" width="900" height="675" data-parallax="6" loading="lazy" decoding="async" />
-      </div>
-    </div>
+  Pod sekcí leží tušová krajina (Hasegawa Tōhaku, public domain — viz
+  ASSET-CREDITS.md), text stojí v úzkém sloupci na střed. Prostřední
+  odstavec je vytažená citace, tím se trojice odstavců rozdýchá.
 
-    <div class="about-copy">
-      <span class="eyebrow" data-rv="fade-right" data-i18n="about.eyebrow">O nás</span>
-      <h2 data-rv="fade-up" data-i18n="about.title">Chuť, kterou rádi sdílíte</h2>
+  Text je původní, odsouhlasený klientem — mockup si ho zkracoval jen proto,
+  aby se dal nakreslit. .splitwords rozsvěcuje slova podle rolování, dělení
+  dělá app.js až po doplnění jazyka.
 
-      <p class="lead" data-rv="fade-up" data-i18n-html="about.p1">
+  Konec sekce dojíždí přechodem .toInk do barvy další sekce; bez něj tam
+  byla vodorovná hrana.
+*/
+---
+
+<section class="about" id="o-nas">
+  <div class="about__bgWrap" aria-hidden="true"><img class="about__bg" src="/assets/wash.webp" alt="" /></div>
+  <div class="about__top" aria-hidden="true"></div>
+
+  <div class="about__in">
+    <header class="secHead">
+      <span class="kanji" aria-hidden="true">心</span>
+      <span class="eyebrow eyebrow--gold" data-i18n="about.eyebrow">O nás</span>
+      <h2 class="h2">
+        <span class="ml"><span class="ml__i" data-i18n="about.title1">Chuť, kterou</span></span>
+        <span class="ml"><span class="ml__i"><em data-i18n="about.title2">rádi sdílíte</em></span></span>
+      </h2>
+    </header>
+
+    <div class="about__body">
+      <p class="lead splitwords" data-i18n-html="about.p1">
         Jsme malá rodina s velkou vášní pro asijskou kuchyni a právě z této vášně vzniklo <strong>MESHi</strong>.
-        "Meshi" v japonštině znamená jídlo, respektive domácí jídlo či pokrm.         Pro nás však představuje mnohem víc – chvíle strávené u společného stolu, radost ze sdílení a spojení mezi lidmi.
+        „Meshi“ v japonštině znamená jídlo, respektive domácí jídlo či pokrm. Pro nás však představuje mnohem
+        víc – chvíle strávené u společného stolu, radost ze sdílení a spojení mezi lidmi.
       </p>
 
-      <blockquote class="quote" data-rv="fade-up">
-        <p data-i18n="about.p2">Naše kuchyně harmonicky propojuje japonskou eleganci s autentickými chutěmi Asie – jednoduchými, osobitými a plnými charakteru.</p>
+      <blockquote class="pull" data-i18n="about.p2">
+        Naše kuchyně harmonicky propojuje japonskou eleganci s autentickými chutěmi Asie – jednoduchými,
+        osobitými a plnými charakteru.
       </blockquote>
 
-      <p class="lead" data-rv="fade-up" data-i18n="about.p3">
-        Pečlivě vybíráme kvalitní suroviny a každému pokrmu věnujeme čas, péči a srdce. MESHi jsme vytvořili jako místo,
-        kam se budete rádi vracet – za dobrým jídlem, příjemnou atmosférou a společnými chvílemi, přímo v srdci Plzně,
-        na náměstí Republiky.
+      <p class="lead splitwords" data-i18n="about.p3">
+        Pečlivě vybíráme kvalitní suroviny a každému pokrmu věnujeme čas, péči a srdce. MESHi jsme vytvořili
+        jako místo, kam se budete rádi vracet – za dobrým jídlem, příjemnou atmosférou a společnými chvílemi,
+        přímo v srdci Plzně, na náměstí Republiky.
       </p>
-
-      <div class="about-foot" data-rv="fade-up">
-        <a class="chip chip-link" href="https://maps.app.goo.gl/UFdjuugsRDGuJuGq6" target="_blank" rel="noopener"><svg width="13" height="13" style="color:var(--secondary)"><use href="#ic-pin"/></svg> nám. Republiky 107/14, 301 00 Plzeň 3-Vnitřní Město</a>
-        <a class="link-u" href="#kontakt"><span data-i18n="about.hours">Zjistit otevírací dobu</span><svg><use href="#ic-arrow"/></svg></a>
-      </div>
     </div>
   </div>
+
+  <div class="toInk" aria-hidden="true"></div>
 </section>

@@ -1,21 +1,25 @@
 ---
 /*
-  Mobilní panel. Odkazy mají šipku a plnou výšku řádku, aby se trefovaly
-  palcem; aktivní sekci značí stejná tečka jako v liště na desktopu.
-  Zavírá se pilulkou „Zavřít“ v liště nad panelem — viz Header.astro.
+  Panel s navigací — hlavní nabídka webu, otevírá ji tlačítko Menu v liště.
+
+  V mockupu je lišta prázdná a všechno se otevírá odsud, takže tady musí být
+  i to, co dřív viselo v liště: telefon a online objednávka. Odkazy mají
+  šipku a plnou výšku řádku, aby se trefovaly palcem; aktivní sekci značí
+  stejná šipka jako při přejezdu myší.
 */
 const links = [
   { href: "#top", key: "nav.home", label: "Domů" },
   { href: "#o-nas", key: "nav.about", label: "O nás" },
-  { href: "#signatures", key: "nav.menu", label: "Menu" },
+  { href: "#menu", key: "nav.menu", label: "Menu" },
   { href: "#galerie", key: "nav.gallery", label: "Galerie" },
+  { href: "#rezervace", key: "nav.reserve", label: "Rezervace" },
   { href: "#poukaz", key: "nav.gift", label: "Dárkový poukaz" },
   { href: "#kontakt", key: "nav.contact", label: "Kontakt" },
 ];
 ---
 
 <div class="sheet" id="sheet">
-  <nav class="sheet-nav" aria-label="Mobilní nabídka" data-i18n-aria="nav.main">
+  <nav class="sheet-nav" aria-label="Hlavní nabídka" data-i18n-aria="nav.main">
     {links.map((l) => (
       <a href={l.href}>
         <span data-i18n={l.key}>{l.label}</span>
@@ -24,14 +28,20 @@ const links = [
     ))}
   </nav>
 
+  <!-- Rezervace tu není schválně — sedí v liště, kde je vidět pořád, a
+       dvakrát na jedné obrazovce nemá co dělat.
+
+       Zbylé dvě akce drží mřížka na půl, ať nemá každá jinou šířku podle
+       délky popisku. Přepínač jazyka je nad nimi jako malá pilulka: je to
+       stav, ne akce, a přes celou šířku vypadal jako třetí tlačítko. -->
   <div class="sheet-foot">
     <div class="lang" role="group" aria-label="Jazyk" data-i18n-aria="nav.lang">
       <button type="button" class="on" data-lang="cs" aria-pressed="true">CZ</button>
       <button type="button" data-lang="en" aria-pressed="false">EN</button>
     </div>
-    <a class="btn btn-primary" href="#rezervace" data-i18n="nav.reserveTable">Rezervovat stůl</a>
-    <a class="btn btn-ghost" href="tel:+420778585688"><svg><use href="#ic-phone"/></svg><span data-i18n="nav.call">Zavolat</span></a>
-    <!-- PŘEDÁVKA: bez obsluhy, viz Header.astro -->
-    <button class="btn btn-ghost btn-order" type="button" data-i18n="nav.order">Online objednávka</button>
+    <a class="btn btn--line" href="tel:+420778585688"><svg><use href="#ic-phone"/></svg><span data-i18n="nav.call">Zavolat</span></a>
+    <!-- PŘEDÁVKA: tlačítko zatím nemá obsluhu — chybí odkaz na rozvozovou
+         platformu nebo vlastní objednávkový tok. -->
+    <button class="btn btn--ghost btn-order" id="objednavka" type="button" data-i18n="nav.order">Online objednávka</button>
   </div>
 </div>

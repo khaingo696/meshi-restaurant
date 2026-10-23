@@ -1,81 +1,98 @@
 ---
 /*
-  Signatures — nadpis, odstavec a tři karty kategorií.
+  Signatures — ukázka jídel.
 
-  Japonský rejstřík, ale měkký: pečeť hanko přes roh fotky, sumi vlnka pod
-  nadpisem, washi vlákno pod celou sekcí. Motivy ano, ostré hrany ne.
+  Sekce se připíchne na obrazovku a jídla jedou vodorovně: to uprostřed je
+  největší a stojí v ose, ta po stranách se zmenší a nakloní. Fotky jsou
+  WebP s alfa kanálem (vyříznuté z pozadí), takže drop-shadow() obkresluje
+  skutečný obrys jídla. Kruh, zář a zapuštěné logo tvoří podstavec.
 
-  Karty jsou stejně velké a jen posazené do různé výšky — tři kategorie jsou
-  si rovny, žádná nesmí vypadat důležitěji než ostatní. Štítek s názvem
-  přesahuje přes spodní hranu fotky, stejné vrstvení jako v sekci O nás.
+  Tlačítko vpravo dole otevírá <MenuOverlay> s celým lístkem. Kategorii mu
+  app.js průběžně přepisuje na tu, ze které je jídlo právě uprostřed, takže
+  překryv se otevře v kategorii, kterou si člověk prohlížel.
 
-  Kliknutí otevře překryv <MenuOverlay>, obsluhu dělá app.js.
+  Seznam se skládá z src/data/menu.ts — názvy ani ceny se tady nepíšou.
+  Vyříznuté fotky existují jen pro část jídel, proto SHOWCASE: slug musí mít
+  soubor v public/assets/dishes/. Ceny ještě nejsou (price: null), a dokud
+  nebudou, řádek s cenou se nevykreslí — žádné „0 Kč“ ani vymyšlená čísla.
 */
-import { categories } from "../data/menu";
-import Rule from "./Rule.astro";
+import { categories, formatPrice } from "../data/menu";
+
+/* Pořadí na scéně: nejdřív hlavní jídla, pak předkrmy. Osm jídel je strop:
+   délku připíchnuté scény určuje jejich počet, a každé další přidá přes
+   500 px rolování. */
+const SHOWCASE = [
+  "duck-teriyaki",
+  "pad-thai",
+  "mama-bowl",
+  "chicken-katsu-kare",
+  "mongolian-beef",
+  "ebi-tempura",
+  "gyoza",
+  "tori-karagge",
+];
+
+const dishes = SHOWCASE.map((slug) => {
+  const cat = categories.find((c) => c.items.some((d) => d.slug === slug));
+  if (!cat) throw new Error(`Signatures: slug "${slug}" není v src/data/menu.ts`);
+  const dish = cat.items.find((d) => d.slug === slug)!;
+  return {
+    cat: cat.slug,
+    kicker: cat.label,
+    name: dish.name,
+    price: formatPrice(dish.price) ?? "",
+    img: `/assets/dishes/${slug}.webp`,
+  };
+});
+
+const first = dishes[0];
 ---
 
-<section class="section bg-sand paper" id="signatures">
-  <div class="kanji-bg jp" style="left:-2rem; top:4rem; font-size:26rem" data-drift="-60" aria-hidden="true">匠</div>
-  <div class="kanji-bg jp" style="right:-1rem; bottom:4rem; font-size:20rem; opacity:.03" data-drift="50" aria-hidden="true">味</div>
-  <div class="glow" style="width:28rem;height:28rem;top:18%;left:28%;background:rgba(200,150,80,.14)"></div>
-  <div class="glow" style="width:30rem;height:30rem;bottom:6%;right:14%;background:rgba(124,74,45,.1)"></div>
+<section class="show" id="menu">
+  <div class="wrap show__head">
+    <span class="kanji" aria-hidden="true">匠</span>
+    <span class="eyebrow eyebrow--gold" data-i18n="sig.title">Naše signatures</span>
+    <h2 class="h2">
+      <span class="ml"><span class="ml__i" data-i18n="sig.sub1">Harmonie poctivé chuti</span></span>
+      <span class="ml"><span class="ml__i"><em data-i18n="sig.sub2">v každém soustu</em></span></span>
+    </h2>
+  </div>
 
-  <div class="wrap">
-    <div class="sig-head">
-      <div class="section-head">
-        <h2 data-rv="fade-up"><span data-i18n="sig.title">Naše signatures</span>
-          <span class="sub" data-rv="fade-up" data-i18n="sig.sub">Harmonie poctivé chuti v každém soustu</span>
-        </h2>
-        <p data-rv="fade-up" data-i18n="sig.body">
-          Pečlivě vybíráme kvalitní suroviny a každý den používáme čerstvé potraviny.
-          Každému pokrmu věnujeme čas, péči a srdce, protože věříme, že právě na kvalitě surovin a poctivé přípravě záleží.
-          V MESHi můžete ochutnat výrazné a poctivé asijské polévky, naše speciální předkrmy, charakteristický ramen,
-          tradiční sushi s domácí sójovou omáčkou i oblíbená asijská jídla, která možná už dlouho hledáte.
-        </p>
-      </div>
-      <div class="sig-actions" data-rv="fade-up">
-        <a class="btn btn-primary" href="/docs/menu.pdf" target="_blank" rel="noopener"><svg><use href="#ic-menu-book"/></svg><span data-i18n="sig.full">Zobrazit celé menu</span><svg><use href="#ic-arrow"/></svg></a>
-      </div>
-    </div>
+  <div class="show__pin" id="showPin">
+    <div class="show__ring" aria-hidden="true"></div>
+    <div class="show__glow" aria-hidden="true"></div>
+    <img class="show__mark" id="showMark" src="/assets/meshi_logo_hero.png?v=gold" alt="" aria-hidden="true" />
 
-    <Rule />
-
-    <div class="cats">
-      {categories.map((cat, i) => (
-        <button
-          class="cat"
-          type="button"
-          data-cat={cat.slug}
-          data-n={cat.items.length}
-          data-rv="rise"
-          aria-haspopup="dialog"
-          aria-expanded="false"
-        >
-          <span class="cat-seal" aria-hidden="true"><b>{String(i + 1).padStart(2, "0")}</b></span>
-
-          <span class="cat-shot">
-            <img
-              src={cat.cover}
-              srcset={`${cat.cover} 900w, ${cat.cover.replace(".webp", "@2x.webp")} 1800w`}
-              sizes="(max-width: 700px) 92vw, (max-width: 1100px) 44vw, 360px"
-              alt={cat.coverAlt}
-              data-i18n-alt={`cat.${cat.slug}Alt`}
-              width="900"
-              height="1125"
-              loading="lazy"
-              decoding="async"
-            />
-          </span>
-
-          <span class="cat-plate">
-            <span class="cat-plate-txt">
-              <span class="cat-name" data-i18n={`cat.${cat.slug}`}>{cat.label}</span>
-            </span>
-            <span class="cat-arr" aria-hidden="true"><svg><use href="#ic-arrow"/></svg></span>
-          </span>
-        </button>
+    <div class="show__stage" id="showStage">
+      {dishes.map((d) => (
+        <figure class="dish" data-cat={d.cat} data-kicker={d.kicker} data-name={d.name} data-price={d.price}>
+          <img src={d.img} alt={d.name} width="900" height="900" loading="lazy" decoding="async" />
+          <!-- Popisek je vidět jen v náhradní podobě scény (bez pohybu nebo
+               bez GSAP), kde se pás roluje prstem. Jinak jméno nese
+               .show__meta uprostřed. -->
+          <figcaption class="dish__cap">
+            <span class="dish__kicker" data-i18n={`cat.${d.cat}`}>{d.kicker}</span>
+            <span class="dish__name">{d.name}</span>
+            {d.price && <span class="dish__price">{d.price}</span>}
+          </figcaption>
+        </figure>
       ))}
     </div>
+
+    <!-- Název jídla uprostřed. Pro čtečky je to duplikát — jméno každého
+         jídla už nese alt jeho fotky, a hlásit deset změn za jedno
+         rolování by bylo na obtíž. Proto aria-hidden. -->
+    <div class="show__meta" aria-hidden="true">
+      <span class="show__kicker" id="showKicker">{first.kicker}</span>
+      <span class="show__name" id="showName">{first.name}</span>
+      <span class="show__price" id="showPrice">{first.price}</span>
+    </div>
+
+    <div class="show__bar" aria-hidden="true"><i id="showBar"></i></div>
+
+    <button class="show__cta btn btn--line" id="showMenuBtn" type="button"
+            data-cat={first.cat} aria-haspopup="dialog" aria-expanded="false">
+      <span data-i18n="sig.full">Zobrazit celé menu</span> <span class="btn__arrow" aria-hidden="true">→</span>
+    </button>
   </div>
 </section>

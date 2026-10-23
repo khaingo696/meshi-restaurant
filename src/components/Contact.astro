@@ -1,61 +1,64 @@
 ---
-/* Pás 青海波 na spodní hraně dělá přechod do tmavé patičky — stejná forma
-   jako pod rezervací, tedy od kraje ke kraji a s plným motivem. */
-import Rule from "./Rule.astro";
+/*
+  Kontakt — text v levé polovině, mapa v pravé.
+
+  Otevírací doba stojí v rezervaci a v patičce, tady by byla potřetí; místo
+  ní jsou v řádcích adresa, telefon a e-mail. Sítě a údaje o provozovateli
+  zůstaly — mockup je nekreslí, ale do kontaktu patří.
+
+  Mapa jde přes <iframe> z Google Maps; jazyk v odkazu přepíná app.js.
+*/
+const MAPS = "https://maps.app.goo.gl/UFdjuugsRDGuJuGq6";
 ---
 
-<section class="section bg-surface paper band m-seigaiha" id="kontakt" data-pat-drift="110">
-  <div class="wrap">
-    <div class="rev-top" style="margin-bottom:2.2rem">
-      <span class="eyebrow center" data-rv="fade-up" data-i18n="con.eyebrow">Kde nás najdete</span>
-      <h2 data-rv="fade-up" style="margin-top:.7rem" data-i18n="con.title">Navštivte nás v srdci Plzně</h2>
-      <Rule class="center" style="margin-top:1.1rem" />
-    </div>
+<section class="con" id="kontakt">
+  <div class="secbg" aria-hidden="true"><img src="/assets/bg/con.webp" alt="" /></div>
 
-    <div class="kontakt-grid">
-      <div class="map" data-rv="fade-up">
-        <iframe title="Mapa — MESHi Restaurant Plzeň, nám. Republiky 107/14" data-i18n-title="con.mapTitle" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1305.5!2d13.3785312!3d49.7466407!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470af101904b4569%3A0xf3c31f42fa8945cf!2sMeshi%20Restaurant%20Plze%C5%88!5e0!3m2!1scs!2scz"></iframe>
-        <div class="map-card">
-          <a class="l" href="https://maps.app.goo.gl/UFdjuugsRDGuJuGq6" target="_blank" rel="noopener">
-            <span class="ico"><svg><use href="#ic-pin"/></svg></span>
-            <span><b>nám. Republiky 107/14</b><span>301 00 Plzeň 3-Vnitřní Město</span></span>
-          </a>
-          <a class="btn btn-primary btn-sm" target="_blank" rel="noopener"
-             href="https://maps.app.goo.gl/UFdjuugsRDGuJuGq6">
-            <span data-i18n="con.openMaps">Otevřít v Mapách</span><svg><use href="#ic-ext"/></svg>
-          </a>
-        </div>
+  <div class="con__copy">
+    <span class="eyebrow eyebrow--gold" data-i18n="con.eyebrow">Kde nás najdete</span>
+    <h2 class="h2">
+      <span class="ml"><span class="ml__i" data-i18n="con.title1">Navštivte nás</span></span>
+      <span class="ml"><span class="ml__i"><em data-i18n="con.title2">v srdci Plzně</em></span></span>
+    </h2>
+
+    <div class="hours">
+      <div class="hours__row">
+        <span data-i18n="con.address">Adresa</span>
+        <b><a href={MAPS} target="_blank" rel="noopener">nám. Republiky 107/14, Plzeň</a></b>
       </div>
-
-      <div class="card info" data-rv="fade-up">
-        <div>
-          <h3><svg><use href="#ic-clock"/></svg><span data-i18n="con.hours">Otevírací doba</span></h3>
-          <div class="hours">
-            <div><span data-i18n="con.monThu">Pondělí – Čtvrtek</span><b>11:00 – 22:00</b></div>
-            <div><span data-i18n="con.friSat">Pátek – Sobota</span><b>11:00 – 23:00</b></div>
-            <div><span data-i18n="con.sun">Neděle</span><b>12:00 – 22:00</b></div>
-          </div>
-
-          <h3><svg><use href="#ic-chat"/></svg><span data-i18n="con.connect">Spojení s námi</span></h3>
-          <div class="contacts">
-            <a href="tel:+420778585688"><svg><use href="#ic-phone"/></svg><b style="color:var(--ink);font-weight:600">+420 778 585 688</b></a>
-            <a href="mailto:info@meshi-restaurant.cz"><svg><use href="#ic-mail"/></svg>info@meshi-restaurant.cz</a>
-            <span class="ico-row">
-              <svg style="width:15px;height:15px;color:var(--primary)"><use href="#ic-globe"/></svg>
-              <a href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">Instagram</a>
-              <span style="color:var(--muted-2)">·</span>
-              <a href="https://www.facebook.com/profile.php?id=61578757887900" target="_blank" rel="noopener" style="color:var(--primary);font-weight:600">Facebook</a>
-            </span>
-          </div>
-        </div>
-
-        <div class="biz">
-          <b data-i18n="con.operator">Provozovatel</b>
-          Nguyen Quoc Vinh OSVČ<br />
-          IČO: 23517034 · DIČ: CZ9303301480
-        </div>
+      <div class="hours__row">
+        <span data-i18n="con.phone">Telefon</span>
+        <b><a href="tel:+420778585688">+420 778 585 688</a></b>
+      </div>
+      <div class="hours__row">
+        <span data-i18n="con.mail">E-mail</span>
+        <b><a href="mailto:info@meshi-restaurant.cz">info@meshi-restaurant.cz</a></b>
       </div>
     </div>
+
+    <p class="con__social">
+      <span data-i18n="con.follow">Sledujte nás</span>
+      <a href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener">
+        <svg aria-hidden="true"><use href="#ic-instagram"/></svg><span>Instagram</span>
+      </a>
+      <a href="https://www.facebook.com/profile.php?id=61578757887900" target="_blank" rel="noopener">
+        <svg aria-hidden="true"><use href="#ic-facebook"/></svg><span>Facebook</span>
+      </a>
+    </p>
+
+    <a class="btn btn--line" href={MAPS} target="_blank" rel="noopener">
+      <span data-i18n="con.openMaps">Otevřít v Mapách</span> <span class="btn__arrow" aria-hidden="true">→</span>
+    </a>
+
+    <p class="con__biz">
+      <b data-i18n="con.operator">Provozovatel</b><br />
+      Nguyen Quoc Vinh OSVČ · IČO: 23517034 · DIČ: CZ9303301480
+    </p>
+  </div>
+
+  <div class="con__map">
+    <iframe title="Mapa — MESHi Restaurant Plzeň, nám. Republiky 107/14" data-i18n-title="con.mapTitle"
+      loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1305.5!2d13.3785312!3d49.7466407!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470af101904b4569%3A0xf3c31f42fa8945cf!2sMeshi%20Restaurant%20Plze%C5%88!5e0!3m2!1scs!2scz"></iframe>
   </div>
 </section>

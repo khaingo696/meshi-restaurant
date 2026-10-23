@@ -1,44 +1,56 @@
-<footer class="footer">
-  <div class="kanji-bg jp" data-drift="40" aria-hidden="true">飯</div>
-  <div class="wrap">
-    <div class="f-grid">
-      <div class="f-brand">
-        <img src="/assets/meshi_logo_hero.png?v=gold" width="593" height="421" alt="MESHi" />
-        <p data-i18n="foot.blurb">Autentická asijská kuchyně a prémiové sushi v srdci Plzně. Tradice, poctivé suroviny a filozofie omotenashi.</p>
-      </div>
+---
+/*
+  Patička — čtyři sloupce, spodní řádek a vysazené MESHi na dně stránky.
 
-      <div>
-        <h4 data-i18n="foot.hours">Otevírací doba</h4>
-        <div class="f-list">
-          <span class="f-row"><span data-i18n="foot.monThu">Po – Čt</span><b>11:00 – 22:00</b></span>
-          <span class="f-row"><span data-i18n="foot.friSat">Pá – So</span><b>11:00 – 23:00</b></span>
-          <span class="f-row"><span data-i18n="foot.sun">Neděle</span><b>12:00 – 22:00</b></span>
-        </div>
-      </div>
+  Bez fotky, jen barva, která tmavne ke dnu. Obří MESHi na konci je obrys
+  bez výplně a vyjíždí podle rolování; je to dekorace, ne nadpis.
+*/
+---
 
-      <div>
-        <h4 data-i18n="foot.find">Kde nás najdete</h4>
-        <div class="f-list">
-          <a href="https://maps.app.goo.gl/UFdjuugsRDGuJuGq6" target="_blank" rel="noopener">nám. Republiky 107/14<br />301 00 Plzeň 3-Vnitřní Město</a>
-          <a href="tel:+420778585688">+420 778 585 688</a>
-          <a href="mailto:info@meshi-restaurant.cz">info@meshi-restaurant.cz</a>
-        </div>
-      </div>
+<footer class="foot">
+  <span class="wm wm--foot" aria-hidden="true">飯</span>
 
-      <div>
-        <h4 data-i18n="foot.nav">Rychlá navigace</h4>
-        <div class="f-links">
-          <a href="#top" data-i18n="nav.home">Domů</a><a href="#o-nas" data-i18n="nav.about">O nás</a>
-          <a href="#galerie" data-i18n="nav.gallery">Galerie</a>
-          <a href="#poukaz" data-i18n="nav.gift">Dárkový poukaz</a><a href="#kontakt" data-i18n="nav.contact">Kontakt</a>
-          <a href="#signatures" data-i18n="nav.menu">Menu</a><a href="#rezervace" data-i18n="nav.reserve">Rezervace</a>
-        </div>
-      </div>
+  <div class="wrap foot__top">
+    <div class="foot__brand">
+      <img class="foot__logo" src="/assets/meshi_logo_hero.png?v=gold" width="593" height="421" alt="MESHi" />
+      <p class="foot__blurb" data-i18n-html="foot.blurb">
+        Autentická asijská kuchyně a prémiové sushi v srdci Plzně. Tradice, poctivé suroviny a filozofie <em>omotenashi</em>.
+      </p>
     </div>
 
-    <div class="f-bottom">
-      <span>© 2026 MESHi Plzeň · <span data-i18n="foot.rights">Všechna práva vyhrazena</span> · Nguyen Quoc Vinh OSVČ, IČO: 23517034</span>
-      <span style="display:flex; gap:1.4rem"><a href="#" data-i18n="foot.privacy">Ochrana osobních údajů</a><a href="#" data-i18n="foot.terms">Obchodní podmínky</a></span>
+    <nav class="fcol" aria-label="Navigace v patičce" data-i18n-aria="foot.navLabel">
+      <h5 data-i18n="foot.nav">Navigace</h5>
+      <a href="#o-nas" data-i18n="nav.about">O nás</a>
+      <a href="#menu" data-i18n="nav.menu">Menu</a>
+      <a href="#galerie" data-i18n="nav.gallery">Galerie</a>
+      <a href="#rezervace" data-i18n="nav.reserve">Rezervace</a>
+      <a href="#poukaz" data-i18n="nav.gift">Dárkový poukaz</a>
+      <a href="#kontakt" data-i18n="nav.contact">Kontakt</a>
+      <!-- Jediná cesta k lístku, která nepotřebuje JavaScript — překryv
+           v sekci Signatures bez něj nejde otevřít. -->
+      <a href="/docs/menu.pdf" target="_blank" rel="noopener" data-i18n="foot.menuPdf">Menu v PDF</a>
+    </nav>
+
+    <div class="fcol">
+      <h5 data-i18n="foot.hours">Otevírací doba</h5>
+      <p><span data-i18n="hours.monThu">Po – Čt</span> · 11:00 – 22:00</p>
+      <p><span data-i18n="hours.friSat">Pá – So</span> · 11:00 – 23:00</p>
+      <p><span data-i18n="hours.sun">Neděle</span> · 12:00 – 22:00</p>
+    </div>
+
+    <div class="fcol">
+      <h5 data-i18n="foot.find">Kontakt</h5>
+      <p>nám. Republiky 107/14</p>
+      <p>301 00 Plzeň 3-Vnitřní Město</p>
+      <a href="tel:+420778585688">+420 778 585 688</a>
+      <a href="mailto:info@meshi-restaurant.cz">info@meshi-restaurant.cz</a>
     </div>
   </div>
+
+  <div class="wrap foot__bottom">
+    <p>© 2026 MESHi Asian Cuisine · <span data-i18n="foot.rights">Všechna práva vyhrazena</span> · Nguyen Quoc Vinh OSVČ, IČO: 23517034</p>
+    <p><a href="#" data-i18n="foot.privacy">Ochrana osobních údajů</a> · <a href="#" data-i18n="foot.terms">Obchodní podmínky</a></p>
+  </div>
+
+  <div class="wordmark" aria-hidden="true"><span>MESHi</span></div>
 </footer>

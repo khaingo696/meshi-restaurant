@@ -1,51 +1,250 @@
-<section class="hero" id="hero">
-  <div class="hero-media" id="heroMedia">
-    <video autoplay muted loop playsinline poster="/assets/hero-poster.webp" aria-hidden="true">
-      <source src="/assets/background_video.mp4" type="video/mp4" />
-    </video>
-  </div>
-  <div class="hero-veil v1" aria-hidden="true"></div>
-  <div class="hero-veil v2" aria-hidden="true"></div>
-  <div class="hero-veil v3" aria-hidden="true"></div>
+---
+/*
+  Hero — „cinema lower-third“, navázané na dveře meshi-door.
 
-  <div class="hero-art">
-    <div class="hero-float" data-hero="7">
-      <p class="hero-note" id="openState">
-        <i class="dot"></i><span>Otevřeno – zavíráme ve 23:00</span>
-      </p>
-      <a class="hero-rating" id="gRatingLink" target="_blank" rel="noopener noreferrer"
-         href="https://www.google.com/maps/search/?api=1&amp;query=Meshi%20restaurant%2C%20n%C3%A1m.%20Republiky%20107%2F14%2C%20301%2000%20Plze%C5%88">
-        <span class="score" id="gRatingScore" aria-hidden="true">4,9</span>
-        <span class="rt">
-          <span class="rt-top">
-            <span class="stars" aria-hidden="true">
-              <svg><use href="#ic-star"/></svg><svg><use href="#ic-star"/></svg><svg><use href="#ic-star"/></svg><svg><use href="#ic-star"/></svg><svg><use href="#ic-star"/></svg>
-            </span>
-            <b>Google</b>
-          </span>
-          <span class="rt-sub"><span id="gRatingCountLabel">252 recenzí</span><span class="addr"> • nám. Republiky 107/14, 301 00 Plzeň 3-Vnitřní Město</span></span>
-        </span>
-        <span class="go" aria-hidden="true"><svg><use href="#ic-arrow"/></svg></span>
-      </a>
-    </div>
-  </div>
+  Převzaté z hotového prototypu (meshi-hero/index.html), popis podoby je
+  v meshi-hero/meshi-door/INTEGRATION.md, část 2. Hodnoty i rozložení jsou
+  odsouhlasené s klientem, takže se tady nic nepřekresluje. Styly sedí
+  v global.css, sekce 6; chování (cyklus tří slov, navázání na průběh
+  otvírání dveří, magnetické tlačítko) je v app.js, sekce 9b.
 
-  <div class="wrap hero-grid">
+  Video je `interior` dveří: pod kurzorem se prosvítá papírem šódži, takže
+  má třídu .hero-bg, na kterou míří <MeshiDoor interior="video.hero-bg">.
+  Musí jít ze stejného původu, jinak prohlížeč nepustí čtení pixelů a
+  z pochodně zůstane jen teplé světlo. /assets/ je zdejší, takže v pořádku.
+
+  Proti prototypu se tady liší jen napojení na zdejší web:
+    · #gRatingLink / #gRatingScore plní app.js ze snapshotu
+      /google-rating.json, #openState z rozpisu hodin
+    · data-i18n na textu tlačítka (hero.explore); popisek odkazu na
+      hodnocení skládá app.js, aby v něm bylo živé číslo (paintRatingAria)
+    · <aside class="dev-controls"> z prototypu tu nemá co dělat
+    · počet recenzí odešel: tiráž místo něj přetáčí popisek na „Plzeň · Mapa“
+*/
+---
+
+<section class="hero" id="hero" data-active-word="0">
+  <!-- preload="none" a bez autoplay schválně: video se pouští až ve chvíli,
+       kdy mají dveře svůj renderer (app.js, sekce 2b). Dokud se stahuje a
+       dekóduje 1080p30, nestíhá dorazit chunk three.js — a dveře, které ho
+       při startu nemají, spadnou na Canvas 2D a jedou po procesoru.
+       Do té doby drží místo poster, pod dveřmi stejně není video vidět. -->
+  <video class="hero__video hero-bg" poster="/assets/hero-poster.webp" preload="none"
+         loop muted playsinline aria-hidden="true" data-src="/assets/background_video.mp4"></video>
+  <div class="hero__edge" aria-hidden="true"></div>
+
+  <!-- Filtr pro vlnu vůně nad slovem pod kurzorem -->
+  <svg class="sr-svg-defs" aria-hidden="true" width="0" height="0">
+    <defs>
+      <filter id="aroma-vapor" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.016 0.045" numOctaves="2" seed="3" result="noise">
+          <animate attributeName="baseFrequency" values="0.016 0.045;0.022 0.065;0.016 0.045" dur="5.5s" repeatCount="indefinite" />
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.6" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="hero-stage">
     <div class="hero-copy">
-      <span class="hero-logo" data-hero="logo">
-        <img src="/assets/meshi_logo_hero.png?v=gold" alt="MESHi — Traditional Asian Cuisine &amp; Premium Sushi" />
-      </span>
+      <!-- Kicker jen hloubkou ostrosti, bez jediné dekorativní linky:
+           1. vyjede ze spáry mezi křídly šódži, jak se dveře otvírají (--door-p: 0 → 1)
+           2. slova dělí prázdno a přeostřování, takže jediná kresba na ploše
+              je porcelánový talíř pod „Plate“ -->
+      <div class="hero-kicker" role="group" aria-label="Taste, Feel, Connect">
+        <button type="button" class="kicker-node" data-word="0">
+          <span class="kicker-node-text">Taste</span>
+        </button>
 
-      <h1>
-        <span class="mask-line"><span data-hero="2">Taste <i class="dv" aria-hidden="true"></i> Feel <i class="dv" aria-hidden="true"></i> Connect</span></span>
-        <span class="mask-line"><span class="ital" data-hero="2">A Taste of Home. On Your Plate.</span></span>
+        <button type="button" class="kicker-node is-serif" data-word="1">
+          <span class="kicker-node-text">Feel</span>
+        </button>
+
+        <button type="button" class="kicker-node" data-word="2">
+          <span class="kicker-node-text">Connect</span>
+        </button>
+      </div>
+
+      <!-- Nadpis je firemní claim, zůstává anglicky v obou jazycích — proto bez data-i18n. -->
+      <h1 class="hero-title" aria-label="A Taste of Home. On Your Plate">
+        <span class="hero-title-line is-prelude">
+          <span class="prelude-text">A Taste of Home.</span>
+        </span>
+        <span class="hero-title-line is-italic is-climax">
+          <span class="on-your-text">On Your</span>
+          <span class="plate-token">
+            <span class="plate-word-text">Plate</span>
+
+            <!-- Stoupající pára, zakotvená přímo nad „a“ ve slově „Plate“ -->
+            <svg class="plate-art-steam" viewBox="0 0 80 46" fill="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="steam-grad" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stop-color="#ecd09c" stop-opacity="0.1" />
+                  <stop offset="30%" stop-color="#f7efe2" stop-opacity="0.95" />
+                  <stop offset="75%" stop-color="#ecd09c" stop-opacity="0.78" />
+                  <stop offset="100%" stop-color="#ecd09c" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <path
+                class="steam-wisp wisp-1"
+                d="M 22 44 C 15 34, 30 23, 21 12 C 16 6, 24 2, 20 -1"
+                stroke="url(#steam-grad)"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              />
+              <path
+                class="steam-wisp wisp-2"
+                d="M 40 43 C 32 32, 50 20, 39 8 C 34 3, 42 0, 39 -3"
+                stroke="url(#steam-grad)"
+                stroke-width="1.85"
+                stroke-linecap="round"
+              />
+              <path
+                class="steam-wisp wisp-3"
+                d="M 58 44 C 51 34, 65 24, 56 13 C 51 7, 59 3, 55 0"
+                stroke="url(#steam-grad)"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+
+            <!-- Plochý porcelánový talíř + kódai (noha) + hůlky pod „Plate“ -->
+            <svg class="plate-art-hashi" viewBox="0 0 210 40" fill="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="gold-fade" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#ecd09c" stop-opacity="0.08" />
+                  <stop offset="22%" stop-color="#ecd09c" stop-opacity="0.95" />
+                  <stop offset="78%" stop-color="#ecd09c" stop-opacity="0.95" />
+                  <stop offset="100%" stop-color="#ecd09c" stop-opacity="0.08" />
+                </linearGradient>
+              </defs>
+              <!-- Zadní okraj talíře -->
+              <path
+                class="dish-back-rim"
+                d="M 14 8 C 56 1, 138 1, 180 8"
+                stroke="rgba(236, 208, 156, 0.36)"
+                stroke-width="1"
+                stroke-linecap="round"
+              />
+              <!-- Přední oblouk okraje -->
+              <path
+                class="dish-front-rim"
+                d="M 6 9 C 44 27, 150 27, 188 9"
+                stroke="url(#gold-fade)"
+                stroke-width="1.7"
+                stroke-linecap="round"
+              />
+              <!-- Noha talíře (kódai) -->
+              <path
+                class="dish-kodai"
+                d="M 58 24 C 82 29, 112 29, 136 24"
+                stroke="rgba(236, 208, 156, 0.65)"
+                stroke-width="1.15"
+                stroke-linecap="round"
+              />
+              <!-- Zúžené hůlky u pravého okraje; reagují na kurzor nad tlačítkem -->
+              <line
+                class="hashi-stick hashi-upper"
+                x1="40"
+                y1="34"
+                x2="204"
+                y2="22"
+                stroke="rgba(236, 208, 156, 0.85)"
+                stroke-width="1.3"
+                stroke-linecap="round"
+              />
+              <line
+                class="hashi-stick hashi-lower"
+                x1="56"
+                y1="38"
+                x2="206"
+                y2="27"
+                stroke="rgba(236, 208, 156, 0.55)"
+                stroke-width="1.05"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
+        </span>
       </h1>
 
-      <div class="hero-cta" data-hero="4">
-        <a class="btn btn-primary" href="#rezervace"><svg><use href="#ic-table"/></svg><span data-i18n="nav.reserveTable">Rezervovat stůl</span></a>
-        <a class="btn btn-glass" href="#signatures"><span data-i18n="hero.explore">Prozkoumat menu</span><svg class="dn"><use href="#ic-arrow"/></svg></a>
+      <div class="hero-cta-wrap">
+        <a class="hero-cta" href="#menu">
+          <span class="hero-cta-gem" aria-hidden="true"></span>
+          <span class="hero-cta-label" data-i18n="hero.explore">Prozkoumat menu</span>
+          <span class="hero-cta-icon" aria-hidden="true">
+            <svg viewBox="0 0 22 10" fill="none">
+              <path d="M0 5H20M16 1L20 5L16 9" stroke="currentColor" stroke-width="1.2" />
+            </svg>
+          </span>
+        </a>
       </div>
     </div>
-  </div>
 
+    <footer class="hero-meta" aria-label="Informace o restauraci">
+      <a
+        class="hero-rating"
+        id="gRatingLink"
+        href="https://www.google.com/maps/search/?api=1&amp;query=Meshi%20restaurant%2C%20n%C3%A1m.%20Republiky%20107%2F14%2C%20301%2000%20Plze%C5%88"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Hodnocení Google 4,9 z 5 — restaurace MESHi Plzeň, otevřít na Google Maps"
+      >
+        <!-- Vytesané skóre -->
+        <span class="rating-monolith">
+          <span class="rating-score" id="gRatingScore">4,9</span>
+          <span class="rating-scale" aria-hidden="true">/5</span>
+        </span>
+
+        <!-- Souhvězdí pěti hvězd a přetáčecí popisek -->
+        <span class="rating-detail">
+          <svg class="rating-constellation" viewBox="0 0 88 14" fill="none" aria-hidden="true">
+            <!-- Zlatá nit souhvězdí -->
+            <path
+              class="constellation-line"
+              d="M 7 9 L 25 5 L 44 8 L 63 4 L 81 7"
+              stroke="rgba(236, 208, 156, 0.38)"
+              stroke-width="0.85"
+              stroke-linecap="round"
+            />
+            <path
+              class="constellation-pulse"
+              d="M 7 9 L 25 5 L 44 8 L 63 4 L 81 7"
+              stroke="#fff6e0"
+              stroke-width="1.15"
+              stroke-linecap="round"
+            />
+            <!-- Pět hvězd -->
+            <g class="constellation-nodes" fill="#ecd09c">
+              <path class="c-node n-1" d="M7 5.2L8.1 7.9L10.8 9L8.1 10.1L7 12.8L5.9 10.1L3.2 9L5.9 7.9Z" />
+              <path class="c-node n-2" d="M25 1.2L26.1 3.9L28.8 5L26.1 6.1L25 8.8L23.9 6.1L21.2 5L23.9 3.9Z" />
+              <path class="c-node n-3" d="M44 4.2L45.1 6.9L47.8 8L45.1 9.1L44 11.8L42.9 9.1L40.2 8L42.9 6.9Z" />
+              <path class="c-node n-4" d="M63 0.2L64.1 2.9L66.8 4L64.1 5.1L63 7.8L61.9 5.1L59.2 4L61.9 2.9Z" />
+              <path class="c-node n-5" d="M81 3.2L82.1 5.9L84.8 7L82.1 8.1L81 10.8L79.9 8.1L77.2 7L79.9 5.9Z" />
+            </g>
+          </svg>
+
+          <span class="rating-reel">
+            <span class="reel-track">
+              <span class="reel-line" data-i18n="hero.reviews">Google Reviews</span>
+              <span class="reel-line is-hover" aria-hidden="true" data-i18n="hero.map">Plzeň · Mapa</span>
+            </span>
+            <span class="rating-arrow" aria-hidden="true">↗</span>
+          </span>
+        </span>
+      </a>
+
+      <div class="hero-hours" id="openState">
+        <span class="lantern-ember" aria-hidden="true">
+          <span class="lantern-halo"></span>
+          <span class="lantern-core"></span>
+        </span>
+        <span class="hours-text">
+          <span class="hours-state">Otevřeno</span>
+          <span class="hours-dot" aria-hidden="true">·</span>
+          <span class="hours-time">zavíráme ve 23:00</span>
+        </span>
+      </div>
+    </footer>
+  </div>
 </section>

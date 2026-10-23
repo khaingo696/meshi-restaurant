@@ -1,0 +1,109 @@
+---
+/**
+ * Meshi door intro for Astro.
+ *
+ * Setup:
+ *   1. npm i three
+ *   2. copy this folder to src/components/meshi-door/
+ *   3. copy assets/ to public/meshi-door/   (served at /meshi-door/meshi-door.webp, ...)
+ *   4. <MeshiDoor interior="video.hero-bg" /> in the page, as the first element of <body>
+ *
+ * Props:
+ *   interior  CSS selector of the element behind the door (the hero video), seen
+ *             through the paper under the pointer. Optional.
+ *   assets    base URL of the images (default /meshi-door/)
+ *   hint      two-line welcome under the door, e.g. ["いらっしゃいませ", "Slide or scroll to enter"]
+ *   once      'session' to show the door only on the first visit of a browser session
+ */
+interface Props {
+  interior?: string;
+  assets?: string;
+  hint?: [string, string];
+  once?: 'session' | false;
+}
+// imported here, not in the script, so it is a stylesheet in <head> and the cover is there from the first paint
+import './door-intro.css';
+
+const { interior, assets = '/meshi-door/', hint, once = false } = Astro.props;
+---
+
+<div
+  id="meshi-door"
+  class="md-root is-loading"
+  data-interior={interior}
+  data-assets={assets}
+  data-hint={hint ? JSON.stringify(hint) : undefined}
+  data-once={once || undefined}
+></div>
+<noscript><style>#meshi-door { display: none; } html.md-lock { overflow: visible; }</style></noscript>
+
+<script is:inline>
+  // before the first paint: lock the page under the cover, or drop the door if this session has seen it
+  (function () {
+    var el = document.getElementById('meshi-door');
+    var seen = false;
+    try { seen = el.dataset.once === 'session' && sessionStorage.getItem('meshi-door') === '1'; } catch (e) {}
+    if (seen) el.remove();
+    else document.documentElement.classList.add('md-lock');
+  })();
+</script>
+
+<script>
+  import { createDoorIntro } from './index.js';
+
+  // Stáhne a zkompiluje 3D renderer dřív, než dveře vzniknou. Je to tentýž
+  // modul, který si index.js importuje sám, takže se jen předehřeje modulová
+  // cache — žádný druhý chunk nevzniká. Bez WebGL se nestahuje vůbec.
+  async function warmGL() {
+    try {
+      const c = document.createElement('canvas');
+      if (!(c.getContext('webgl2') || c.getContext('webgl'))) return;
+    } catch {
+      return;
+    }
+    try {
+      await import('./webgl-view.js');
+    } catch {
+      /* dveře si poradí na Canvas 2D */
+    }
+  }
+
+  const el = document.getElementById('meshi-door');
+  if (el) {
+    const { interior, assets, hint, once } = el.dataset;
+    const seen = once === 'session' && sessionStorage.getItem('meshi-door') === '1';
+    if (seen) el.remove();
+    else {
+      // Náskok pro 3D. Dveře se kreslí tím, co mají po ruce ve chvíli, kdy
+      // doběhne jejich obrázek (index.js: `if (!(glModule && createView('webgl')))
+      // createView('2d')`). Při studené cache se 472 kB three.js nestihne
+      // rozparsovat dřív, než se dekóduje 170kB obrázek, takže dveře spadnou na
+      // Canvas 2D — a ten se kreslí procesorem: změřeno 11 snímků na celý
+      // 1,6s posuv proti 97 ve 3D. Při teplé cache three.js vyhraje a je to
+      // hladké; proto to při druhém načtení „zmizí“.
+      //
+      // Tohle není statický import three.js, který INTEGRATION.md zakazuje —
+      // načítá se pořád dynamicky a první vykreslení stránky to neblokuje,
+      // dveře už nad ní leží z markupu. Jen se počká, než dorazí, a čekání má
+      // strop: na pomalé lince se radši ukážou dveře na 2D než černá plocha.
+      await Promise.race([
+        warmGL(),
+        new Promise((r) => setTimeout(r, 1500)),
+      ]);
+
+      const intro = createDoorIntro(el, {
+        assets,
+        interior: interior ? document.querySelector(interior) : null,
+        hint: hint ? JSON.parse(hint) : null,
+      });
+      window.meshiDoor = intro;
+      el.addEventListener('meshi-door:opened', () => {
+        if (once === 'session') sessionStorage.setItem('meshi-door', '1');
+        // the door has done its job: free everything and leave the page as it was, once the page has
+        // settled (dropping the WebGL context stalls a few frames; never in the moment the page appears)
+        const idle = window.requestIdleCallback ?? (cb => setTimeout(cb, 40));
+        setTimeout(() => idle(() => { intro.destroy(); el.remove(); }, { timeout: 400 }), 1000);
+      }, { once: true });
+    }
+  }
+</script>

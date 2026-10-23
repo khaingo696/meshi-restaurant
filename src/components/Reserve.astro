@@ -1,55 +1,93 @@
-<section class="section bg-surface wash band m-seigaiha" id="rezervace" data-pat-drift="140">
-  <div class="kanji-bg jp" style="left:-3rem; bottom:-1rem; font-size:22rem" data-drift="-50" aria-hidden="true">席</div>
-  <div class="glow" style="width:28rem;height:28rem;top:18%;left:50%;translate:-50% 0;background:rgba(200,150,80,.12)"></div>
+---
+/*
+  Rezervace — text vlevo, formulář v panelu vpravo.
 
-  <div class="wrap">
-    <div class="res-card" data-rv="fade-up">
-      <div class="res-top">
-        <span class="eyebrow center" data-i18n="res.eyebrow">Rezervovat stůl</span>
-        <h2 data-i18n="res.title">Rezervujte si svůj stůl</h2>
-        <p class="small" data-i18n="res.sub">Potvrzení posíláme do 15 minut. Raději telefonicky?</p>
-        <a class="res-phone" href="tel:+420778585688"><svg><use href="#ic-phone"/></svg>+420 778 585 688</a>
+  Formulář je ten původní, funkční: validace, souhlas se zpracováním údajů,
+  schovaná poznámka a hláška o přijetí. Mockup tu kreslí jen atrapu, takže
+  se převzala jeho mřížka (dva sloupce, celé řádky pro jméno, počet osob a
+  poznámku) a obsah zůstal.
+*/
+---
+
+<section class="res" id="rezervace">
+  <div class="secbg" aria-hidden="true"><img src="/assets/bg/res.webp" alt="" /></div>
+  <span class="wm wm--res" aria-hidden="true">席</span>
+
+  <div class="wrap res__in">
+    <div class="res__copy">
+      <span class="kanji" aria-hidden="true">席</span>
+      <span class="eyebrow eyebrow--gold" data-i18n="res.eyebrow">Rezervovat stůl</span>
+      <h2 class="h2">
+        <span class="ml"><span class="ml__i" data-i18n="res.title1">Rezervujte si</span></span>
+        <span class="ml"><span class="ml__i"><em data-i18n="res.title2">svůj stůl</em></span></span>
+      </h2>
+      <p class="lead" data-i18n-html="res.sub">
+        Potvrzení posíláme <strong>do 15 minut</strong>.<br />Raději telefonicky?
+        <a class="inlineLink" href="tel:+420778585688">+420 778 585 688</a>
+      </p>
+
+      <div class="hours hours--compact">
+        <div class="hours__row"><span data-i18n="hours.monThu">Po – Čt</span><b>11:00 – 22:00</b></div>
+        <div class="hours__row"><span data-i18n="hours.friSat">Pá – So</span><b>11:00 – 23:00</b></div>
+        <div class="hours__row"><span data-i18n="hours.sun">Neděle</span><b>12:00 – 22:00</b></div>
+      </div>
+    </div>
+
+    <form class="panel form" id="resForm" novalidate>
+      <label class="field field--full">
+        <span class="field__label" data-i18n="res.name">Jméno a příjmení *</span>
+        <input id="r-name" name="name" type="text" placeholder="Jan Novák" data-i18n-placeholder="res.namePh" autocomplete="name" required />
+      </label>
+      <label class="field res-field--email">
+        <span class="field__label" data-i18n="res.mail">E-mail *</span>
+        <input id="r-mail" name="email" type="email" placeholder="jan.novak@email.cz" data-i18n-placeholder="res.mailPh" autocomplete="email" required />
+      </label>
+      <label class="field">
+        <span class="field__label" data-i18n="res.phone">Telefon *</span>
+        <input id="r-phone" name="phone" type="tel" placeholder="+420 777 000 000" autocomplete="tel" required />
+      </label>
+      <label class="field">
+        <span class="field__label" data-i18n="res.date">Datum *</span>
+        <input id="r-date" name="date" type="date" required />
+      </label>
+      <label class="field">
+        <span class="field__label" data-i18n="res.time">Čas *</span>
+        <select id="r-time" name="time" required>
+          <option>17:00</option><option>17:30</option><option selected>18:00</option><option>18:30</option>
+          <option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option>
+        </select>
+      </label>
+      <label class="field field--full res-field--people">
+        <span class="field__label" data-i18n="res.ppl">Počet osob *</span>
+        <select id="r-ppl" name="people" required>
+          <option data-i18n="res.ppl1">1 osoba</option><option selected data-i18n="res.ppl2">2 osoby</option>
+          <option data-i18n="res.ppl3">3 osoby</option><option data-i18n="res.ppl4">4 osoby</option>
+          <option data-i18n="res.ppl5">5 osob</option><option data-i18n="res.ppl6">6 osob</option>
+          <option data-i18n="res.ppl7">7 osob</option><option data-i18n="res.ppl8">8 osob</option>
+        </select>
+      </label>
+
+      <!-- Poznámku chce málokdo, proto se rozbaluje až na vyžádání. -->
+      <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteField">
+        <span class="plus" aria-hidden="true"></span>
+        <span data-i18n="res.note">Přidat poznámku</span>
+        <span class="opt" data-i18n="res.noteHint">(alergie, dětská židlička, oslava)</span>
+      </button>
+      <div class="field field--full" id="noteField" hidden>
+        <label class="sr-only" for="r-note" data-i18n="res.noteLabel">Poznámka</label>
+        <textarea id="r-note" name="note" rows="2" placeholder="Rádi bychom stůl u okna…" data-i18n-placeholder="res.notePh"></textarea>
       </div>
 
-      <form class="stack" id="resForm" novalidate>
-        <div class="fgrid">
-          <div class="field"><label for="r-name" data-i18n="res.name">Jméno a příjmení *</label><input id="r-name" type="text" placeholder="Jan Novák" data-i18n-placeholder="res.namePh" required /></div>
-          <div class="field"><label for="r-phone" data-i18n="res.phone">Telefon *</label><input id="r-phone" type="tel" placeholder="+420 777 000 000" required /></div>
-          <div class="field"><label for="r-mail" data-i18n="res.mail">E-mail *</label><input id="r-mail" type="email" placeholder="jan.novak@email.cz" data-i18n-placeholder="res.mailPh" required /></div>
-          <div class="field"><label for="r-date" data-i18n="res.date">Datum *</label><input id="r-date" type="date" required /></div>
-          <div class="field"><label for="r-time" data-i18n="res.time">Čas *</label>
-            <select id="r-time" required>
-              <option>17:00</option><option>17:30</option><option selected>18:00</option><option>18:30</option>
-              <option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option>
-            </select>
-          </div>
-          <div class="field"><label for="r-ppl" data-i18n="res.ppl">Počet osob *</label>
-            <select id="r-ppl" required>
-              <option data-i18n="res.ppl1">1 osoba</option><option selected data-i18n="res.ppl2">2 osoby</option><option data-i18n="res.ppl3">3 osoby</option><option data-i18n="res.ppl4">4 osoby</option>
-              <option data-i18n="res.ppl5">5 osob</option><option data-i18n="res.ppl6">6 osob</option><option data-i18n="res.ppl7">7 osob</option><option data-i18n="res.ppl8">8 osob</option>
-            </select>
-          </div>
-        </div>
+      <div class="consent">
+        <input id="r-gdpr" name="gdpr" type="checkbox" required />
+        <label for="r-gdpr" data-i18n-html="res.gdpr">Souhlasím se zpracováním údajů pro vyřízení rezervace. <a href="#">Zásady ochrany osobních údajů</a>. U skupin nad 8 osob volejte prosím telefonicky.</label>
+      </div>
 
-        <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteField">
-          <span class="plus" aria-hidden="true"></span><span data-i18n="res.note">Přidat poznámku</span> <span class="opt" data-i18n="res.noteHint">(alergie, dětská židlička, oslava)</span>
-        </button>
-        <div class="field" id="noteField" hidden>
-          <label for="r-note" class="sr-only" data-i18n="res.noteLabel">Poznámka</label>
-          <textarea id="r-note" rows="2" placeholder="Vaše přání nebo dietní preference…" data-i18n-placeholder="res.notePh"></textarea>
-        </div>
+      <button class="btn btn--gold btn--lg" type="submit">
+        <span data-i18n="res.submit">Odeslat rezervaci</span> <span class="btn__arrow" aria-hidden="true">→</span>
+      </button>
 
-        <div class="consent">
-          <input id="r-gdpr" type="checkbox" required />
-          <label for="r-gdpr" data-i18n-html="res.gdpr">Souhlasím se zpracováním údajů pro vyřízení rezervace. <a href="#">Zásady ochrany osobních údajů</a>. U skupin nad 8 osob volejte prosím telefonicky.</label>
-        </div>
-
-        <div class="res-cta">
-          <button class="btn btn-primary" type="submit" data-i18n="res.submit">Odeslat rezervaci</button>
-        </div>
-
-        <p class="ok-box" id="resOk" role="status" data-i18n="res.ok">Děkujeme! Vaši rezervaci jsme přijali a potvrzení vám zašleme do 15 minut.</p>
-      </form>
-    </div>
+      <p class="ok-box" id="resOk" role="status" data-i18n="res.ok">Děkujeme! Vaši rezervaci jsme přijali a potvrzení vám zašleme do 15 minut.</p>
+    </form>
   </div>
 </section>

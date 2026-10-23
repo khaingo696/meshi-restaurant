@@ -12,16 +12,21 @@
       Přechod na astro:assets (srcset, AVIF) je samostatný krok.
 */
 import "../styles/global.css";
+import MeshiDoor from "../components/meshi-door/MeshiDoor.astro";
 import rating from "../../public/google-rating.json";
 
 interface Props {
   title?: string;
   description?: string;
+  /* Šódži dveře na úvod. Jen domovská stránka, a jen při plném načtení —
+     viz INTEGRATION.md, „Things not to do“. */
+  door?: boolean;
 }
 
 const {
   title = "MESHi | Asijská kuchyně a prémiové sushi v Plzni",
   description = "MESHi — tradiční asijská kuchyně a prémiové sushi na náměstí Republiky v Plzni. Rezervace stolu, dárkové poukazy.",
+  door = false,
 } = Astro.props;
 
 const site = Astro.site ?? new URL("https://meshi-restaurant.eu");
@@ -76,7 +81,7 @@ const schema = {
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
-<meta name="theme-color" content="#7c4a2d" />
+<meta name="theme-color" content="#1e140b" />
 
 <link rel="icon" href="/favicon.ico" sizes="32x32" />
 <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
@@ -103,7 +108,9 @@ const schema = {
 <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)}></script>
 
 <script is:inline>
-document.documentElement.className = 'js';
+/* classList, ne className: dveře si na <html> nasazují .md-lock ještě před
+   prvním vykreslením a přepsání celého atributu by ho sundalo. */
+document.documentElement.classList.replace('no-js', 'js');
 try {
   var storedLang = localStorage.getItem('meshi-lang');
   if (storedLang === 'en') document.documentElement.lang = 'en';
@@ -112,12 +119,32 @@ try {
 
 <link rel="preload" as="image" href="/assets/hero-poster.webp" />
 <link rel="preload" as="image" href="/assets/meshi_logo_hero.png?v=gold" />
-<link rel="stylesheet" href="/fonts/eb-garamond/index.css" />
-<link rel="stylesheet" href="/fonts/plus-jakarta-sans/index.css" />
+{door && <link rel="preload" as="image" href="/meshi-door/meshi-door.webp" type="image/webp" />}
+
+<!-- Písma leží v public/fonts, nic se netahá z Google Fonts. Japonské řezy
+     jsou podmnožiny — plné váží megabajty a web z nich bere jen kanji.
+     Novou podmnožinu vyrobí scripts/build-jp-subset.sh. -->
+<link rel="stylesheet" href="/fonts/shippori-mincho/index.css" />
 <link rel="stylesheet" href="/fonts/shippori-mincho/japanese-400.css" />
+<link rel="stylesheet" href="/fonts/zen-kaku-gothic-new/index.css" />
+<link rel="stylesheet" href="/fonts/noto-serif/index.css" />
+<link rel="stylesheet" href="/fonts/yuji-syuku/japanese-400.css" />
+<!-- Hero (global.css, sekce 6) jede na písmech z prototypu. Taky z public/,
+     ne z Google Fonts — INTEGRATION.md nabízí <link> na fonts.googleapis.com,
+     ale zdejší pravidlo „nic se netahá z Googlu“ platí dál. -->
+<link rel="stylesheet" href="/fonts/cormorant-garamond/index.css" />
+<link rel="stylesheet" href="/fonts/plus-jakarta-sans/index.css" />
 </head>
 
 <body>
+
+{/* Úplně první v <body>: overlay dveří přikrývá stránku od prvního
+    vykreslení a sám se po otevření odklidí z DOM.
+
+    Bez once: dveře jsou vstup do restaurace a mají se otevřít pokaždé,
+    i při obnovení stránky. (INTEGRATION.md nabízí once="session", tedy
+    jednou za relaci karty — klient chce vidět je vždycky.) */}
+{door && <MeshiDoor interior="video.hero-bg" />}
 
 <div class="grain" aria-hidden="true"></div>
 <div class="progress" id="progress" aria-hidden="true"></div>

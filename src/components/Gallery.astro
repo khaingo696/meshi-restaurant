@@ -1,60 +1,58 @@
-<section class="section bg-canvas" id="galerie">
-  <div class="kanji-bg jp" style="left:-4rem; bottom:-2rem; font-size:26rem" data-drift="55" aria-hidden="true">間</div>
+---
+/*
+  Galerie.
 
-  <div class="wrap">
-    <div class="gal-head">
-      <div class="section-head">
-        <span class="eyebrow" data-rv="fade-right" data-i18n="gal.eyebrow">Galerie</span>
-        <h2 data-rv="tile" data-i18n="gal.title">Jak to u nás vypadá</h2>
-        <p data-rv="tile" data-i18n="gal.body">
-          V útulném prostoru Meshi, plném dřeva a zeleně, chceme našim hostům
-          přiblížit autentickou asijskou kuchyni – prostou, poctivou a plnou výrazných chutí.
-          Srdcem v každém pokrmu.
-        </p>
-      </div>
+  Sekce se připíchne a dva pruhy fotek jedou proti sobě, popis stojí
+  uprostřed. Jak dlouho pruhy jedou, určuje výška .tick v CSS, ne tenhle
+  soubor.
+
+  Pruhy jsou kulisa, ne mřížka na proklikání: lightbox tu proti předchozí
+  podobě zmizel. Klepat na fotku, která se právě sune přes obrazovku, by
+  byla past. Celá galerie proto míří odkazem na Instagram a lightbox
+  zůstal tam, kde má smysl — nad fotkami v jídelním lístku.
+*/
+const left = [
+  { src: "/assets/space/interior.webp", alt: "Hlavní sál restaurace MESHi se závěsnými lampami a zelení", key: "gal.a" },
+  { src: "/assets/menu/sushi/sushi-rolls.webp", alt: "Sushi rolky na dřevěném tácu", key: "gal.h" },
+  { src: "/assets/space/maple.webp", alt: "Zátiší s javorem, kočkou maneki-neko a lahví sake", key: "gal.c" },
+  { src: "/assets/menu/sushi/nigiri.webp", alt: "Nigiri s lososem a tuňákem", key: "gal.i" },
+  { src: "/assets/space/shelves.webp", alt: "Police s lahvemi saké, daruma a výhledem do noci", key: "gal.g" },
+  { src: "/assets/space/table.webp", alt: "Prostřený stůl s jídelními lístky MESHi", key: "gal.b" },
+];
+
+const right = [
+  { src: "/assets/menu/sushi/signature-m-s-salmon.webp", alt: "Signature rolka s lososem", key: "gal.j" },
+  { src: "/assets/space/noren.webp", alt: "Modrý noren závěs s nápisem MESHi a závěsnou zelení", key: "gal.e" },
+  { src: "/assets/menu/sushi/samuraj-roll.webp", alt: "Samuraj roll", key: "gal.k" },
+  { src: "/assets/space/door-night.webp", alt: "Otevřený vchod s noren závěsem a výhledem na noční náměstí Republiky", key: "gal.d" },
+  { src: "/assets/menu/sushi/chirashi-roll.webp", alt: "Chirashi roll", key: "gal.l" },
+  { src: "/assets/space/daruma.webp", alt: "Stěna s panenkami daruma a dřevěnými tabulkami ema", key: "gal.f" },
+];
+---
+
+<section class="tick" id="galerie">
+  <div class="tick__pin">
+    <div class="tick__col tick__col--l" id="tickL">
+      {left.map((im) => (
+        <figure><img src={im.src} alt={im.alt} data-i18n-alt={im.key} width="680" height="850" loading="lazy" decoding="async" /></figure>
+      ))}
     </div>
 
-    <div class="gal" id="gal">
-      <button class="frame gal-print gal-a" type="button" data-rv="tile" style="--p: 50% 34%"
-        aria-label="Hlavní sál restaurace MESHi se závěsnými lampami, zelení a ukiyo-e"
-        data-i18n-aria="gal.a">
-        <img src="/assets/space/interior.webp" alt="" />
-      </button>
-      <button class="frame gal-print gal-b" type="button" data-rv="tile" style="--p: 50% 42%"
-        aria-label="Prostřený stůl s jídelními lístky MESHi"
-        data-i18n-aria="gal.b">
-        <img src="/assets/space/table.webp" alt="" loading="lazy" />
-      </button>
-      <button class="frame gal-print gal-c" type="button" data-rv="tile" style="--p: 36% 78%"
-        aria-label="Zátiší s javorem, kočkou maneki-neko a lahví sake"
-        data-i18n-aria="gal.c">
-        <img src="/assets/space/maple.webp" alt="" loading="lazy" />
-      </button>
-      <button class="frame gal-print gal-d" type="button" data-rv="tile" style="--p: 50% 52%"
-        aria-label="Otevřený vchod s noren závěsem a výhledem na noční náměstí Republiky"
-        data-i18n-aria="gal.d">
-        <img src="/assets/space/door-night.webp" alt="" loading="lazy" />
-      </button>
-      <button class="frame gal-print gal-e" type="button" data-rv="tile" style="--p: 42% 68%"
-        aria-label="Modrý noren závěs s nápisem MESHi a závěsnou zelení"
-        data-i18n-aria="gal.e">
-        <img src="/assets/space/noren.webp" alt="" loading="lazy" />
-      </button>
-      <button class="frame gal-print gal-f" type="button" data-rv="tile" style="--p: 20% 48%"
-        aria-label="Stěna s panenkami daruma a dřevěnými tabulkami ema"
-        data-i18n-aria="gal.f">
-        <img src="/assets/space/daruma.webp" alt="" loading="lazy" />
-      </button>
-      <button class="frame gal-print gal-g" type="button" data-rv="tile" style="--p: 34% 50%"
-        aria-label="Police s lahvemi saké, daruma a výhledem do noci"
-        data-i18n-aria="gal.g">
-        <img src="/assets/space/shelves.webp" alt="" loading="lazy" />
-      </button>
+    <div class="tick__label">
+      <span class="kanji kanji--big" aria-hidden="true">間</span>
+      <span class="eyebrow eyebrow--gold" data-i18n="gal.eyebrow">Galerie</span>
+      <span class="tick__sub" data-i18n="gal.title">Jak to u nás vypadá</span>
     </div>
 
-    <p class="gal-foot">
-      <a class="link-u" href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener">
-        Instagram <svg><use href="#ic-ext"/></svg>
+    <div class="tick__col tick__col--r" id="tickR">
+      {right.map((im) => (
+        <figure><img src={im.src} alt={im.alt} data-i18n-alt={im.key} width="680" height="850" loading="lazy" decoding="async" /></figure>
+      ))}
+    </div>
+
+    <p class="tick__foot">
+      <a class="btn btn--line" href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener">
+        Instagram <svg aria-hidden="true"><use href="#ic-ext"/></svg>
       </a>
     </p>
   </div>
