@@ -1513,18 +1513,13 @@ html.no-js .show .blend {
    z okna a od talíře ho dělí prázdno na výšku displeje. */
 .show__head { position: absolute; left: 0; right: 0; z-index: 5;
   top: calc(5.4rem + env(safe-area-inset-top, 0px));
-  display: grid; justify-items: center; text-align: center; gap: .85rem;
+  display: grid; justify-items: center; text-align: center;
   pointer-events: none; }
-.show__head .lead {
-  max-width: 38ch;
-  font-size: clamp(16.5px, 1.45vw, 19.5px);
-  color: var(--t-2);
-}
 
 /* Tady NESMÍ být grid + place-items: vycentroval by .show__stage a offsetLeft
    každého jídla by přestal odpovídat skutečné souřadnici → vybrané jídlo by
    neskončilo uprostřed. */
-.show__pin { position: relative; z-index: 2; height: 100svh; overflow: hidden; }
+.show__pin { position: relative; z-index: 2; height: 100svh; height: 100dvh; overflow: hidden; }
 /* Studna drží kruh, zář, logo i pás jídel ve stejném rámu. Na desktopu
    vyplní pin (chování beze změny). Na telefonu je to prostřední řádek
    sloupce, takže talíř sedí v kruhu i když se nadpis a patička scény
@@ -1660,22 +1655,40 @@ html.no-js .show .blend {
    dojde do barvy, ve které začíná neosvětlená horní hrana papíru
    rezervace (rgb 92 75 60, L* 33). Šev tak neběží pod spodní řadou
    fotek. Zbytek skoku tma → papír dělá světlo na papíře (.res::before).
+
+   Ocas je PRVNÍ POLOVINA smoothstepu (1,5t² − 0,5t³): plochý start u tuše,
+   ale na hranici sekce běží NEJRYCHLEJI. Dřív to byl celý smoothstep, tedy
+   plochý na obou koncích — a protože .res::before pod ním začínal taky
+   plochý, sklon se na pár desítkách pixelů kolem švu propadl ze 7 na 1
+   jednotku L na 10 px a zase vyskočil na 9. Barva seděla na jednotku
+   přesně, ale ta zastávka se čte jako vodorovná police (Machův pruh).
+   Spojitá musí být DERIVACE, ne jen hodnota: ocas zrychluje, .res::before
+   na stejném sklonu navazuje a zpomaluje — dohromady jeden smoothstep
+   přes celých ~320 px.
    Fotky z plochy nikdy nevyjedou (hromádka leží uprostřed, konec je na
    místě), takže se nic neořezává.
    ========================================================================== */
-.gal { --gal-tail: clamp(180px, 28svh, 300px);
+.gal { --gal-tail: clamp(96px, 14svh, 160px);
   position: relative;
   padding-bottom: var(--gal-tail);
   background:
     linear-gradient(180deg,
       var(--ink) 0%,
-      rgb(32, 22, 13) 12.5%,
-      rgb(39, 28, 18) 25%,
-      rgb(48, 36, 25) 37.5%,
-      rgb(60, 46, 34) 50%,
-      rgb(71, 57, 44) 62.5%,
-      rgb(82, 66, 52) 75%,
-      rgb(89, 72, 58) 87.5%,
+      var(--ink) 6.25%,
+      rgb(31, 21, 12) 12.5%,
+      rgb(33, 23, 13) 18.75%,
+      rgb(35, 25, 15) 25%,
+      rgb(38, 27, 17) 31.25%,
+      rgb(41, 30, 20) 37.5%,
+      rgb(45, 33, 23) 43.75%,
+      rgb(49, 37, 26) 50%,
+      rgb(54, 41, 30) 56.25%,
+      rgb(59, 46, 34) 62.5%,
+      rgb(64, 50, 38) 68.75%,
+      rgb(69, 55, 42) 75%,
+      rgb(75, 60, 46) 81.25%,
+      rgb(80, 65, 51) 87.5%,
+      rgb(86, 70, 55) 93.75%,
       rgb(92, 75, 60) 100%) 0 100% / 100% var(--gal-tail) no-repeat,
     var(--ink);
 }
@@ -1735,6 +1748,7 @@ html.no-js .show .blend {
 .gal__ph--7 { --l: 55%; --t: 58%; --w: 40%; --h: 36%; }
 
 @media (max-width: 809px) {
+  .gal { --gal-tail: clamp(64px, 9svh, 96px); }
   .gal__stage { height: clamp(880px, 128svh, 1150px); }
   .gal__head { left: 4%; top: 45%; width: 92%; gap: .6rem; }
   .gal__ph--1 { --l: 4%;  --t: 3%;  --w: 58%; --h: 17%; }
@@ -1749,43 +1763,78 @@ html.no-js .show .blend {
 /* ==========================================================================
    11 · REZERVACE A FORMULÁŘE
    ========================================================================== */
-/* Rezervace: papír mezi tmou galerie a zlatem poukazu. Ploché švy (barva
+/* Vodorovný vlas na obou hranách sekce (headless ho nereprodukuje, na GPU
+   ano): ::before i ::after jsou mix-blend-mode: multiply uvnitř isolate,
+   takže prohlížeč je rasterizuje jako vlastní vrstvu a slepuje ji PŘESNĚ
+   na hraně boxu. Hrana sekce leží na zlomku pixelu (res měří 536,516 px),
+   poslední řádka vrstvy dostane částečné krytí, multiply na ní zeslábne —
+   a protože pod ním je světlý --res-paper, prosvitne vlas. Léčí se to tím,
+   že švy přesahují box o 2 px (hranu pak udělá clip, ne zprůhodněná řádka)
+   a sousední plochy se o pixel překrývají.
+
+   Rezervace: papír mezi tmou galerie a zlatem poukazu. Ploché švy (barva
    přes papír) tu dělaly stovky pixelů šedé mlhy bez vlákna — přechod byl
    hladký, ale četl se jako prázdná zeď. Teď je přechod SVĚTLO: horní
    a dolní hranu papíru ztmavuje vrstva v režimu multiply, takže vlákno
    i stín borovice zůstávají vidět i v šeru. Papír je u hran neosvětlený:
    nahoře L* 33 (kde končí galerie), dole přesně barva zlaté desky poukazu
-   pod závojem (~rgb 102 78 47). Násobící barvy jsou cíl / --res-paper,
-   průběh smoothstep. Obsah začíná a končí ve světle. */
-.res { --lit-top: clamp(320px, 44vh, 480px); --lit-bot: clamp(300px, 42vh, 460px);
+   pod závojem (~rgb 102 78 47). Násobící barvy jsou cíl / --res-paper.
+
+   Horní šev je DRUHÁ POLOVINA smoothstepu — na hraně s galerií startuje
+   v nejvyšším sklonu (navazuje na zrychlující ocas .gal, viz sekce 10)
+   a odtud zpomaluje do papíru. Dolní je celý smoothstep: nad ním i pod
+   ním (zlatá deska poukazu) je plocha, takže plochý musí být na obou
+   koncích. Stopů je 17, ne 9: gradient je po částech lineární a každý
+   stop je zlom v derivaci — po 20 px se neukáže, po 50 px ano.
+   Obsah začíná a končí ve světle. */
+.res { --lit-top: clamp(160px, 22vh, 240px); --lit-bot: clamp(300px, 42vh, 460px);
   position: relative; overflow: hidden; isolation: isolate; background: var(--res-paper);
-  padding: calc(var(--lit-top) * .8 + clamp(.5rem, 2vh, 1.5rem)) 0 calc(var(--lit-bot) * .75 + 1rem); }
+  margin-bottom: -1px;
+  padding: calc(var(--lit-top) * .65 + clamp(.5rem, 2vh, 1.5rem)) 0 calc(var(--lit-bot) * .75 + 1rem); }
 .res::before,
 .res::after {
   content: ""; position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none;
   mix-blend-mode: multiply; }
-.res::before { top: 0; height: var(--lit-top);
+.res::before { top: -2px; height: calc(var(--lit-top) + 2px);
   background: linear-gradient(180deg,
     rgb(117, 105, 92) 0%,
-    rgb(123, 111, 99) 12.5%,
-    rgb(139, 128, 117) 25%,
-    rgb(161, 152, 144) 37.5%,
-    rgb(186, 180, 174) 50%,
-    rgb(211, 208, 203) 62.5%,
-    rgb(233, 232, 230) 75%,
-    rgb(249, 249, 248) 87.5%,
-    #fff 100%); }
-.res::after { bottom: 0; height: var(--lit-bot);
+    rgb(130, 119, 107) 6.25%,
+    rgb(143, 133, 122) 12.5%,
+    rgb(155, 147, 137) 18.75%,
+    rgb(168, 160, 152) 25%,
+    rgb(180, 173, 166) 31.25%,
+    rgb(191, 185, 179) 37.5%,
+    rgb(202, 197, 192) 43.75%,
+    rgb(212, 208, 204) 50%,
+    rgb(221, 218, 215) 56.25%,
+    rgb(230, 227, 225) 62.5%,
+    rgb(237, 235, 234) 68.75%,
+    rgb(243, 242, 241) 75%,
+    rgb(248, 248, 247) 81.25%,
+    rgb(252, 252, 251) 87.5%,
+    rgb(254, 254, 254) 93.75%,
+    #fff 100%) 0 2px / 100% var(--lit-top) no-repeat,
+    rgb(117, 105, 92); }
+.res::after { bottom: -2px; height: calc(var(--lit-bot) + 2px);
   background: linear-gradient(180deg,
     #fff 0%,
+    rgb(254, 253, 253) 6.25%,
     rgb(250, 249, 247) 12.5%,
+    rgb(243, 242, 238) 18.75%,
     rgb(235, 232, 226) 25%,
+    rgb(226, 221, 213) 31.25%,
     rgb(215, 209, 197) 37.5%,
-    rgb(193, 182, 164) 50%,
+    rgb(204, 196, 181) 43.75%,
+    rgb(192, 182, 164) 50%,
+    rgb(181, 168, 146) 56.25%,
     rgb(170, 155, 130) 62.5%,
+    rgb(159, 143, 114) 68.75%,
     rgb(150, 132, 101) 75%,
+    rgb(142, 122, 89) 81.25%,
     rgb(135, 115, 80) 87.5%,
-    rgb(130, 109, 72) 100%); }
+    rgb(131, 111, 74) 93.75%,
+    rgb(130, 109, 72) 100%) 0 0 / 100% var(--lit-bot) no-repeat,
+    rgb(130, 109, 72); }
 /* Podklad: stín borovice na šódži (viz Reserve.astro). Stojí — žádná
    paralaxa (app.js §9f ho vynechává): stín, který by ujížděl pod
    formulářem, by tahal oko od polí. */
@@ -1794,11 +1843,17 @@ html.no-js .show .blend {
    holé barvy papíru. Pod rezervací začíná rozmazaný obraz poukazu, nad
    ní tma galerie — ostré vlákno, které končilo rovnou čarou na hraně
    sekce, se četlo jako schod mezi dvěma materiály, i když barva seděla.
-   Takhle se obě strany potkají v téže hladké barvě a jediná textura,
-   která švem projde, je zrno celé stránky (.grain). */
+   Takhle se obě strany potkají v téže hladké barvě.
+
+   Dole ale maska NEKONČÍ dřív než sekce (dřív mizela 15 % --lit-bot nad
+   hranou). Vlákno tím zhaslo o ~56 px výš, než se pod hranou rozsvítily
+   větve poukazu — a mezi tím zbyl pruh ~95 px, ve kterém se nehnula ani
+   jedna textura. Barva přes něj šla hladce, ale PLOCHA bez zrna uprostřed
+   zrnitého okolí se čte jako nakreslený pruh. Obě textury se teď
+   překrývají: vlákno dohasíná až na hraně sekce, větve odtud nabíhají. */
 .res__bg {
-  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 calc(var(--lit-top) * .6), #000 calc(100% - var(--lit-bot) * .9), transparent calc(100% - var(--lit-bot) * .15));
-          mask-image: linear-gradient(180deg, transparent 0, #000 calc(var(--lit-top) * .6), #000 calc(100% - var(--lit-bot) * .9), transparent calc(100% - var(--lit-bot) * .15)); }
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, .156) calc(var(--lit-top) * .15), rgba(0, 0, 0, .5) calc(var(--lit-top) * .3), rgba(0, 0, 0, .844) calc(var(--lit-top) * .45), #000 calc(var(--lit-top) * .6), #000 calc(100% - var(--lit-bot) * .9), rgba(0, 0, 0, .844) calc(100% - var(--lit-bot) * .675), rgba(0, 0, 0, .5) calc(100% - var(--lit-bot) * .45), rgba(0, 0, 0, .156) calc(100% - var(--lit-bot) * .225), transparent 100%);
+          mask-image: linear-gradient(180deg, transparent 0, rgba(0, 0, 0, .156) calc(var(--lit-top) * .15), rgba(0, 0, 0, .5) calc(var(--lit-top) * .3), rgba(0, 0, 0, .844) calc(var(--lit-top) * .45), #000 calc(var(--lit-top) * .6), #000 calc(100% - var(--lit-bot) * .9), rgba(0, 0, 0, .844) calc(100% - var(--lit-bot) * .675), rgba(0, 0, 0, .5) calc(100% - var(--lit-bot) * .45), rgba(0, 0, 0, .156) calc(100% - var(--lit-bot) * .225), transparent 100%); }
 /* 心 a 匠 přišly z hlaviček sekcí (viz About.astro a Signatures.astro). */
 .wm--about { left: 1%; top: 7%; font-size: clamp(11rem, 21vw, 21rem); }
 .wm--show { right: 1%; top: 4%; font-size: clamp(10rem, 18vw, 18rem); }
@@ -2093,13 +2148,37 @@ html.no-js :is(#resNext, .rSum) { display: none; }
 /* Horní hrana začíná v barvě, kterou má zlatá deska pod závojem sama
    (~rgb 102 78 47) — tam končí šev z papíru rezervace (.res::after).
    Dřív tu bylo --lift, protože rezervace byla tmavá. */
+/* Podklad přesahuje horní hranu sekce o 2 px. Pod ní je vlastní pozadí
+   .gift (--lift / tuš, tedy TMAVŠÍ než barva švu) a jediná nedokreslená
+   řádka na hraně boxu z něj udělá tmavý vlas. Clip sekce přesah schová. */
+.gift .secbg { top: -2px; }
+
 /* Horní barva je NEJVYŠŠÍ vrstva: tmavá kaluž vlevo nahoře ležela nad ní
    a hrana pod papírem rezervace pak nebyla tou barvou, do které se papír
-   usadil. Obraz se z ní vynořuje pozvolna (do ~40 % výšky) — větve hned
-   pod hranou se četly jako nový materiál položený na šev. */
+   usadil. Obraz se z ní vynořuje pozvolna — větve hned pod hranou by se
+   četly jako nový materiál položený na šev.
+
+   Krytí jede smoothstep (1 → 0 přes 36 %), bez plochého držení. Dřív
+   stálo plné krytí prvních 4 % (~37 px) a teprve pak začalo klesat: na
+   tom zlomu větve NASKOČILY a jejich hrana byla ta vodorovná linka,
+   kterou tu bylo vidět. Spojitá musí být i amplituda textury, ne jen
+   barva — proto nikde plocha a nikde zlom. */
 .gift .secbg--lift::after {
   background:
-    linear-gradient(180deg, rgb(102, 78, 47) 0%, rgb(102, 78, 47) 4%, rgba(102, 78, 47, .85) 10%, rgba(102, 78, 47, .55) 18%, rgba(102, 78, 47, .25) 28%, transparent 40%),
+    linear-gradient(180deg,
+      rgb(102, 78, 47) 0%,
+      rgba(102, 78, 47, .98) 3%,
+      rgba(102, 78, 47, .926) 6%,
+      rgba(102, 78, 47, .844) 9%,
+      rgba(102, 78, 47, .741) 12%,
+      rgba(102, 78, 47, .624) 15%,
+      rgba(102, 78, 47, .5) 18%,
+      rgba(102, 78, 47, .376) 21%,
+      rgba(102, 78, 47, .259) 24%,
+      rgba(102, 78, 47, .156) 27%,
+      rgba(102, 78, 47, .074) 30%,
+      rgba(102, 78, 47, .02) 33%,
+      rgba(102, 78, 47, 0) 36%),
     radial-gradient(48% 52% at 22% 30%, rgba(22, 14, 7, .26) 0%, transparent 68%),
     linear-gradient(180deg, transparent 78%, rgba(30, 20, 11, .22) 100%),
     radial-gradient(80% 70% at 50% 46%, rgba(30, 20, 11, 0) 0%, rgba(30, 20, 11, .22) 62%, rgba(30, 20, 11, .5) 100%),
@@ -2549,6 +2628,7 @@ body.menu-open .sheet-foot { opacity: 1; transform: none; transition-delay: .49s
    každá svítila jako samostatný ostrov; na krémové splynou do jedné strany.
    ========================================================================== */
 .menu-ov { position: fixed; inset: 0; z-index: 92; display: grid; place-items: center;
+  width: 100%; height: 100dvh; overflow: hidden;
   opacity: 0; transition: opacity .32s var(--ease); }
 .menu-ov.on { opacity: 1; }
 .menu-ov[hidden] { display: none; }
@@ -2557,7 +2637,7 @@ body.ov-open { overflow: hidden; }
 
 .menu-ov-panel {
   position: relative; z-index: 2;
-  width: min(1180px, 94vw); max-height: 92vh;
+  width: min(1180px, 94vw); max-height: 92dvh;
   display: flex; flex-direction: column;
   background: #f4ebda; color: #2a1b0e;
   border-radius: var(--r-act); box-shadow: 0 60px 120px -50px rgba(0, 0, 0, .95); overflow: hidden;
@@ -2751,27 +2831,34 @@ body.ov-open { overflow: hidden; }
      dřív byl nadpis 33 px a věta 36 px a přetahovaly se o oko. Nadpis
      tak zůstává na běžném stupni (.h2, 26 px). */
 
-  /* --- rezervace: jedna celá obrazovka --------------------------------
-     Sekce je vysoká aspoň jako okno, takže nekončí useknutá, a obsah stojí
-     uprostřed výšky. Vertikálně na střed, ne nahoru s tlačítkem u dna: tak
-     mezi textem a tlačítkem nikdy nevznikne mezera. Švy jsou kratší než na
-     desktopu, ale obsah pořád začíná až za nimi (a tím i pod lištou). */
-  .res { --lit-top: clamp(230px, 32svh, 300px); --lit-bot: clamp(210px, 28svh, 270px);
-    min-height: 100svh; display: flex; flex-direction: column; justify-content: center;
-    padding-top: calc(var(--lit-top) * .8 + .5rem); padding-bottom: calc(var(--lit-bot) * .75 + .5rem); }
+  /* --- rezervace: šev z galerie je krátký, obsah hned pod ním ----------
+     Dřív --lit-top ~270 px plus min-height 100svh a svislý střed: mezi
+     poslední fotkou a nadpisem zbyla skoro půlka okna prázdná. Šev má
+     jen dovést tmu do papíru, ne vyplnit obrazovku. */
+  .res { --lit-top: clamp(88px, 12svh, 120px); --lit-bot: clamp(160px, 22svh, 210px);
+    padding-top: calc(var(--lit-top) * .55 + .75rem); padding-bottom: calc(var(--lit-bot) * .65 + .5rem); }
   /* Na telefonu má zlatá deska poukazu slabší závoj (.5 místo .64), takže
      je světlejší (~rgb 124 98 60) a dolní hrana papíru se usadí tam. */
   .res::after {
     background: linear-gradient(180deg,
       #fff 0%,
+      rgb(254, 254, 253) 6.25%,
       rgb(251, 250, 248) 12.5%,
+      rgb(246, 244, 240) 18.75%,
       rgb(240, 237, 230) 25%,
+      rgb(233, 228, 217) 31.25%,
       rgb(224, 218, 203) 37.5%,
-      rgb(207, 196, 174) 50%,
+      rgb(216, 207, 189) 43.75%,
+      rgb(206, 196, 174) 50%,
+      rgb(197, 185, 158) 56.25%,
       rgb(189, 174, 144) 62.5%,
+      rgb(180, 164, 130) 68.75%,
       rgb(173, 155, 117) 75%,
+      rgb(167, 148, 107) 81.25%,
       rgb(162, 142, 99) 87.5%,
-      rgb(158, 137, 92) 100%); }
+      rgb(159, 138, 94) 93.75%,
+      rgb(158, 137, 92) 100%) 0 0 / 100% var(--lit-bot) no-repeat,
+    rgb(158, 137, 92); }
   .res__in { gap: 1.5rem; }
   .res__copy { gap: .55rem; }
   #resForm { padding-top: 0; padding-bottom: 0; gap: 1rem .95rem; background: none; }
@@ -2866,7 +2953,7 @@ body.ov-open { overflow: hidden; }
   /* Obraz má pevnou výšku plakátu, ne výšku sekce: probuzený formulář
      sekci prodlouží a obraz by se jinak skokem přiblížil a tmavé tahy
      kmene by běžely pod poli. Pole tak leží na tuši pod obrazem. */
-  .gift .secbg { bottom: auto; height: 46rem; }
+  .gift .secbg { bottom: auto; top: -2px; height: calc(46rem + 2px); }
   /* Týž závoj v tónu obrazu jako na desktopu (sekce 12), jen o vlas
      menší rozostření — obraz je na telefonu menší. */
   .gift .secbg img {
@@ -2877,8 +2964,12 @@ body.ov-open { overflow: hidden; }
      a s tuší dole zůstal v plné barvě sousední sekce, bez pruhu. */
   .gift .secbg--lift::after {
     background:
-      linear-gradient(180deg, rgb(124, 98, 60) 0%, rgb(124, 98, 60) 4%, rgba(124, 98, 60, .82) 10%, rgba(124, 98, 60, .5) 18%,
-        rgba(124, 98, 60, .2) 28%, transparent 38%, transparent 46%, rgba(30, 20, 11, .4) 60%,
+      linear-gradient(180deg, rgb(124, 98, 60) 0%,
+        rgba(124, 98, 60, .98) 3%, rgba(124, 98, 60, .926) 6%, rgba(124, 98, 60, .844) 9%,
+        rgba(124, 98, 60, .741) 12%, rgba(124, 98, 60, .624) 15%, rgba(124, 98, 60, .5) 18%,
+        rgba(124, 98, 60, .376) 21%, rgba(124, 98, 60, .259) 24%, rgba(124, 98, 60, .156) 27%,
+        rgba(124, 98, 60, .074) 30%, rgba(124, 98, 60, .02) 33%, rgba(124, 98, 60, 0) 36%,
+        transparent 46%, rgba(30, 20, 11, .4) 60%,
         rgba(30, 20, 11, .76) 72%, rgba(30, 20, 11, .95) 82%, var(--ink) 90%),
       radial-gradient(82% 58% at 50% 40%, rgba(30, 20, 11, 0) 0%, rgba(30, 20, 11, .18) 60%, rgba(30, 20, 11, .46) 100%),
       linear-gradient(rgba(96, 70, 38, .5), rgba(96, 70, 38, .5));
@@ -2935,15 +3026,19 @@ body.ov-open { overflow: hidden; }
   .con__facts { gap: .8rem; padding-top: .9rem; }
   /* Okraje netaví maska, ale barva. mask-image kolem cizí iframe rozbije
      kompozici vrstvy a mapa zmizí úplně — ověřeno, byla černá plocha.
-     Gradient do barvy pozadí dělá totéž a iframe nechá být. */
+     Gradient do barvy pozadí dělá totéž a iframe nechá být.
+     Uprostřed dřív zbývalo jen 10 % tmy, takže ulice a popisky Map
+     křičely přes adresu. Teď leží přes celou plochu stálá clona
+     a kontrast iframe jde dolů, mapa zůstane náznakem. */
   .con__mapFrame { height: 100%; border: 0; border-radius: 0; box-shadow: none; }
   .con__mapFrame::after {
-    background: linear-gradient(180deg,
-      var(--ink) 0%, rgba(26, 17, 9, .42) 8%, rgba(26, 17, 9, .1) 18%,
-      rgba(26, 17, 9, .78) 46%, var(--ink) 84%);
+    background:
+      linear-gradient(180deg,
+        var(--ink) 0%, transparent 14%, transparent 42%, var(--ink) 86%),
+      rgba(26, 17, 9, .66);
   }
   .con__map iframe { height: 100%; min-height: 56svh; pointer-events: none;
-    filter: grayscale(1) invert(.92) sepia(.28) hue-rotate(345deg) saturate(.85) brightness(.98) contrast(1.1); }
+    filter: grayscale(1) invert(.92) sepia(.2) hue-rotate(345deg) saturate(.42) brightness(.58) contrast(.7); }
   .con__badge { display: none; }
   .con__mapTap {
     display: inline-flex; position: absolute; inset: 0; z-index: 1;
@@ -3030,10 +3125,15 @@ body.ov-open { overflow: hidden; }
   .toTop__label { display: none; }
   .toTop { padding: .9rem; }
   .menu-grid { grid-template-columns: 1fr; }
-  .menu-ov-panel { width: 100vw; max-height: 100vh; border-radius: 0; }
-  .menu-ov-bar { flex-wrap: wrap; gap: .8rem; }
+  /* 100vh na iOS je velké okno (bez lišty). Vycentrovaný panel pak
+     přeteče nahoru a uřízne titulek se křížkem pod lištou Safari. */
+  .menu-ov { place-items: stretch; align-items: stretch; }
+  .menu-ov-panel { width: 100%; max-width: none; height: 100%; max-height: none; border-radius: 0; }
+  .menu-ov-bar { flex-wrap: wrap; gap: .8rem;
+    padding-top: calc(.9rem + env(safe-area-inset-top, 0px)); }
   .menu-ov-tabs { order: 3; width: 100%; margin-left: 0; overflow-x: auto; }
   .menu-ov-close { margin-left: auto; }
+  .menu-ov-body { padding-bottom: calc(1.4rem + env(safe-area-inset-bottom, 0px)); }
   /* Vodorovný vstup pole s datem si v Safari bere víc místa, než má. */
   .field > input[type="date"] { padding-inline: 0 .2rem; }
 }

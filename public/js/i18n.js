@@ -46,7 +46,6 @@ window.MESHI_I18N = {
 
     'sig.title1': 'Naše',
     'sig.title2': 'signatures',
-    'sig.lead': 'Harmonie poctivé chuti v každém soustu.',
     'sig.full': 'Zobrazit celé menu',
     'cat.predkrmy': 'Předkrmy',
     'cat.hlavni': 'Hlavní jídla',
@@ -195,7 +194,6 @@ window.MESHI_I18N = {
 
     'sig.title1': 'Our',
     'sig.title2': 'signatures',
-    'sig.lead': 'Honest flavour in every bite.',
     'sig.full': 'View full menu',
     'cat.predkrmy': 'Starters',
     'cat.hlavni': 'Mains',

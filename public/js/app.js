@@ -405,6 +405,27 @@
   var lastOpener = null;   // kam vrátit fokus po zavření
   var ovOpen   = false;
 
+  /* iOS Safari: fixed inset:0 sedí v layout viewportu (100vh), který je
+     vyšší než viditelné okno, když je nahoře lišta. Panel se vycentroval
+     a uřízl hlavičku. Dokud je překryv otevřený, drží se visualViewport. */
+  function fitOverlay() {
+    if (!ov) return;
+    var vv = window.visualViewport;
+    if (!vv) return;
+    ov.style.top = Math.round(vv.offsetTop) + 'px';
+    ov.style.left = Math.round(vv.offsetLeft) + 'px';
+    ov.style.width = Math.round(vv.width) + 'px';
+    ov.style.height = Math.round(vv.height) + 'px';
+    ov.style.right = 'auto';
+    ov.style.bottom = 'auto';
+  }
+  function clearOverlayFit() {
+    if (!ov) return;
+    ov.style.top = ov.style.left = ov.style.width = ov.style.height = '';
+    ov.style.right = ov.style.bottom = '';
+  }
+  function onOverlayVp() { if (ovOpen) fitOverlay(); }
+
   // Popisky i počty bere překryv ze svých záložek, ať data žijí jen
   // v src/data/menu.ts. Počet se skloňuje, proto se text skládá tady.
   var catMeta = {};
@@ -455,6 +476,7 @@
     void ov.offsetWidth;              // vynutit přechod z hidden
     ov.classList.add('on');
     body.classList.add('ov-open');
+    fitOverlay();
     if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
     if (lenis) lenis.stop();
 
@@ -469,6 +491,7 @@
     ovOpen = false;
     ov.classList.remove('on');
     body.classList.remove('ov-open');
+    clearOverlayFit();
     if (lenis) lenis.start();
     if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
 
@@ -505,6 +528,10 @@
 
   if (ov) {
     refreshCatMeta();
+    if (window.visualViewport) {
+      visualViewport.addEventListener('resize', onOverlayVp);
+      visualViewport.addEventListener('scroll', onOverlayVp);
+    }
 
     if (menuBtn) {
       menuBtn.addEventListener('click', function () {
@@ -1150,6 +1177,36 @@
     var lastStop = 1 / (1 + DUSK);   // průběh, při kterém stojí uprostřed poslední jídlo
     var dusk = 0;
 
+    /* Pin GSAP zamkne na výšku, kterou měl v okamžiku připíchnutí (100svh).
+       Na telefonu se po chvíli rolování schová lišta prohlížeče, okno se
+       prodlouží a pod talířem zbude pruh papíru sekce (--honey-edge).
+       Dokud je pin fixed, dorovná se na visualViewport — spacer v toku
+       dokumentu se nemění, jen se vyplní díra v okně. */
+    var pinFitH = 0;
+    var pinFitTop = -1;
+    function fitPinnedPin(active) {
+      if (!pinEl) return;
+      if (!active) {
+        if (pinFitH) {
+          pinEl.style.top = '';
+          pinEl.style.height = '';
+        }
+        pinFitH = 0;
+        pinFitTop = -1;
+        return;
+      }
+      var vv = window.visualViewport;
+      var top = Math.round(vv ? vv.offsetTop : 0);
+      var h = Math.round((vv && vv.height) || window.innerHeight);
+      var topPx = top + 'px';
+      var hPx = h + 'px';
+      if (pinEl.style.top === topPx && pinEl.style.height === hPx) return;
+      pinFitH = h;
+      pinFitTop = top;
+      pinEl.style.top = topPx;
+      pinEl.style.height = hPx;
+    }
+
     var tl = gsap.timeline({
       scrollTrigger: {
         trigger: '.show__pin', start: 'top top',
@@ -1164,8 +1221,13 @@
           },
           duration: { min: .18, max: .42 }, delay: .06, ease: 'power2.inOut'
         },
-        onToggle: function (self) { setDay('pin', self.isActive && dusk < .5); },
+        onToggle: function (self) {
+          fitPinnedPin(self.isActive);
+          setDay('pin', self.isActive && dusk < .5);
+        },
+        onRefresh: function (self) { fitPinnedPin(self.isActive); },
         onUpdate: function (self) {
+          fitPinnedPin(self.isActive);
           var p = self.progress * (1 + DUSK);
           var sp = Math.min(1, p);                        // průběh pásu jídel
           var k = gsap.utils.clamp(0, 1, (p - 1) / DUSK); // průběh soumraku
@@ -1229,6 +1291,15 @@
       x: function () { return -off(dishes.length - 1); },
       ease: 'none', duration: 1
     }).to({}, { duration: DUSK });
+
+    if (window.visualViewport) {
+      var onVp = function () {
+        var st = tl.scrollTrigger;
+        if (st) fitPinnedPin(st.isActive);
+      };
+      visualViewport.addEventListener('resize', onVp);
+      visualViewport.addEventListener('scroll', onVp);
+    }
   }
   initShowcase();
 
