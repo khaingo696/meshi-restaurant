@@ -13,6 +13,7 @@ import Blend from "./Blend.astro";
 
   <div class="wrap giftIn">
     <div class="giftCopy">
+      <span class="eyebrow eyebrow--gold" data-i18n="gift.eyebrow">Darujte zážitek</span>
       <h2 class="h2">
         <span class="ml"><span class="ml__i" data-i18n="gift.title1">Dárkový poukaz</span></span>
         <span class="ml"><span class="ml__i"><em data-i18n="gift.title2">do MESHi</em></span></span>
@@ -28,19 +29,37 @@ import Blend from "./Blend.astro";
              alt="Dárkový poukaz MESHi: jméno, hodnota a platnost" data-i18n-alt="gift.alt" loading="lazy" />
       </figure>
 
-      <div class="actRow" id="giftActs">
-        <button class="btn btn--act btn--lg" type="button" id="giftOpen" aria-expanded="false" aria-controls="vForm" data-i18n="gift.submit">Objednat poukaz</button>
-      </div>
     </div>
 
+    <!-- Na telefonu je formulář sám poukazem (CSS, sekce 18): hlava
+         s logem a hodnotou, trhací linka s výseky, pod ní ústřižek.
+         Zavřený ukazuje jen hodnotu, dvě řádky o doručení a tlačítko;
+         ostatní pole se probudí do ústřižku (app.js §6). Hlava, linka
+         a řádky o doručení jsou na desktopu skryté. -->
     <form class="panel form" id="vForm" tabindex="-1" novalidate>
-      <div class="field field--full">
+      <div class="vHead" aria-hidden="true">
+        <img src="/assets/meshi_logo_hero.png" width="593" height="421" alt="" loading="lazy" />
+        <span class="vSerial"></span>
+      </div>
+
+      <div class="field field--full field--val">
         <span class="field__label" data-i18n="gift.value">Požadovaná hodnota poukazu</span>
         <div class="vals">
-          <label><input type="radio" name="val" value="500" /><span>500 Kč</span></label>
-          <label><input type="radio" name="val" value="1000" checked /><span>1 000 Kč</span></label>
-          <label><input type="radio" name="val" value="2000" /><span>2 000 Kč</span></label>
+          <label><input type="radio" name="val" value="500" /><span><b>500</b> <small>Kč</small></span></label>
+          <label><input type="radio" name="val" value="1000" checked /><span><b>1 000</b> <small>Kč</small></span></label>
+          <label><input type="radio" name="val" value="2000" /><span><b>2 000</b> <small>Kč</small></span></label>
         </div>
+      </div>
+
+      <div class="vTear" aria-hidden="true"></div>
+
+      <ul class="giftMeta">
+        <li data-i18n="gift.metaPdf">PDF k tisku do e-mailu</li>
+        <li data-i18n="gift.metaBox">Nebo v dárkovém balení k vyzvednutí</li>
+      </ul>
+
+      <div class="actRow" id="giftActs">
+        <button class="btn btn--act btn--lg" type="button" id="giftOpen" aria-expanded="false" aria-controls="vForm" data-i18n="gift.submit">Objednat poukaz</button>
       </div>
 
       <label class="field field--full">

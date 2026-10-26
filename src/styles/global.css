@@ -44,6 +44,10 @@
   --ink-2: #160e07;
   --ink-3: #2a1c10;
   --brown: #6d4a2a;
+  /* Šev O nás → Signatures: průměrná barva papíru S vláknem a tečkami
+     tuše (jas ~72), ne holé --brown (jas ~79) — to na švu svítilo jako
+     světlejší pruh. */
+  --seam: rgb(98, 67, 38);
   /* O stupeň světlejší než --ink. Střídá se s tmou, text zůstává krémový. */
   --lift: #322114;
 
@@ -373,9 +377,8 @@ body.menu-open .nav__bars i:nth-child(3) { transform: translateY(-6px) rotate(-4
 /* ==========================================================================
    6 · HERO — „cinema lower-third“, navázané na dveře meshi-door
 
-   Převzaté z hotového prototypu (meshi-hero/style.css), hodnoty beze změny.
-   Popis podoby je v meshi-hero/meshi-door/INTEGRATION.md, část 2. Klientem
-   odsouhlasené, takže se tady nic „nezjednodušuje“.
+   Převzaté z hotového prototypu dveří, hodnoty beze změny.
+   Klientem odsouhlasené, takže se tady nic „nezjednodušuje“.
 
    Co se proti prototypu liší, a proč (prototyp běží na samostatné stránce,
    kde je video pozadí celého dokumentu a lišta stojí v toku):
@@ -425,14 +428,15 @@ body.menu-open .nav__bars i:nth-child(3) { transform: translateY(-6px) rotate(-4
     linear-gradient(180deg, rgba(10, 6, 3, 0) 46%, rgba(10, 6, 3, .16) 64%, rgba(10, 6, 3, .58) 100%);
 }
 
-/* Přechod do hnědé následující sekce (O nás), ne do černé. */
+/* Přechod do hnědé následující sekce (O nás), ne do černé — do barvy
+   švu (--seam), kterou O nás nahoře začíná. */
 .hero__edge { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; height: 32%; pointer-events: none;
   background: linear-gradient(
-    rgba(109, 74, 42, 0) 0%,
-    rgba(109, 74, 42, .08) 28%,
-    rgba(109, 74, 42, .28) 52%,
-    rgba(109, 74, 42, .62) 76%,
-    var(--brown) 100%); }
+    rgba(98, 67, 38, 0) 0%,
+    rgba(98, 67, 38, .08) 28%,
+    rgba(98, 67, 38, .28) 52%,
+    rgba(98, 67, 38, .62) 76%,
+    var(--seam) 100%); }
 
 .sr-svg-defs { position: absolute; width: 0; height: 0; pointer-events: none; }
 
@@ -454,10 +458,11 @@ body.menu-open .nav__bars i:nth-child(3) { transform: translateY(-6px) rotate(-4
 }
 
 /* ==========================================================================
-   KICKER JEN HLOUBKOU OSTROSTI: „TASTE    Feel    CONNECT“
-   Žádné dekorativní linky. Slova dělí prázdno (ma) a přeostřování jako
-   u filmového objektivu (rozostřené ⇄ ostré), takže jediná kresba na
-   celé ploše je porcelánový talíř pod „Plate“.
+   KICKER SE ZNAKY: „味 TASTE    心 FEEL    間 CONNECT“
+   Slova dělí prázdno (ma), žádné linky ani rámečky. Každé nese svůj znak;
+   znak aktivního slova se rozzáří a dopadne jako otisk razítka.
+   Dřív to byly 10px verzálky v 34 % a rozostřené; na videu se nedaly
+   přečíst. Teď jsou ostré i v klidu a hierarchii nese jas znaku.
    ========================================================================== */
 
 .hero-kicker {
@@ -465,69 +470,91 @@ body.menu-open .nav__bars i:nth-child(3) { transform: translateY(-6px) rotate(-4
   --inv-p: calc(1 - var(--door-p));
   position: relative;
   display: inline-flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-start;
-  gap: clamp(22px, 3.2vw, 38px);
-  margin: 0 0 clamp(14px, 2vh, 22px);
+  gap: 10px clamp(26px, 3.4vw, 44px);
+  margin: 0 0 clamp(18px, 2.6vh, 28px);
   padding: 2px 0;
   color: var(--gold-bright);
   user-select: none;
 }
 
-/* Jedno slovo = jedno tlačítko. Ve výchozím stavu rozostřené, jako při f/1.4 */
+/* Jedno slovo = jedno tlačítko: pečeť + slovo */
 .kicker-node {
   position: relative;
   appearance: none;
   border: 0;
   background: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .72em;
   padding: 2px 0;
   margin: 0;
-  font: 400 clamp(9.5px, .88vw, 11px) / 1.1 var(--font-sans);
-  letter-spacing: .38em;
+  font: 500 clamp(12px, 1.08vw, 14px) / 1 var(--font-sans);
+  letter-spacing: .3em;
   text-transform: uppercase;
-  color: rgba(236, 208, 156, .34);
-  filter: blur(.65px);
-  text-shadow: 0 2px 14px rgba(0, 0, 0, .72);
+  color: rgba(247, 239, 226, .62);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, .8);
   cursor: pointer;
   outline: none;
   transition:
     color .7s cubic-bezier(.16, 1, .3, 1),
     transform .7s cubic-bezier(.16, 1, .3, 1),
-    letter-spacing .7s cubic-bezier(.16, 1, .3, 1),
     filter .7s cubic-bezier(.16, 1, .3, 1),
     text-shadow .3s ease,
     opacity .55s ease;
 }
 
-/* Prostřední slovo („Feel“) kontrastuje kurzivou Cormorantu */
-.kicker-node.is-serif {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  font-size: clamp(14.5px, 1.3vw, 17.5px);
-  letter-spacing: .16em;
-  text-transform: none;
-  color: rgba(247, 239, 226, .38);
+/* Znak: v klidu tlumeně zlatý, holý — bez rámečku */
+.kicker-node-seal {
+  display: inline-block;
+  flex-shrink: 0;
+  font: 400 clamp(19px, 1.6vw, 23px) / 1 var(--kanji);
+  letter-spacing: 0;
+  color: rgba(236, 208, 156, .58);
+  transition:
+    color .5s ease,
+    text-shadow .5s ease,
+    transform .7s cubic-bezier(.16, 1, .3, 1);
 }
 
-/* Aktivní slovo se přeostří doostra — a nepotřebuje k tomu ani jednu linku */
+/* Aktivní slovo: ostrý jas a otištěná pečeť */
 .hero[data-active-word="0"] .kicker-node[data-word="0"],
 .hero[data-active-word="1"] .kicker-node[data-word="1"],
 .hero[data-active-word="2"] .kicker-node[data-word="2"],
 .kicker-node:hover,
 .kicker-node:focus-visible {
-  color: rgba(255, 249, 238, .96);
-  filter: blur(0);
+  color: #fff9ee;
   transform: translateY(-1px);
   text-shadow:
-    0 0 18px rgba(236, 208, 156, .72),
+    0 0 18px rgba(236, 208, 156, .6),
     0 2px 12px rgba(0, 0, 0, .85);
 }
 
-/* Když si návštěvník vybere slovo sám, ostatní dvě zajdou ještě dál */
+.hero[data-active-word="0"] .kicker-node[data-word="0"] .kicker-node-seal,
+.hero[data-active-word="1"] .kicker-node[data-word="1"] .kicker-node-seal,
+.hero[data-active-word="2"] .kicker-node[data-word="2"] .kicker-node-seal,
+.kicker-node:hover .kicker-node-seal,
+.kicker-node:focus-visible .kicker-node-seal {
+  color: var(--gold-bright);
+  text-shadow:
+    0 0 14px rgba(236, 208, 156, .75),
+    0 2px 10px rgba(0, 0, 0, .8);
+  animation: hanko-stamp .6s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+
+/* Znak dopadne jako razítko: větší, a usadí se s nepatrným odskokem */
+@keyframes hanko-stamp {
+  0%   { transform: scale(1.5); opacity: 0; }
+  55%  { transform: scale(.94); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Když si návštěvník vybere slovo sám, ostatní dvě ustoupí do neostra */
 .hero.is-word-hovered .kicker-node:not(:hover):not(:focus-visible) {
-  opacity: .28;
-  filter: blur(1.1px);
+  opacity: .4;
+  filter: blur(.6px);
 }
 
 .kicker-node:hover .kicker-node-text,
@@ -871,8 +898,9 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 }
 
 /* ==========================================================================
-   TIRÁŽ: SOUHVĚZDÍ HVĚZD U HODNOCENÍ A LAMPIONOVÝ UHLÍK U HODIN
-   Místo obchodních ★★★★★ a zelené tečky „jsme online“.
+   TIRÁŽ: „4,9★“ U HODNOCENÍ A LAMPIONOVÝ UHLÍK U HODIN
+   Hodnocení je jen číslo a jedna hvězda — souhvězdí pěti hvězd se četlo
+   jako graf. Místo zelené tečky „jsme online“ lampionový uhlík.
    ========================================================================== */
 
 .hero-meta {
@@ -890,7 +918,7 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
   text-shadow: 0 2px 14px rgba(0, 0, 0, .75);
 }
 
-/* Vytesané 4,9 /5 a zlatý oblouk souhvězdí */
+/* Vytesané 4,9 a zlatá hvězda */
 .hero-rating {
   position: relative;
   display: inline-flex;
@@ -924,46 +952,27 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
     text-shadow .45s ease;
 }
 
-.rating-scale {
-  font-size: 13px;
-  font-weight: 300;
-  color: rgba(232, 216, 193, .48);
-  margin-left: 2px;
-  letter-spacing: .04em;
-}
-
-.rating-detail {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-/* Souhvězdí pěti hvězd */
-.rating-constellation {
-  width: 78px;
-  height: 13px;
+/* Hvězda stojí vedle čísla na jeho výšce, ne jako exponent. Jednou za čas
+   se zablýskne, a pod kurzorem se otočí o 72° — o jeden cíp, takže
+   dosedne sama na sebe. */
+.rating-star {
+  align-self: center;
+  width: .66em;
+  height: .66em;
+  margin-left: .14em;
+  font-size: clamp(32px, 3.2vw, 44px);
+  fill: var(--gold-bright);
   overflow: visible;
-  filter: drop-shadow(0 0 6px rgba(236, 208, 156, .42));
-}
-
-.constellation-pulse {
-  stroke-dasharray: 26 68;
-  animation: constellation-trace 3.8s linear infinite;
-}
-
-@keyframes constellation-trace {
-  0%   { stroke-dashoffset: 94; opacity: .2; }
-  50%  { opacity: .95; }
-  100% { stroke-dashoffset: 0; opacity: .2; }
-}
-
-.c-node {
-  transform-box: fill-box;
-  transform-origin: center;
+  filter: drop-shadow(0 0 6px rgba(236, 208, 156, .5));
+  animation: star-glint 5.6s ease-in-out infinite;
   transition:
-    transform .5s cubic-bezier(.16, 1, .3, 1),
+    transform .7s cubic-bezier(.16, 1, .3, 1),
     fill .4s ease;
+}
+
+@keyframes star-glint {
+  0%, 82%, 100% { filter: drop-shadow(0 0 6px rgba(236, 208, 156, .5)); }
+  90%           { filter: drop-shadow(0 0 4px #fff6e0) drop-shadow(0 0 14px rgba(236, 208, 156, .95)); }
 }
 
 /* Popisek se pod kurzorem přetočí („Google Reviews“ ⇄ „Plzeň · Mapa“) */
@@ -1016,16 +1025,11 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
     0 2px 14px rgba(0, 0, 0, .85);
 }
 
-.hero-rating:hover .c-node,
-.hero-rating:focus-visible .c-node {
+.hero-rating:hover .rating-star,
+.hero-rating:focus-visible .rating-star {
   fill: #fff9ee;
-  transform: rotate(45deg) scale(1.22);
+  transform: rotate(72deg) scale(1.12);
 }
-
-.hero-rating:hover .c-node.n-2 { transition-delay: .04s; }
-.hero-rating:hover .c-node.n-3 { transition-delay: .08s; }
-.hero-rating:hover .c-node.n-4 { transition-delay: .12s; }
-.hero-rating:hover .c-node.n-5 { transition-delay: .16s; }
 
 .hero-rating:hover .reel-line:not(.is-hover),
 .hero-rating:focus-visible .reel-line:not(.is-hover) {
@@ -1158,7 +1162,9 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 
   .hero-copy { padding-top: 12vh; padding-bottom: 0; }
 
-  .hero-kicker { gap: 20px; margin-bottom: 12px; }
+  .hero-kicker { gap: 8px 18px; margin-bottom: 16px; }
+  .kicker-node { font-size: 11px; letter-spacing: .2em; gap: .55em; }
+  .kicker-node-seal { font-size: 17px; }
 
   .hero-title-line.is-prelude { font-size: clamp(24px, 6.8vw, 31px); }
 
@@ -1174,10 +1180,8 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
   .hero-meta { padding: 4px 12px 4px 0; font-size: 10.5px; }
 
   .hero-rating { gap: 10px; }
-  .rating-score { font-size: 24px; }
-  .rating-scale { font-size: 11px; }
-  .rating-detail { gap: 2px; }
-  .rating-constellation { width: 58px; height: 10px; }
+  .rating-score,
+  .rating-star { font-size: 24px; }
   .rating-reel { font-size: 8.5px; letter-spacing: .15em; }
 
   .hero-hours { font-size: 9.5px; letter-spacing: .06em; gap: 7px; }
@@ -1255,10 +1259,17 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 .about { position: relative; overflow: hidden; background: var(--brown); padding: calc(var(--sec) * 1.1) 0 clamp(5.2rem, 10vw, 8rem); }
 .about__bgWrap { position: absolute; inset: -8% 0; }
 .about__bg { width: 100%; height: 100%; object-fit: cover; object-position: 72% 46%; opacity: .88; }
+/* Nahoře se papír vynořuje z barvy švu (--seam) pozvolna přes třetinu
+   výšky. Dřív začínal holým --brown (světlejší než papír i než video nad
+   ním — na švu svítil pruh) a texturu odkryl už na 8 %: vlákno a
+   borovice naskočily jako zeď. */
 .about__top { position: absolute; inset: 0; pointer-events: none;
+  /* Vrstva švu je PRVNÍ (navrchu): kruhový závoj pod ní jinak horní hranu
+     ztmavil o pár stupňů a na švu s herem zůstal schod. */
   background:
+    linear-gradient(var(--seam) 0%, rgba(98, 67, 38, .78) 10%, rgba(98, 67, 38, .42) 22%, rgba(98, 67, 38, .12) 32%, rgba(98, 67, 38, 0) 40%),
     radial-gradient(62% 44% at 50% 34%, rgba(22, 14, 7, .4) 0%, rgba(22, 14, 7, .12) 58%, rgba(0, 0, 0, 0) 100%),
-    linear-gradient(var(--brown) 0%, rgba(30, 20, 11, .4) 8%, rgba(30, 20, 11, .12) 26%, rgba(0, 0, 0, 0) 48%, rgba(22, 14, 7, .22) 100%); }
+    linear-gradient(rgba(30, 20, 11, 0) 0%, rgba(30, 20, 11, .12) 26%, rgba(0, 0, 0, 0) 48%, rgba(22, 14, 7, .22) 100%); }
 
 .about__in { position: relative; z-index: 2; width: min(760px, 100% - var(--pad) * 2); margin-inline: auto; }
 .about__body { margin-top: clamp(2.4rem, 5vw, 4rem); display: grid; gap: 1.7rem; text-align: center; }
@@ -1295,34 +1306,73 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
    rolování. Fotky jsou WebP s alfa kanálem, takže drop-shadow() obkresluje
    skutečný obrys jídla, ne obdélník.
    ========================================================================== */
-.show { position: relative; overflow: hidden; padding: 0 0 clamp(1.4rem, 4vh, 3rem);
-  background: #4a321c; }
-/* paper-pines je už nabarvený jako wash — stejný recept jako O nás:
-   vysoká krytí, lehký závoj, střed tmavší kvůli talířům. */
-.show .secbg { background: #4a321c; }
+.show { position: relative; overflow: hidden; padding: 0;
+  background: var(--seam); }
+/* Pravé křídlo téže zástěny, jejíž levé křídlo leží pod O nás (Tōhaku,
+   Borovicový les — viz ASSET-CREDITS.md), v téže tušové škále. Kdo roluje
+   z O nás, jde dál podél jedné zástěny: stejný papír, stejná mlha.
+   Šev mezi sekcemi je MLHA, ne pruh: O nás se dole rozpustí do barvy
+   papíru (--brown — na tu barvu vyjde papír wash.webp pod svými závoji)
+   a obraz tady z téže barvy vyroste maskou. Dřív obě sekce končily
+   a začínaly plochou #4a321c a mezi papírem a rozmazaným hedvábím zůstal
+   pás hnědého bláta.
+   Bez rozostření: talíře nese jejich vlastní stín a kruh, za nimi stojí
+   mlha zástěny, ne kresba. Dole tmavne k tuši, do které jde blend--ink. */
+/* Pod obsahem pinu (z-index -1 v kontextu pinu), nad pozadím sekce. */
+.show .secbg { z-index: -1; background: var(--seam); }
+/* Noc a lucerna. Na světlém papíře (bez závoje) splývala jídla — oranžová
+   rýže a hnědé maso na hnědém kartonu — a celá plocha byla stejně světlá,
+   bez místa, kam se dívat. Teď se scéna setmí a nechá kaluž světla jen
+   kolem talíře; borovice zůstanou siluetami v mlze po stranách.
+   Závoj je maskou rozpuštěný na horních 24 %: tam musí plocha zůstat
+   čisté --brown, jinak se šev s O nás vrátí jako tmavý pruh. Připíchnutá
+   scéna tak má nahoře teplé světlo za nadpisem a dolů tmavne. */
+/* Šev: papír O nás a papír zástěny se mají potkat skoro bez hladkého
+   pruhu mezi nimi — dřív zbyl mezi oběma texturami ~180 px čisté hnědé
+   bez vlákna a četl se jako přerušení. Proto obraz mizí jen na horních
+   10 % a závoj nabíhá zvolna přes 45 % výšky, ne skokem. */
+/* Borovice jen jako tušená mlha: ostrá kresba za talířem tahala oko od
+   jídla. Ztišení průhledností na barvě papíru (--seam), ne tmou — celkový
+   tón scény zůstává, jen kresba ustoupí. */
 .show .secbg img {
-  opacity: .92;
-  filter: none;
-  object-position: 22% 46%;
+  opacity: .25;
+  object-position: 100% 50%;
+  filter: contrast(.75);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
+          mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
 }
+/* O nás je den — světlý papír na čtení. Signatures je soumrak a lucerna:
+   scéna o stupeň tmavší a za talířem teplá jantarová kaluž světla, která
+   v O nás není. Tím se sekce liší, i když šev mezi nimi zůstává měkký. */
 .show .secbg--lift::after {
   background:
-    radial-gradient(62% 44% at 50% 38%, rgba(22, 14, 7, .4) 0%, rgba(22, 14, 7, .1) 58%, transparent 100%),
-    linear-gradient(#4a321c 0%, rgba(30, 20, 11, .3) 8%, rgba(30, 20, 11, .08) 26%, transparent 48%, rgba(22, 14, 7, .2) 100%);
+    radial-gradient(30% 28% at 50% 50%, rgba(236, 176, 104, .16) 0%, rgba(236, 176, 104, .06) 55%, rgba(236, 176, 104, 0) 100%),
+    radial-gradient(38% 34% at 50% 50%, rgba(18, 11, 6, 0) 0%, rgba(18, 11, 6, 0) 55%, rgba(18, 11, 6, .42) 100%),
+    linear-gradient(180deg, rgba(18, 11, 6, 0) 0%, rgba(18, 11, 6, .34) 40%, rgba(18, 11, 6, .42) 72%, rgba(18, 11, 6, .62) 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .5) 22%, #000 45%);
+          mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .5) 22%, #000 45%);
 }
 .show .h2,
 .show .lead { text-shadow: 0 2px 22px rgba(12, 7, 4, .7); }
+/* Dlouhý a pozvolný. Zástěna pod Signatures je ztlumená na čtvrtinu,
+   takže papír O nás musí svou texturu (vlákno, svislé tahy) odevzdat
+   postupně — krátký přechod nechal plnou texturu až skoro k hraně a pak
+   ji uťal: barva navazovala, ale „zeď“ vlákna byla vidět. */
 .about .blend--lift {
+  height: clamp(160px, 26vh, 280px);
   background: linear-gradient(
-    rgba(74, 50, 28, 0) 0%,
-    rgba(74, 50, 28, .14) 28%,
-    rgba(74, 50, 28, .42) 58%,
-    rgba(74, 50, 28, .78) 84%,
-    #4a321c 100%);
+    rgba(98, 67, 38, 0) 0%,
+    rgba(98, 67, 38, .3) 35%,
+    rgba(98, 67, 38, .68) 70%,
+    var(--seam) 100%);
 }
-/* Fade až ZA pin, ať nepřekryje talíř a tlačítko. Totéž u galerie. */
-.show .blend,
-.gal .blend { position: relative; bottom: auto; }
+/* Fade až ZA pin, ať nepřekryje talíř a tlačítko. Pin dole končí skoro
+   v tuši (závoj .62, změřeno ~rgb 35 24 14), kdežto obecný blend--ink
+   jede přes holé --seam pod ním — mezi pinem a galerií tak svítil
+   světlý hnědý pruh s ostrou horní hranou. Tady proto začíná v barvě
+   dna pinu a je neprůhledný. */
+.show .blend { position: relative; bottom: auto; height: clamp(48px, 8vh, 96px);
+  background: linear-gradient(rgb(35, 24, 14), var(--ink)); }
 /* Nadpis leží v pinu, ne nad ním — jinak ho připíchnutá scéna odsouvá
    z okna a od talíře ho dělí prázdno na výšku displeje. */
 .show__head { position: absolute; left: 0; right: 0; z-index: 5;
@@ -1446,196 +1496,108 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 .dish__price { font-size: 15px; font-weight: 500; color: var(--gold); }
 
 /* ==========================================================================
-   10 · GALERIE — „Prah“: fotka je místnost, scroll je chůze.
+   10 · GALERIE — „Výbuch“: hromádka → koláž → zhasnutí. Žádný pin.
 
-   Plná plocha, žádná řeka slov, žádná clona přes sál. Hierarchii nese
-   světlo v té fotce. Jméno je drobné, dole, a jde se přeskočit vlasem.
+   Sekce je vysoká zhruba jako okno. Tady stojí jen SLOŽENÝ stav koláže
+   (tak ji vidí i bez JS a s omezeným pohybem); hromádku a zhasnutí
+   dopočítává app.js §9g z těchto pozic. Pozice jsou v % plochy:
+   --l/--t levý horní roh, --w/--h rozměr.
+
+   Plocha jde z tuše (konec Signatures) do --lift (začátek rezervace),
+   takže ani jeden šev nemá hranu. Fotky z plochy nikdy nevyjedou
+   (hromádka leží uprostřed, konec je na místě), takže se nic neořezává.
    ========================================================================== */
 .gal {
   position: relative;
-  background: var(--ink);
+  background: linear-gradient(180deg, var(--ink) 0%, var(--ink) 45%, var(--lift) 100%);
 }
 
-.gal__pin {
+.gal__stage {
   position: relative;
-  height: 100svh;
-  overflow: hidden;
-  isolation: isolate;
-  background: var(--ink);
+  height: clamp(640px, 100svh, 1000px);
 }
 
-.gal__stage { position: absolute; inset: 0; z-index: 1; }
-
-.gal__scene {
-  --pos: 50% 50%;
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  opacity: 0;
-  transform: translateZ(0);
-  backface-visibility: hidden;
+.gal__head {
+  position: absolute; z-index: 1;
+  left: 30%; top: 38%; width: 34%;
+  display: grid; justify-items: start; gap: .85rem;
 }
-.gal__scene:first-child { opacity: 1; }
-.gal__pin.is-live .gal__scene { will-change: transform, opacity; }
-.gal__scene img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  object-position: var(--pos);
-  display: block;
-}
-.gal__cap { display: none; }
-
-/* Závoj jen na hranách: nahoře kvůli liště, dole kvůli jménu.
-   Prostředek fotky zůstává, jak ho nafotili. */
-.gal__veil {
-  position: absolute; inset: 0; z-index: 2; pointer-events: none;
-  background:
-    linear-gradient(to bottom, rgba(12, 7, 4, .46) 0%, transparent 22%),
-    linear-gradient(to top, rgba(12, 7, 4, .58) 0%, rgba(12, 7, 4, .12) 28%, transparent 46%);
-}
-
-/* První pohled. Leží NAD scénou, po 2–3 s zmizí a nechá práh. */
-.gal__intro {
-  position: absolute; inset: 0; z-index: 4;
-  pointer-events: none; overflow: hidden;
-  opacity: 0; visibility: hidden;
-}
-.gal__flash {
-  position: absolute; inset: 0;
-  background: var(--img) center / cover no-repeat;
-  transform: translateZ(0);
-}
-.gal__flash--hall { opacity: 0; }
-
-.wm--gal {
-  right: calc(var(--pad) - .18em);
-  top: 8%;
-  bottom: auto;
-  z-index: 3;
-  font-size: clamp(10rem, 18vw, 18rem);
-  opacity: .02;
-}
-
-.gal__hud {
-  position: absolute;
-  z-index: 5;
-  left: var(--pad);
-  bottom: clamp(1.6rem, 4vh, 2.6rem);
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: .45rem 1.4rem;
-  max-width: min(46ch, calc(100% - var(--pad) * 2 - 110px));
-}
-.gal__room { grid-column: 1 / -1; }
-.gal__room {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-style: italic;
-  font-size: clamp(22px, 2.6vw, 34px);
-  line-height: 1.12;
-  letter-spacing: .01em;
-  color: var(--gold-bright);
-  text-shadow: 0 2px 18px rgba(0, 0, 0, .72);
-  padding-bottom: 3px;
-}
-.gal__steps {
-  display: flex;
-  align-items: center;
-  gap: .45rem;
-}
-.gal__step {
-  appearance: none;
-  position: relative;
-  width: 22px; height: var(--tap); padding: 0; border: 0;
-  background: transparent;
-  cursor: pointer;
-  transition: width .45s var(--ease);
-}
-.gal__step::before {
-  content: '';
-  position: absolute; left: 0; right: 0;
-  top: 50%; height: 2px;
-  border-radius: 1px;
-  background: rgba(247, 239, 226, .32);
-  transform: translateY(-50%);
-  transition: background .45s var(--ease);
-}
-.gal__step.on { width: 42px; }
-.gal__step.on::before { background: var(--gold-bright); }
-.gal__step:hover::before, .gal__step:focus-visible::before { background: var(--gold); }
+.gal__head .h2 span, .gal__head .h2 em { display: block; }
 .gal__ig {
-  font-family: var(--sans);
-  font-weight: 500;
-  font-size: 11px;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  color: rgba(247, 239, 226, .62);
-  border-bottom: 1px solid transparent;
-  min-height: var(--tap);
-  display: inline-flex;
-  align-items: center;
+  display: inline-flex; align-items: center; min-height: var(--tap);
+  font-family: var(--sans); font-weight: 500; font-size: 11px;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: var(--t-3);
+  text-decoration: underline; text-decoration-color: var(--hair-gold);
+  text-underline-offset: .7em;
+  transition: color .35s var(--ease), text-decoration-color .35s var(--ease);
 }
-.gal__ig:hover, .gal__ig:focus-visible {
-  color: var(--gold-bright);
-  border-bottom-color: var(--hair-gold);
-}
+.gal__ig:hover, .gal__ig:focus-visible { color: var(--gold-bright); text-decoration-color: var(--gold); }
 
-.gal__rail {
-  position: absolute; z-index: 5;
-  left: 0; right: 0; bottom: 0; height: 1px;
-  background: var(--hair);
+.gal__ph {
+  position: absolute; z-index: 2;
+  left: var(--l); top: var(--t); width: var(--w); height: var(--h);
+  padding: 0; border: 0;
+  border-radius: var(--r-act);
+  overflow: hidden;
+  background: var(--ink-3);
+  box-shadow: 0 34px 60px -30px rgba(0, 0, 0, .85);
+  cursor: zoom-in;
 }
-.gal__rail i {
-  display: block; height: 100%; width: 0%;
-  background: linear-gradient(90deg, rgba(236, 208, 156, .25), var(--gold-bright));
+.gal__ph img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover;
+  /* Fotky jsou syrové, zbytek webu tuš a papír — lehký teplý grade. */
+  filter: brightness(.9) contrast(1.05) saturate(.84) sepia(.08);
+  transition: filter .5s var(--ease), transform .7s var(--ease);
 }
+.gal__ph:hover img, .gal__ph:focus-visible img {
+  filter: brightness(1.02) contrast(1.05) saturate(.92) sepia(.04);
+  transform: scale(1.035);
+}
+.gal__ph:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+
+/* Složená koláž, desktop. Sedmička je hlavní postava. */
+.gal__ph--1 { --l: 3%;  --t: 10%; --w: 24%; --h: 34%; }
+.gal__ph--2 { --l: 30%; --t: 4%;  --w: 17%; --h: 26%; }
+.gal__ph--3 { --l: 50%; --t: 9%;  --w: 13%; --h: 24%; }
+.gal__ph--4 { --l: 66%; --t: 5%;  --w: 30%; --h: 38%; }
+.gal__ph--5 { --l: 6%;  --t: 52%; --w: 18%; --h: 38%; }
+.gal__ph--6 { --l: 27%; --t: 66%; --w: 22%; --h: 28%; }
+.gal__ph--7 { --l: 55%; --t: 58%; --w: 40%; --h: 36%; }
 
 @media (max-width: 809px) {
-  .gal__hud { max-width: calc(100% - var(--pad) * 2); }
-  .gal__room { font-size: clamp(20px, 6.4vw, 28px); }
-  .wm--gal { opacity: .012; font-size: 7.2rem; }
-}
-@media (max-height: 560px) {
-  .gal__hud { bottom: 1.1rem; gap: .45rem; }
-  .gal__room { font-size: 20px; }
-  .wm--gal { font-size: 8rem; }
-}
-
-/* Bez GSAP / omezený pohyb: fotky pod sebou, jméno pod každou. */
-:is(.gal__pin.is-static, html.no-js .gal__pin) {
-  height: auto; overflow: visible;
-  display: grid; gap: clamp(1.6rem, 4vh, 2.8rem);
-  padding: var(--sec) var(--pad);
-}
-:is(.gal__pin.is-static, html.no-js .gal__pin) .gal__stage {
-  position: static; display: grid; gap: inherit;
-}
-:is(.gal__pin.is-static, html.no-js .gal__pin) .gal__scene {
-  position: relative; inset: auto; opacity: 1; height: auto;
-}
-:is(.gal__pin.is-static, html.no-js .gal__pin) .gal__scene img {
-  height: min(78svh, 680px);
-}
-:is(.gal__pin.is-static, html.no-js .gal__pin) .gal__cap {
-  display: block;
-  margin-top: .7rem;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: clamp(20px, 2.4vw, 28px);
-  color: var(--gold-bright);
-}
-:is(.gal__pin.is-static, html.no-js .gal__pin) :is(.gal__veil, .gal__intro, .gal__rail, .wm--gal, .gal__hud) {
-  display: none;
+  .gal__stage { height: clamp(880px, 128svh, 1150px); }
+  .gal__head { left: 4%; top: 45%; width: 92%; gap: .6rem; }
+  .gal__ph--1 { --l: 4%;  --t: 3%;  --w: 58%; --h: 17%; }
+  .gal__ph--2 { --l: 66%; --t: 5%;  --w: 30%; --h: 13%; }
+  .gal__ph--3 { --l: 4%;  --t: 23%; --w: 34%; --h: 17%; }
+  .gal__ph--4 { --l: 42%; --t: 21%; --w: 54%; --h: 21%; }
+  .gal__ph--5 { --l: 4%;  --t: 62%; --w: 40%; --h: 16%; }
+  .gal__ph--6 { --l: 48%; --t: 61%; --w: 48%; --h: 18%; }
+  .gal__ph--7 { --l: 4%;  --t: 82%; --w: 92%; --h: 15%; }
 }
 
 /* ==========================================================================
    11 · REZERVACE A FORMULÁŘE
    ========================================================================== */
-.res { position: relative; overflow: hidden; background: var(--ink); padding: var(--sec) 0; }
+/* Shora jen část --sec: galerie nad tím končí vlastní vycpávkou, která už
+   do --lift doběhla — plná vycpávka by se četla jako díra. */
+.res { position: relative; overflow: hidden; background: var(--ink); padding: calc(var(--sec) * .6) 0 var(--sec); }
 .res[data-tone="lift"] { background: var(--lift); }
-.wm--res { right: -2rem; bottom: 6%; font-size: clamp(12rem, 20vw, 20rem); }
+/* Podklad: Sesshū, Zimní krajina, v duotónu tuše (viz ASSET-CREDITS.md).
+   Ostrá, ne rozostřená — rozostřená fotka stolu byla hnědé bláto se
+   skvrnami. Tlumí ji jen jas a hustý závoj, takže tahy tuše zůstanou
+   čitelné jako textura a text na nich drží kontrast. Na telefonu je
+   vidět chrám s poutníkem pod textem, na širokém displeji pás skal. */
+.res__bg img { opacity: 1; object-position: 50% 58%; filter: brightness(.6) saturate(.9); }
+/* Svislý přechod leží NAD závojem: pod ním závoj horní hranu ztmavil pod
+   --lift a na švu s galerií zůstávala vodorovná čára. */
+.res__bg::after {
+  background:
+    linear-gradient(180deg, var(--lift) 0%, rgba(50, 33, 20, 0) 14%, rgba(50, 33, 20, 0) 86%, var(--lift) 100%),
+    radial-gradient(85% 65% at 30% 40%, rgba(22, 14, 8, .78) 0%, rgba(22, 14, 8, .64) 100%);
+}
 /* 心 a 匠 přišly z hlaviček sekcí (viz About.astro a Signatures.astro). */
 .wm--about { left: 1%; top: 7%; font-size: clamp(11rem, 21vw, 21rem); }
 .wm--show { right: 1%; top: 4%; font-size: clamp(10rem, 18vw, 18rem); }
@@ -1673,8 +1635,6 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
     inset 0 1px 0 rgba(255, 242, 216, .1),
     0 36px 70px -40px rgba(0, 0, 0, .85); }
 .form { display: grid; grid-template-columns: 1fr 1fr; gap: 1.3rem 1.1rem; }
-.form-row { grid-column: 1 / -1; display: grid; gap: inherit; }
-.form-row--3 { grid-template-columns: 1fr 1fr 1fr; }
 .field { display: grid; gap: .45rem; min-width: 0; }
 .field--full { grid-column: 1 / -1; }
 /* .field má display:grid, a ten přebíjí [hidden] z prohlížeče — pole pro
@@ -1757,35 +1717,123 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
   font-family: var(--sans); font-size: 12.5px; font-weight: 500; line-height: 1.6; }
 .ok-box.on { display: block; }
 
-/* přepínače hodnoty poukazu — architektonické destičky se zlatým kosočtvercem */
-.vals { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
-.vals label { cursor: pointer; display: block; }
-.vals input { position: absolute; opacity: 0; pointer-events: none; }
-.vals span {
-  display: inline-flex; align-items: center; justify-content: center; gap: .55rem;
-  width: 100%; min-height: var(--tap); padding: .55rem .85rem;
-  border-radius: var(--r-act); border: 1px solid rgba(248, 242, 231, .2);
-  background: rgba(255, 255, 255, .03);
-  font-family: var(--font-display); font-size: 20px; font-weight: 500; line-height: 1.2;
-  font-variant-numeric: lining-nums; font-feature-settings: 'lnum' 1;
-  letter-spacing: .01em; white-space: nowrap;
-  color: var(--cream);
-  transition: background .35s var(--ease), border-color .35s var(--ease), color .35s var(--ease), box-shadow .35s var(--ease);
+/* --- Rezervace: věta s popiskem -------------------------------------------
+   Krok 1 je věta, ne tabulka: „2 osoby ve středu 28. 10. v 18:00“.
+   Sazba jako jídelní lístek v časopise — tři hlasy:
+     · čísla rovně, krémově, velká (to, co host čte);
+     · slova kurzívou ve zlatě (osoby, středu) — týž hlas jako „svůj stůl“
+       v nadpisu;
+     · spojky (ve / v / on / at) drobnou tichou kurzívou.
+   Aby se věta nečetla jako ozdobný text (to se už jednou stalo), má nad
+   sebou popisek pole a každá hodnota je kus se zlatou linkou a šipkou;
+   ťuknutí kamkoli na kus otevře výběr. Kontaktní pole spí za Pokračovat
+   a probudí se na místě věty, která se složí do řádku (.rSum) — gate
+   html.js, třída .is-open na sekci. */
+.rSent { grid-column: 1 / -1; min-width: 0; margin: 0; padding: 0; border: 0; }
+.rSent__lbl { display: block; padding: 0; margin: 0 0 .5rem;
+  font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .2em;
+  line-height: 1.4; text-transform: uppercase; color: rgba(216, 174, 105, .82); }
+/* Dva řádky podle smyslu: KDO (2 osoby), pod ním KDY (datum + čas v .rWhen,
+   který se nezalamuje). Krátký řádek nad dlouhým — čas nikdy nestojí sám. */
+/* Visací spojka: první spojka řádku KDY (ve / on) stojí v úzkém levém
+   sloupci zarovnaná doprava, takže „2 osoby“ a „středu“ začínají pod
+   sebou — jako visací interpunkce v knižní sazbě. Dřív začínal řádek 2
+   spojkou a hodnoty měly každá jiný levý okraj. */
+.rLine { display: grid; grid-template-columns: .95em minmax(0, 1fr); align-items: baseline;
+  justify-items: start; row-gap: .1em;
+  font-family: var(--font-display); font-weight: 300; font-size: clamp(44px, 4.2vw, 64px);
+  line-height: 1.15; letter-spacing: -.012em; color: var(--cream);
+  /* Cormorant má minuskové číslice: „10“ se četlo jako „IO“. */
+  font-variant-numeric: lining-nums; }
+/* Spojka drží s hodnotou za sebou — „v“ na konci řádku je v české sazbě chyba. */
+.rWhen { display: flex; align-items: baseline; gap: .32em; max-width: 100%; }
+.rSeg { display: inline-flex; align-items: baseline; gap: .32em; white-space: nowrap; }
+.rConn { font-style: italic; font-size: .56em; color: var(--t-3); }
+.rConn:empty { display: none; }
+.rLine > .rPick:first-child, .rWhen { grid-column: 2; }
+.rConn--hang { grid-column: 1; justify-self: end; padding-right: .5em; }
+
+.rPick { position: relative; display: inline-flex; align-items: baseline; min-width: 0; min-height: var(--tap);
+  /* Linka je tichá (.28) — tři plné linky nad sebou dělaly žebřík.
+     Rozsvítí se až pod kurzorem, při výběru a z tlačítka. To, že se na
+     kus dá ťuknout, nese hlavně šipka. */
+  border-bottom: 1px solid rgba(216, 174, 105, .28); cursor: pointer;
+  transition: opacity .5s var(--ease), filter .5s var(--ease), border-color .45s var(--ease); }
+.rPick__face { display: inline-flex; align-items: baseline; gap: .2em; padding-right: .7em; white-space: nowrap;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ecd09c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right .02em center / .42em; }
+.rPick__face b { font-weight: 300; }
+.rPick__face i { font-style: italic; color: var(--gold-bright); }
+.rPick select {
+  appearance: none; -webkit-appearance: none; border: 0; border-radius: 0; background: transparent;
+  font: inherit; letter-spacing: inherit; line-height: inherit; color: inherit; cursor: pointer; }
+.rPick select:focus-visible { outline: none; }
+.rPick select option { font-family: var(--sans); font-size: 15px; letter-spacing: 0; background: var(--ink); }
+.rPick:has(:focus-visible) { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 6px; }
+.rPick:is(:hover, :focus-within) { border-color: var(--gold-bright); }
+/* Nativní pole průhledně přes celý kus, vidět je jen sazba v .rPick__face.
+   Ikona kalendáře v Chromu se roztáhne přes celé pole, takže kalendář
+   otevře ťuknutí kamkoli. */
+.rPick--over :is(select, input) { position: absolute; inset: 0; width: 100%; height: 100%;
+  margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; font-size: 16px; color-scheme: dark; }
+.rPick--date input::-webkit-calendar-picker-indicator {
+  position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; cursor: pointer; }
+html.no-js .rPick__face { display: none; }
+html.no-js .rPick--over :is(select, input) { position: static; width: auto; height: auto; opacity: 1;
+  font-size: .5em; background: transparent; color: inherit; }
+
+/* Hloubka ostrosti: dokud host vybírá jednu hodnotu, zbytek věty ustoupí
+   do neostra. Jen s myší — na dotyku zůstane select po zavření výběru
+   zaostřený a věta by zůstala rozmazaná. */
+@media (hover: hover) {
+  :is(.rLine, .rWhen):focus-within > :not(:focus-within) { opacity: .4; filter: blur(1.4px); }
 }
-.vals span::before {
-  content: ''; width: 5px; height: 5px; flex: none;
-  transform: rotate(45deg) scale(.6); background: currentColor; opacity: .35;
-  transition: transform .45s var(--ease), opacity .35s var(--ease);
+/* Tlačítko a věta jsou spojené nádoby: najetím na Pokračovat se linky
+   pod všemi třemi hodnotami rozsvítí jedna po druhé — tím se pokračuje. */
+.rWhen > .rPick { transition-delay: 0s, 0s, .07s; }
+.rWhen > .rSeg .rPick { transition-delay: 0s, 0s, .14s; }
+#resForm:has(#resNext:is(:hover, :focus-visible)) .rPick { border-color: var(--gold-bright); }
+
+/* Bez rámu: kouřové sklo panelu bylo karta v ploše a uvnitř zůstával
+   prázdný roh. Věta leží rovnou na tušové krajině jako na telefonu;
+   čitelnost drží měkká kaluž tmy za formulářem (::before) — stín, ne
+   hrana. Zlatá deska je zlatá i v klidu, ne až pod kurzorem: na tmavé
+   ploše se kouřové sklo jako hlavní akce nepoznalo do půl vteřiny. */
+#resForm { margin-inline: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+/* Ve dvou sloupcích je mezi textem a větou dost místa, aby spojky visely
+   úplně venku a hodnoty stály na téže hraně jako popisek nad nimi. Na
+   telefonu by spojka vyjela z obrazovky, tam visí uvnitř. */
+@media (min-width: 1001px) {
+  .rLine { margin-left: -.95em; }
 }
-.vals label:hover span { border-color: rgba(216, 174, 105, .6); }
-.vals input:checked + span {
-  background: var(--gold-bright); border-color: var(--gold-bright); color: var(--ink);
-  box-shadow: 0 10px 24px -12px rgba(138, 96, 56, .45);
+@media (min-width: 810px) {
+  #resForm::before { content: ""; position: absolute; inset: -4rem -5rem; z-index: -1; pointer-events: none;
+    background: radial-gradient(closest-side, rgba(14, 9, 5, .62), rgba(14, 9, 5, .38) 55%, rgba(14, 9, 5, 0)); }
 }
-.vals input:checked + span::before {
-  transform: rotate(135deg) scale(1.1); opacity: 1;
-}
-.vals input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 3px; }
+#resForm :is(.rLine, .rSum__txt, .field__label) { text-shadow: 0 2px 22px rgba(12, 7, 4, .75); }
+#resForm .btn--act {
+  color: #140c07; border-color: var(--gold-bright);
+  background: linear-gradient(135deg, rgba(216, 178, 116, .96), rgba(236, 208, 156, .92));
+  box-shadow: 0 12px 34px -14px rgba(216, 178, 116, .5), inset 0 1px 0 rgba(255, 255, 255, .35); }
+#resForm .btn--act::before { background: #140c07; box-shadow: none; }
+
+.rGo { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.6rem; margin-top: .6rem; }
+.form .rGo .btn { margin: 0; }
+/* Na desktopu je telefon ve větě vlevo (res.sub); .rCall je jen pro telefon. */
+.rCall { display: none; }
+
+.rSum { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: .3rem 1.2rem; width: 100%; min-height: var(--tap); margin: 0 0 -.3rem; padding: 0;
+  background: none; border: 0; text-align: left; cursor: pointer; }
+.rSum__txt { font-family: var(--font-display); font-size: clamp(22px, 1.9vw, 28px); font-weight: 300;
+  font-style: italic; line-height: 1.25; color: var(--gold-bright); font-variant-numeric: lining-nums; }
+.rSum__edit { font-family: var(--sans); font-size: 10.5px; font-weight: 500; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--gold); border-bottom: 1px solid var(--hair-gold);
+  transition: color .35s var(--ease), border-color .35s var(--ease); }
+.rSum:hover .rSum__edit { color: var(--gold-bright); border-color: var(--gold); }
+
+html.js .res:not(.is-open) #resForm > :is(.rSum, .field, .note-toggle, .consent, .btn, .ok-box) { display: none; }
+html.js .res.is-open #resForm > :is(.rSent, .rGo) { display: none; }
+html.no-js :is(#resNext, .rSum) { display: none; }
 
 /* Jak poukaz doručit — ostré řádky se zlatým kosočtvercem bez rozmazání */
 .radio-rows { display: grid; gap: .2rem; }
@@ -1813,15 +1861,28 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
    ========================================================================== */
 .gift { position: relative; overflow: hidden; background: var(--lift); padding: var(--sec) 0; }
 .gift[data-tone="lift"] { background: var(--lift); }
-/* Zlato a meruňka zůstanou vidět — jen lehký závoj u textu. */
+/* Obraz zůstává ve svých barvách — zlato a meruňka Kōrinu — a jen se
+   ztiší. Ne ztmavením do tuše (pak z něj zbyla hnědá plocha), ale
+   dvěma kroky, které berou pozornost a barvu nechávají:
+     · mírné rozostření — větve jsou poznat, ale nejsou ostré, takže
+       oko nechytají (jako mělká hloubka ostrosti za formulářem);
+     · závoj v tónu samotného obrazu (jeho průměrná barva je
+       rgb(165 137 94); závoj je tatáž barva o dva stupně hlubší) —
+       snižuje kontrast větví proti zlatu, ne sytost.
+   Okraje tlumí lehká vinětace, bílý text na tom drží kontrast ~6 : 1. */
+/* Na širokém displeji je obraz zvětšený přes celou šíři a větve jsou
+   velké a kreslené do detailu — proto silnější rozostření i závoj než
+   na telefonu (sekce 18). */
 .gift .secbg img {
-  opacity: .78;
-  filter: sepia(.1) saturate(1.08) brightness(.7) contrast(1.1);
+  opacity: 1;
+  filter: blur(6px) saturate(1.05) brightness(.82);
 }
 .gift .secbg--lift::after {
   background:
-    radial-gradient(48% 52% at 22% 30%, rgba(22, 14, 7, .3) 0%, transparent 68%),
-    linear-gradient(180deg, var(--lift) 0%, rgba(50, 33, 20, .45) 7%, rgba(50, 33, 20, .12) 22%, transparent 36%, transparent 78%, rgba(30, 20, 11, .22) 100%);
+    radial-gradient(48% 52% at 22% 30%, rgba(22, 14, 7, .26) 0%, transparent 68%),
+    linear-gradient(180deg, var(--lift) 0%, rgba(50, 33, 20, .45) 7%, rgba(50, 33, 20, .12) 22%, transparent 36%, transparent 78%, rgba(30, 20, 11, .22) 100%),
+    radial-gradient(80% 70% at 50% 46%, rgba(30, 20, 11, 0) 0%, rgba(30, 20, 11, .22) 62%, rgba(30, 20, 11, .5) 100%),
+    linear-gradient(rgba(96, 70, 38, .64), rgba(96, 70, 38, .64));
 }
 .gift .h2,
 .gift .lead { text-shadow: 0 2px 22px rgba(12, 7, 4, .68); }
@@ -1840,6 +1901,144 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
   transform: rotate(-1deg) translateY(-6px);
   box-shadow: 0 56px 100px -32px rgba(0, 0, 0, .92), 0 0 0 1px rgba(236, 208, 156, .42);
 }
+/* Fotka poukazu odchází i z desktopu. Vedle vstupenky by stály dva
+   poukazy vedle sebe — krémový tisk a kouřové sklo — a přetahovaly by
+   se o pozornost. Poukazem je teď sám formulář, na telefonu i tady.
+
+   Vstupenka: kouřové sklo s vykrojenými rohy, obrysem a vnitřním rámem,
+   hlava s logem a hodnotou, trhací linka s výseky a pod ní ústřižek
+   s poli. Výseky jsou maska; jejich výšku (--tear) dopočítá app.js §6.
+   Okraj (--tp) zmenšuje sekce 18 pro telefon. */
+.giftShot { display: none; }
+/* E-mail a telefon vedle sebe — vstupenka zůstane nízká. Hlava, linka
+   a ústřižek jdou přes oba sloupce. */
+.gift #vForm > label.field { grid-column: auto; }
+.vHead, .vTear, .giftMeta, #giftActs { grid-column: 1 / -1; }
+/* Odeslání je jediná plná plocha na vstupence — zlatá deska přes celou
+   šíři ústřižku, ne kouřové sklo, které by na kouřovém skle zaniklo. */
+.gift #vForm .btn--act {
+  width: 100%; justify-self: stretch;
+  color: #140c07; border-color: var(--gold-bright);
+  background: linear-gradient(135deg, rgba(216, 178, 116, .96), rgba(236, 208, 156, .92));
+  box-shadow: 0 12px 34px -14px rgba(216, 178, 116, .5), inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+.gift #vForm .btn--act::before { background: #140c07; box-shadow: none; }
+.gift #vForm {
+  --tear: -40px; --tp: 2.1rem;
+  position: relative; padding: var(--tp) var(--tp) calc(var(--tp) + .15rem);
+  gap: 1.45rem 1.4rem; min-width: 0;
+  border: 0; border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(236, 208, 156, .09) 0%, rgba(236, 208, 156, 0) 26%),
+    rgba(16, 10, 5, .68);
+  backdrop-filter: blur(14px) saturate(1.1); -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow: inset 0 1px 0 rgba(255, 242, 216, .1);
+  /* Tvar vstupenky: čtyři rohy vykrojené čtvrtkruhem (14 px) a dva
+     výseky na trhací lince (10 px). Vrstvy masky se protínají — každá
+     vykrojí jeden otvor, zbytek nechá. */
+  -webkit-mask:
+    radial-gradient(circle at 0 0, transparent 13.5px, #000 14px),
+    radial-gradient(circle at 100% 0, transparent 13.5px, #000 14px),
+    radial-gradient(circle at 0 100%, transparent 13.5px, #000 14px),
+    radial-gradient(circle at 100% 100%, transparent 13.5px, #000 14px),
+    radial-gradient(circle at 0 var(--tear), transparent 9.5px, #000 10px),
+    radial-gradient(circle at 100% var(--tear), transparent 9.5px, #000 10px);
+  -webkit-mask-composite: source-in;
+          mask:
+    radial-gradient(circle at 0 0, transparent 13.5px, #000 14px),
+    radial-gradient(circle at 100% 0, transparent 13.5px, #000 14px),
+    radial-gradient(circle at 0 100%, transparent 13.5px, #000 14px),
+    radial-gradient(circle at 100% 100%, transparent 13.5px, #000 14px),
+    radial-gradient(circle at 0 var(--tear), transparent 9.5px, #000 10px),
+    radial-gradient(circle at 100% var(--tear), transparent 9.5px, #000 10px);
+          mask-composite: intersect;
+}
+/* Obrys a vnitřní rám se kreslí pozadím, ne borderem: border by
+   vykrojené rohy nesledoval. ::before je obrys po hraně i po obloucích
+   rohů a výseků, ::after vnitřní linka 6 px od hrany, která oblouky
+   opisuje soustředně — a v rozích ji nese jasnější zlato. To je celá
+   ozdoba rohů: jeden tah, žádný ornament navíc. */
+.gift #vForm::before,
+.gift #vForm::after { content: ''; position: absolute; inset: 0; pointer-events: none; background-repeat: no-repeat; }
+.gift #vForm::before {
+  --o: rgba(216, 178, 116, .3);
+  background:
+    linear-gradient(var(--o), var(--o)) 14px 0 / calc(100% - 28px) 1px,
+    linear-gradient(var(--o), var(--o)) 14px 100% / calc(100% - 28px) 1px,
+    linear-gradient(var(--o), var(--o)) 0 14px / 1px calc(100% - 28px),
+    linear-gradient(var(--o), var(--o)) 100% 14px / 1px calc(100% - 28px),
+    radial-gradient(circle at 0 0, transparent 14px, var(--o) 14px 15px, transparent 15px) 0 0 / 16px 16px,
+    radial-gradient(circle at 100% 0, transparent 14px, var(--o) 14px 15px, transparent 15px) 100% 0 / 16px 16px,
+    radial-gradient(circle at 0 100%, transparent 14px, var(--o) 14px 15px, transparent 15px) 0 100% / 16px 16px,
+    radial-gradient(circle at 100% 100%, transparent 14px, var(--o) 14px 15px, transparent 15px) 100% 100% / 16px 16px,
+    radial-gradient(circle at 0 var(--tear), transparent 10px, var(--o) 10px 11px, transparent 11px),
+    radial-gradient(circle at 100% var(--tear), transparent 10px, var(--o) 10px 11px, transparent 11px);
+  background-repeat: no-repeat;
+}
+.gift #vForm::after {
+  --f: rgba(216, 178, 116, .17);
+  --a: rgba(236, 208, 156, .78);
+  background:
+    /* rovné linky — boční přerušené u výseků */
+    linear-gradient(var(--f), var(--f)) 20px 6px / calc(100% - 40px) 1px,
+    linear-gradient(var(--f), var(--f)) 20px calc(100% - 6px) / calc(100% - 40px) 1px,
+    linear-gradient(var(--f), var(--f)) 6px 20px / 1px calc(var(--tear) - 35px),
+    linear-gradient(var(--f), var(--f)) 6px calc(var(--tear) + 15px) / 1px calc(100% - var(--tear) - 35px),
+    linear-gradient(var(--f), var(--f)) calc(100% - 6px) 20px / 1px calc(var(--tear) - 35px),
+    linear-gradient(var(--f), var(--f)) calc(100% - 6px) calc(var(--tear) + 15px) / 1px calc(100% - var(--tear) - 35px),
+    /* oblouky kolem výseků */
+    radial-gradient(circle at -6px 16px, transparent 15.5px, var(--f) 15.5px 16.5px, transparent 16.5px) 6px calc(var(--tear) - 16px) / 11px 32px,
+    radial-gradient(circle at calc(100% + 6px) 16px, transparent 15.5px, var(--f) 15.5px 16.5px, transparent 16.5px) calc(100% - 6px) calc(var(--tear) - 16px) / 11px 32px,
+    /* zlaté oblouky v rozích */
+    radial-gradient(circle at -6px -6px, transparent 20.5px, var(--a) 20.5px 21.5px, transparent 21.5px) 6px 6px / 16px 16px,
+    radial-gradient(circle at calc(100% + 6px) -6px, transparent 20.5px, var(--a) 20.5px 21.5px, transparent 21.5px) calc(100% - 6px) 6px / 16px 16px,
+    radial-gradient(circle at -6px calc(100% + 6px), transparent 20.5px, var(--a) 20.5px 21.5px, transparent 21.5px) 6px calc(100% - 6px) / 16px 16px,
+    radial-gradient(circle at calc(100% + 6px) calc(100% + 6px), transparent 20.5px, var(--a) 20.5px 21.5px, transparent 21.5px) calc(100% - 6px) calc(100% - 6px) / 16px 16px;
+  background-repeat: no-repeat;
+}
+
+/* Hlava: logo jako razítko vlevo, vybraná hodnota vpravo jako číslo
+   poukazu. Text bere CSS ze zaškrtnutého přepínače, ne skript. */
+.vHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: -.35rem; }
+.vHead img { width: 46px; height: auto; opacity: .9; }
+.vSerial { font-family: var(--sans); font-size: 10.5px; font-weight: 500; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--gold); font-variant-numeric: lining-nums tabular-nums; }
+.vSerial::before { content: 'Nº\2002 1 000 Kč'; }
+#vForm:has(input[name="val"][value="500"]:checked) .vSerial::before { content: 'Nº\2002 500 Kč'; }
+#vForm:has(input[name="val"][value="2000"]:checked) .vSerial::before { content: 'Nº\2002 2 000 Kč'; }
+
+/* Hodnota jako ceník: velká čísla bez rámečků, krajní v zákrytu
+   s okraji, vybrané podtržené zlatem. */
+.vals { display: grid; gap: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: .1rem; }
+.vals label { display: flex; justify-content: center; min-width: 0; cursor: pointer; }
+.vals input { position: absolute; opacity: 0; pointer-events: none; }
+.vals label:first-child { justify-content: flex-start; }
+.vals label:last-child { justify-content: flex-end; }
+.vals span, .vals input:checked + span {
+  position: relative; width: auto; min-width: 0; min-height: 52px; padding: .55rem 0 .7rem; gap: .28rem;
+  align-items: baseline; border: 0; border-radius: 0; background: transparent; box-shadow: none;
+  font-size: inherit; color: rgba(247, 239, 226, .55); }
+.vals span::before { display: none; }
+.vals label:hover span { border: 0; }
+.vals b { font-size: 38px; font-weight: 500; letter-spacing: -.012em; line-height: 1; }
+.vals small { font-family: var(--sans); font-size: 10px; font-weight: 500; letter-spacing: .18em; }
+.vals span::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: var(--gold-bright); transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .55s var(--ease); }
+@media (hover: hover) { .vals label:hover span { color: rgba(247, 239, 226, .85); } }
+.vals input:checked + span { color: var(--cream); }
+.vals input:checked + span::after { transform: scaleX(1); }
+.vals input:focus-visible + span { outline: 2px solid var(--gold); outline-offset: 4px; }
+
+/* Trhací linka přes celou šířku poukazu, mezi výseky. */
+.vTear { display: block; height: 1px; margin: 0 calc(var(--tp) * -1 + 19px);
+  background: repeating-linear-gradient(90deg, rgba(216, 178, 116, .5) 0 6px, transparent 6px 11px); }
+
+.giftMeta { display: none; list-style: none; margin: 0; padding: 0; gap: .5rem;
+  font-family: var(--sans); font-size: 12.5px; line-height: 1.45; color: var(--t-2); }
+.giftMeta li { display: flex; align-items: center; gap: .7rem; }
+.giftMeta li::before { content: ''; width: 5px; height: 5px; flex: none;
+  transform: rotate(45deg); background: var(--gold); }
 
 /* ==========================================================================
    13 · KONTAKT
@@ -2317,19 +2516,40 @@ body.ov-open { overflow: hidden; }
          JavaScriptu zůstávají vidět tak jako dřív);
        · rezervace je hlavní postava, poukaz vedlejší nabídka (33 vs 23 px);
        · mapa přestala být obrázkem v rámečku a stala se podkladem;
-       · patička nese jen to, co výš nikde není — otevírací dobu a PDF.
+       · patička nese jen to, co výš nikde není — otevírací dobu.
      ------------------------------------------------------------------ */
   .res__in, .giftIn, .con__in { gap: 2.2rem; }
-  .res__copy { gap: .5rem; }
-  /* Eyebrow „Rezervovat stůl“ říká totéž co tlačítko o dva řádky níž,
-     hodiny jsou v patičce a telefon je teď zlatá deska, ne odkaz ve větě. */
+  /* Eyebrow „Rezervovat stůl“ říká totéž co nadpis, hodiny jsou
+     v patičce a telefon stojí pod tlačítkem (.rCall). */
   .res__copy .eyebrow,
   .res .hours--compact,
   .res-sub-more { display: none; }
-  .res__copy .lead { margin-top: 0; font-size: 16px; }
+  .res__copy .lead { margin-top: 0; font-size: 15.5px; }
   .res__copy .lead br { display: none; }
-  /* Rezervace je nejhlasitější hlas v patě webu, ne jeden z pěti stejných. */
-  .res .h2 { font-size: 33px; }
+  /* Hlavní postava sekce je věta pod nadpisem (29–36 px), ne nadpis —
+     dřív byl nadpis 33 px a věta 36 px a přetahovaly se o oko. Nadpis
+     tak zůstává na běžném stupni (.h2, 26 px). */
+
+  /* --- rezervace: jedna celá obrazovka --------------------------------
+     Sekce je vysoká aspoň jako okno, takže nekončí useknutá, a obsah stojí
+     uprostřed výšky — zbytek je rozostřený stůl (.res__bg) pod tuší, ne
+     díra. Vertikálně na střed, ne nahoru s tlačítkem u dna: tak mezi
+     textem a tlačítkem nikdy nevznikne mezera. Shora 4,4rem kvůli liště. */
+  .res { min-height: 100svh; display: flex; flex-direction: column; justify-content: center;
+    padding-top: 4.4rem; padding-bottom: 3.2rem; }
+  .res__in { gap: 1.5rem; }
+  .res__copy { gap: .55rem; }
+  #resForm { padding-top: 0; padding-bottom: 0; gap: 1rem .95rem; background: none; }
+  .res__bg img { object-position: 30% 62%; }
+  /* Řádek KDY musí vyjít na šířku i se „ve čtvrtek 29. 10.“ na 360 px. */
+  .rLine { font-size: clamp(29px, 9vw, 36px); }
+  .rSent__lbl { font-size: 10px; letter-spacing: .16em; }
+  .rGo { flex-direction: column; align-items: stretch; gap: .1rem; margin: .9rem 0 0; }
+  .rCall { display: inline-flex; align-items: center; justify-content: center; gap: .6em; min-height: var(--tap);
+    font-family: var(--sans); font-size: 10.5px; font-weight: 500; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--t-3); }
+  .rCall b { font-weight: 500; letter-spacing: .12em; color: var(--gold-light); }
+  .rSum__txt { font-size: 22px; }
   .con__fact b { font-size: 16px; }
   /* Panel byl na širokém displeji deska vedle sloupce textu; na telefonu
      se roztáhl přes celou šířku a stal se z něj šedý box dlouhý sedm set
@@ -2345,16 +2565,15 @@ body.ov-open { overflow: hidden; }
     /* Svislý přechod, ne kruhový: radiální plocha nedojde k nule dřív než
        k hornímu okraji boxu, a na displeji je z toho vodorovná rýha přes
        celou šířku. Takhle se plocha nahoře i dole beze švu vytratí. */
+    /* .74, ne .62: tušová krajina pod tím jinak běžela střechou a horou
+       přímo přes pole a formulář působil přeplněně. */
     background:
       radial-gradient(90% 46% at 14% 8%, rgba(236, 208, 156, .085) 0%, rgba(236, 208, 156, 0) 70%),
-      linear-gradient(180deg, rgba(10, 6, 3, 0) 0%, rgba(10, 6, 3, .62) 13%,
-        rgba(10, 6, 3, .62) 86%, rgba(10, 6, 3, 0) 100%);
+      linear-gradient(180deg, rgba(10, 6, 3, 0) 0%, rgba(10, 6, 3, .74) 12%,
+        rgba(10, 6, 3, .74) 86%, rgba(10, 6, 3, 0) 100%);
   }
-  .form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.15rem .95rem; }
-  #resForm > .field { grid-column: 1 / -1; }
-  .form-row--3 { grid-template-columns: 1fr 1fr; }
-  .form-row--3 .field:last-child { grid-column: 1 / -1; }
-  .field { gap: .3rem; }
+  .form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.55rem .95rem; }
+  .field { gap: .4rem; }
   .field > input, .field > select, .field > textarea { padding-block: .62rem; }
   .note-toggle .opt { display: none; }
   .radio-rows { gap: .15rem; }
@@ -2370,12 +2589,6 @@ body.ov-open { overflow: hidden; }
   /* --- pult: dvě akce v dosahu palce -------------------------------- */
   .actRow { display: grid; justify-items: start; gap: .35rem; width: 100%; margin: 1.35rem 0 .35rem; }
   .actRow .btn--act { width: 100%; }
-  /* Poukaz nesmí mít druhou stejně širokou zlatou desku — na 756 px
-     vysokém displeji se potká s odesláním rezervace a čtou se jako
-     dvojčata. Jeho akce drží protiváhu úhlopříčně: karta se naklání
-     doleva dolů, tlačítko stojí vpravo. */
-  #giftActs { justify-items: end; }
-  #giftActs .btn--act { width: auto; }
   /* Bez kurzoru se vlasová linka pod .btn--line nikdy nevykreslí, takže
      druhá akce vypadala jako mrtvý popisek. Na dotyku je vidět rovnou. */
   .actRow .btn--line { min-height: var(--tap); color: var(--gold-light); }
@@ -2385,8 +2598,6 @@ body.ov-open { overflow: hidden; }
      z kouřového skla by na něm zůstala navždy tmavý obrys — a tohle je
      jediná plná plocha na obrazovce, podle které se pozná, kam ťuknout.
      Když se formulář probudí, zlato přejde z pultu na odeslání. */
-  #resActs .btn--act,
-  #resForm .btn--act,
   html.js .gift:not(.is-open) #giftActs .btn--act,
   html.js .gift.is-open #vForm .btn--act,
   html.no-js .gift .form .btn--act {
@@ -2394,89 +2605,81 @@ body.ov-open { overflow: hidden; }
     background: linear-gradient(135deg, rgba(216, 178, 116, .96), rgba(236, 208, 156, .92));
     box-shadow: 0 12px 34px -14px rgba(216, 178, 116, .5), inset 0 1px 0 rgba(255, 255, 255, .35);
   }
-  #resActs .btn--act::before,
-  #resForm .btn--act::before,
   html.js .gift:not(.is-open) #giftActs .btn--act::before,
   html.js .gift.is-open #vForm .btn--act::before,
   html.no-js .gift .form .btn--act::before { background: #140c07; box-shadow: none; }
 
   /* Spící formulář. Gate je html.js, ne .is-open — bez skriptu se nemá
      co probudit, takže tam formulář zůstává od začátku vidět. */
-  html.js .gift:not(.is-open) #vForm { display: none; }
+  html.js .gift:not(.is-open) #vForm > :is(.field:not(.field--val), .consent, .btn) { display: none; }
+  html.no-js #giftActs { display: none; }
   html.js .gift.is-open #giftActs { display: none; }
-  /* Rezervační formulář stojí rovnou otevřený — host, který chce stůl,
-     ho má mít před sebou. Tlačítko „Rezervovat stůl“ by ho jen oddálilo
-     o jedno ťuknutí, takže na telefonu odchází; zůstává jen Zavolat. */
-  #resOpen { display: none; }
 
-  /* Probuzení poukazu není jen „objevil se formulář“ — fotka ustoupí
-     a předá pozornost polím (viz .gift.is-open .giftShot níž). */
+  /* --- poukaz: zlatá stěna na konci pultu ------------------------- */
+  /* Po rezervaci (formulář na tmě) přijde jediná zlatá plocha v patě
+     webu: list Kōrin přes celou sekci. Obraz sám dělí plochu úhlopříčně
+     — nahoře zlato se švestkou, dole tmavá řeka. Nadpis a poukaz stojí
+     na zlatě, akce na řece, kde zlaté tlačítko svítí nejvíc.
+     Rezervace se do poukazu rozpouští (blend--merge) a řeka se dole
+     rozpouští do tuše kontaktu, takže mezi sekcemi není žádná hrana. */
+  .gift { padding-top: 4.5rem; padding-bottom: 5.5rem; }
+  /* Pod obrazem tuš, ne --lift: obraz dole končí v tuši a [data-tone]
+     by pod ním jinak nechal světlejší pruh. */
+  .gift, .gift[data-tone="lift"] { background: var(--ink); }
+  /* Obraz má pevnou výšku plakátu, ne výšku sekce: probuzený formulář
+     sekci prodlouží a obraz by se jinak skokem přiblížil a tmavé tahy
+     kmene by běžely pod poli. Pole tak leží na tuši pod obrazem. */
+  .gift .secbg { bottom: auto; height: 46rem; }
+  /* Týž závoj v tónu obrazu jako na desktopu (sekce 12), jen o vlas
+     menší rozostření — obraz je na telefonu menší. */
+  .gift .secbg img {
+    opacity: 1; object-position: 66% 50%;
+    filter: blur(2.5px) saturate(1.05) brightness(.85);
+  }
+  /* Svislý přechod leží nad závojem, aby spoj s rezervací nahoře
+     a s tuší dole zůstal v plné barvě sousední sekce, bez pruhu. */
+  .gift .secbg--lift::after {
+    background:
+      linear-gradient(180deg, var(--lift) 0%, rgba(50, 33, 20, .62) 7%, rgba(50, 33, 20, .3) 15%,
+        rgba(50, 33, 20, .08) 26%, transparent 36%, transparent 46%, rgba(30, 20, 11, .4) 60%,
+        rgba(30, 20, 11, .76) 72%, rgba(30, 20, 11, .95) 82%, var(--ink) 90%),
+      radial-gradient(82% 58% at 50% 40%, rgba(30, 20, 11, 0) 0%, rgba(30, 20, 11, .18) 60%, rgba(30, 20, 11, .46) 100%),
+      linear-gradient(rgba(96, 70, 38, .5), rgba(96, 70, 38, .5));
+  }
+  /* Přechod do poukazu má jinak z-index 3, tedy nad obsahem, a ztmavil
+     by řádek s telefonem i spodek zlaté desky. Tady jde pod obsah. */
+  .res .blend--merge { height: 4rem; z-index: 1; }
+  /* Spodní přechod do tuše dělá už ::after obrazu; vlastní blend by
+     zbytečně ztmavil zlaté tlačítko nad sebou. */
+  .gift .blend--lift { display: none; }
+  /* Dno sekce se vždy dorovná do tuše kontaktu, ať je formulář zavřený
+     (sekce kratší než obraz) nebo otevřený. Leží pod obsahem (z-index 1
+     proti 2), takže tlačítko neztmaví. */
+  .gift::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
+    height: 7rem; pointer-events: none;
+    background: linear-gradient(rgba(30, 20, 11, 0), rgba(30, 20, 11, .7) 55%, var(--ink)); }
 
-  /* --- poukaz: vedlejší nabídka na téže ploše ------------------------ */
-  /* Vlastní pozadí a vlastní horní vycpávka dělaly z poukazu druhou
-     stránku dotazníku. Teď je to jen další odstavec téhož pultu,
-     oddělený jedinou vlasovou linkou a tichem. */
-  .gift { background: var(--lift); padding-top: 0; padding-bottom: 2.6rem; }
-  .gift .secbg { display: none; }
-  .res { padding-bottom: 0; }
-  .res .blend--merge { display: none; }
-  /* Poukaz končí plochou --lift, ale kontakt je pod 810 px tuš (mapa se
-     do ní rozpouští). Přechod proto míří do tuše, jinak je mezi nimi
-     vodorovný schod přes celou šířku. */
-  .gift .blend--lift {
-    background: linear-gradient(
-      rgba(50, 33, 20, 0) 0%, rgba(44, 29, 17, .45) 42%,
-      rgba(36, 24, 14, .82) 74%, var(--ink) 100%);
-  }
-  .gift::before {
-    content: ''; display: block; height: 1px;
-    margin: calc(var(--sec) * .6) var(--pad) calc(var(--sec) * .5);
-    background: linear-gradient(90deg, rgba(216, 178, 116, .34), rgba(216, 178, 116, 0) 68%);
-  }
-  .gift .h2 { font-size: 29px; }
-  /* Kurzíva druhé půlky nadpisu vybíhá doleva z textového sloupce —
-     nadpis tím přestane stát v jednom zákrytu s formulářem pod sebou. */
-  .gift .h2 .ml:last-child { margin-left: -.42em; }
-  .giftCopy { gap: .75rem; justify-items: stretch; width: 100%; }
-  /* Poukaz vysvětluje sám sebe — je na fotce. Tři věty k tomu byly
-     jen další odstavec v dotazníku. */
+  /* Nadpis jako plakát: o dva stupně větší než ostatní sekce a druhá
+     půlka odsazená doprava — úhlopříčka vlevo nahoře → vpravo dole,
+     kterou dokončí natočený poukaz a tmavá řeka. */
+  .giftCopy { gap: 0; justify-items: stretch; width: 100%; }
+  .giftCopy .eyebrow { margin-bottom: 1rem; }
+  .gift .h2 { font-size: clamp(40px, 11vw, 50px); line-height: 1.02; letter-spacing: -.018em; }
+  .gift .h2 .ml:last-child { padding-left: 24%; }
+  .gift .h2, .gift .lead { text-shadow: 0 2px 26px rgba(12, 7, 4, .8); }
   .giftCopy .lead { display: none; }
-  /* Poukaz je předmět, ne náhled v katalogu. Minulá mobilní úprava mu
-     vzala natočení, stín i záři (transform: none) a nechala z něj plochý
-     světlý obdélník uprostřed tmavé stránky — jediná věc na webu, na
-     kterou nesvítí žádné světlo. Tady se vrací: natočený, vysunutý za
-     pravý okraj (.gift má overflow: hidden, takže ho obrazovka ořízne
-     jako záběr), s teplou září za zády a šikmým svitem po líci. */
-  .giftShot { position: relative; width: auto; max-width: none;
-    margin: .9rem calc(var(--pad) * -1 - 1.6rem) 1.2rem 0;
-    transition: opacity .6s var(--ease), transform .6s var(--ease); }
-  .giftShot::before {
-    content: ''; position: absolute; z-index: 0;
-    left: -14%; right: 6%; top: -16%; bottom: -22%;
-    background: radial-gradient(60% 56% at 42% 48%,
-      rgba(216, 174, 105, .3) 0%, rgba(216, 174, 105, .1) 46%, rgba(216, 174, 105, 0) 72%);
-    filter: blur(16px);
-  }
-  .giftShot img {
-    position: relative; z-index: 1; width: 100%; height: auto;
-    transform: rotate(-3.2deg);
-    box-shadow: 0 42px 70px -26px rgba(0, 0, 0, .95), 0 0 0 1px rgba(236, 208, 156, .26);
-    filter: drop-shadow(0 0 26px rgba(216, 174, 105, .16));
-  }
-  .giftIn:has(#vForm:hover) .giftShot img,
-  .giftIn:has(#vForm:focus-within) .giftShot img { transform: rotate(-3.2deg); }
-  .gift.is-open .giftShot { opacity: .42; transform: scale(.93); }
-  #vForm { grid-template-columns: 1fr; min-width: 0; }
-  .vals { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
-  .vals label, .vals span { min-width: 0; }
-  .vals span { font-size: 15px; padding: .5rem .2rem; gap: .28rem; }
-  /* Vybraná částka byla plná krémová deska — nejsvětlejší plocha na
-     obrazovce patřila přepínači, ne akci. Zlato zůstává u odeslání. */
-  .vals input:checked + span {
-    color: var(--gold-bright); border-color: var(--gold-bright);
-    background: rgba(216, 174, 105, .12); box-shadow: none;
-  }
-  .vals input:checked + span::before { background: var(--gold-bright); }
+
+  /* Poukaz na telefonu (sdílená vstupenka je v sekci 12): jeden
+     sloupec, menší okraje a čísla, a formulář spí — vzhůru je jen hlava,
+     hodnota, dvě řádky o doručení a tlačítko; pole se probudí do
+     ústřižku pod trhací linkou. */
+  .giftIn { gap: 0; }
+  .gift #vForm { --tp: 1.35rem; margin: 2.4rem 0 0; grid-template-columns: 1fr; gap: 1.45rem; }
+  .vals b { font-size: clamp(27px, 7.6vw, 33px); }
+  .giftMeta { display: grid; }
+  #giftActs { margin: 0; }
+  /* Probuzený: řádky o doručení nahradí pole „Jak poukaz doručit“. */
+  .gift.is-open .giftMeta { display: none; }
 
   /* --- kontakt: mapa jako podklad, ne obrázek v rámečku -------------- */
   /* Mapa v 210px rámečku nikoho nikam nedovedla a ukrojila třetinu
@@ -2519,15 +2722,11 @@ body.ov-open { overflow: hidden; }
 
   /* --- patička: jen to, co výš nikde není ---------------------------- */
   /* Navigace je v překryvu pod burgerem, adresa a telefon o obrazovku
-     výš v kontaktu. Zůstává otevírací doba (jinde na telefonu není)
-     a Menu v PDF (jediná cesta k lístku, která nepotřebuje skript). */
+     výš v kontaktu. Zůstává otevírací doba (jinde na telefonu není). */
   .foot { padding-top: 2.8rem; }
   .foot__top { grid-template-columns: 1fr; gap: 1.5rem; }
-  .foot__top > div.fcol:last-child { display: none; }
-  .foot__top > nav > a:not([href$=".pdf"]),
-  .foot__top > nav h5 { display: none; }
-  .foot__top > nav { display: block; }
-  .foot__top > nav a { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); }
+  .foot__top > div.fcol:last-child,
+  .foot__top > nav { display: none; }
   .foot__brand { display: grid; grid-template-columns: 64px 1fr; gap: .95rem; align-items: center; }
   .foot__logo { width: 64px; margin: 0; }
   .foot__blurb { max-width: none; font-size: 12.5px; line-height: 1.55; }
@@ -2594,6 +2793,10 @@ body.ov-open { overflow: hidden; }
   .show__cta { position: relative; bottom: auto; left: auto; transform: none;
     grid-area: cta; margin-top: 1rem; }
   .show__name { font-size: 26px; }
+  /* Na výšku je vidět jen úzký pruh obrazu — řeka a mlha uprostřed,
+     ne skály s pavilony vpravo. Menší obraz, menší blur. */
+  /* Na telefonu stojí velká borovice vlevo jako silueta, za talířem mlha. */
+  .show .secbg img { object-position: 40% 50%; }
   .toTop__label { display: none; }
   .toTop { padding: .9rem; }
   .menu-grid { grid-template-columns: 1fr; }
@@ -2610,8 +2813,6 @@ body.ov-open { overflow: hidden; }
    pořád stejně široké, což byla ta původní výtka, ne počet řádků. */
 @media (max-width: 345px) {
   .form { grid-template-columns: 1fr; }
-  .form-row--3 { grid-template-columns: 1fr; }
-  .form-row--3 .field:last-child { grid-column: auto; }
 }
 
 @media (max-width: 809px) and (max-height: 700px) {

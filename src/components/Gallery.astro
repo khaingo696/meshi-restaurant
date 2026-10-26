@@ -1,98 +1,64 @@
 ---
 /*
-  Galerie — „Prah“: vstup do místnosti, ne projíždění nápisů.
+  Galerie — „Výbuch“: sedm fotek se při rolování rozletí z jedné hromádky,
+  složí se do koláže kolem nadpisu a při odchodu na místě zhasne.
 
-  Řeka slov s fotkou v písmě schovávala sál. Signatures už jedou vodorovně,
-  druhý pin do strany by byl totéž gesto dvakrát. Tady se jde DO HLOUBKY:
-  fotka drží celou plochu, scroll je chůze práh → noren → sál → bar →
-  police → přání → stůl.
+  Žádný pin: sekce je vysoká jako okno a pohyb jede s jejím průjezdem
+  oknem (app.js §9g, scrub). Běžným rolováním je za 2–3 s pryč; kdo chce
+  místnost vidět zblízka, vrátí se o kus zpět — koláž se zase složí
+  a fotka se dá otevřít v lightboxu. Za letu jsou fotky rozmazané a tmavé,
+  složené ostré: oko se samo zastaví tam, kde je na co se dívat.
 
-  První dva až tři vteřiny (vrstva .gal__intro) ukážou vchod a hlavní sál,
-  pak zmizí a nechají práh. Rolování potom každou místnost otevře jiným
-  gestem: skrz dveře, zvednutím norenu, přiblížením k baru, pohledem po
-  zdi, usednutím ke stolu.
-
-  Jídlo tu není — to nese Signatures nad tím.
+  Na čem fotka je, tu nehraje roli — pozice určuje jen pořadí v poli
+  a třída .gal__ph--N v global.css (sekce 10).
 */
-import Blend from "./Blend.astro";
 
-const scenes = [
-  { slug: "door-night", label: "Vchod · noc",    nw: 2560, nh: 1707, alt: "gal.d", room: "gal.r1", pos: "50% 52%", verb: "look",   origin: "50% 58%" },
-  { slug: "noren",      label: "Noren",          nw: 2560, nh: 1707, alt: "gal.e", room: "gal.r2", pos: "50% 22%", verb: "through",origin: "50% 16%" },
-  { slug: "interior",   label: "Hlavní sál",     nw: 2560, nh: 1707, alt: "gal.a", room: "gal.r3", pos: "50% 46%", verb: "open",   origin: "50% 48%" },
-  { slug: "maple",      label: "Zátiší u baru",  nw: 2560, nh: 1707, alt: "gal.c", room: "gal.r4", pos: "44% 62%", verb: "lean",   origin: "40% 74%" },
-  { slug: "shelves",    label: "Police se saké", nw: 2560, nh: 1707, alt: "gal.g", room: "gal.r5", pos: "50% 44%", verb: "glance", origin: "48% 40%" },
-  { slug: "daruma",     label: "Přání",          nw: 2560, nh: 1707, alt: "gal.f", room: "gal.r7", pos: "70% 46%", verb: "pass",   origin: "80% 44%" },
-  { slug: "table",      label: "Váš stůl",       nw: 1700, nh: 2550, alt: "gal.b", room: "gal.r6", pos: "52% 36%", verb: "sit",    origin: "50% 68%" },
+const photos = [
+  { slug: "door-night", alt: "gal.d" },
+  { slug: "noren",      alt: "gal.e" },
+  { slug: "shelves",    alt: "gal.g" },
+  { slug: "maple",      alt: "gal.c" },
+  { slug: "table",      alt: "gal.b", tall: true },
+  { slug: "daruma",     alt: "gal.f" },
+  { slug: "interior",   alt: "gal.a" },
 ];
 
-const srcset = (s: { slug: string; nw: number }) =>
-  (s.nw === 1700 ? [850, 1280, 1700] : [1280, 1920, 2560])
-    .map((x) => `/assets/space/wide/${s.slug}-${x}.webp ${x}w`).join(", ");
-
-const src = (s: { slug: string; nw: number }) =>
-  `/assets/space/wide/${s.slug}-${s.nw === 1700 ? 1700 : 2560}.webp`;
-
-const door = scenes[0];
-const hall = scenes[2];
+const file = (p: { slug: string; tall?: boolean }, w: number) => `/assets/space/wide/${p.slug}-${w}.webp`;
+const srcset = (p: { slug: string; tall?: boolean }) =>
+  (p.tall ? [850, 1280, 1700] : [1280, 1920, 2560]).map((w) => `${file(p, w)} ${w}w`).join(", ");
 ---
 
 <section class="gal" id="galerie">
-  <h2 class="sr-only" data-i18n="gal.title">Jak to u nás vypadá</h2>
-
-  <div class="gal__pin" id="galPin">
-
-    <div class="gal__stage" id="galStage">
-      {scenes.map((s, i) => (
-        <figure
-          class="gal__scene"
-          data-i={i}
-          data-room={s.room}
-          data-verb={s.verb}
-          data-origin={s.origin}
-          style={`--pos:${s.pos}`}
-        >
-          <img
-            src={src(s)}
-            srcset={srcset(s)}
-            sizes="100vw"
-            alt=""
-            data-i18n-alt={s.alt}
-            width={s.nw}
-            height={s.nh}
-            loading={i < 3 ? "eager" : "lazy"}
-            fetchpriority={i === 0 ? "high" : "low"}
-            decoding="async"
-          />
-          <figcaption class="gal__cap" data-i18n={s.room}>{s.label}</figcaption>
-        </figure>
-      ))}
-    </div>
-
-    <!-- Jen hrany, ať jde číst jméno. Sál zůstane krémový, noc zůstane nocí. -->
-    <div class="gal__veil" aria-hidden="true"></div>
-
-    <!-- První pohled: vchod, sál, zpět na práh. Dvě až tři vteřiny, pak chůze. -->
-    <div class="gal__intro" id="galIntro" aria-hidden="true">
-      <i class="gal__flash gal__flash--door" style={`--img:url('${src(door)}')`}></i>
-      <i class="gal__flash gal__flash--hall" style={`--img:url('${src(hall)}')`}></i>
-    </div>
-
-    <span class="wm wm--gal" aria-hidden="true">間</span>
-
-    <div class="gal__hud" id="galHud">
-      <p class="gal__room" id="galRoom"></p>
-      <nav class="gal__steps" id="galSteps" aria-label="Galerie" data-i18n-aria="gal.eyebrow">
-        {scenes.map((s, i) => (
-          <button class="gal__step" type="button" data-go={i} data-i18n-aria={s.room}></button>
-        ))}
-      </nav>
-      <a class="gal__ig" href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener">
-        Instagram
+  <div class="gal__stage" id="galStage">
+    <header class="gal__head">
+      <span class="eyebrow eyebrow--gold" data-i18n="gal.eyebrow">Galerie</span>
+      <h2 class="h2">
+        <span data-i18n="gal.title1">Jak to u nás</span>
+        <em data-i18n="gal.title2">vypadá</em>
+      </h2>
+      <a class="gal__ig" href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener" data-i18n="gal.ig">
+        Další fotky na Instagramu
       </a>
-    </div>
+    </header>
 
-    <div class="gal__rail" aria-hidden="true"><i id="galRail"></i></div>
+    {photos.map((p, i) => (
+      <button
+        class={`gal__ph gal__ph--${i + 1}`}
+        type="button"
+        data-full={file(p, p.tall ? 1700 : 2560)}
+      >
+        <img
+          src={file(p, p.tall ? 850 : 1280)}
+          srcset={srcset(p)}
+          sizes="(min-width: 810px) 34vw, 60vw"
+          alt=""
+          data-i18n-alt={p.alt}
+          width={p.tall ? 1700 : 2560}
+          height={p.tall ? 2550 : 1707}
+          loading="lazy"
+          decoding="async"
+        />
+      </button>
+    ))}
   </div>
-  <Blend to="lift" />
 </section>

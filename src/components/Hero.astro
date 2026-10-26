@@ -2,8 +2,7 @@
 /*
   Hero — „cinema lower-third“, navázané na dveře meshi-door.
 
-  Převzaté z hotového prototypu (meshi-hero/index.html), popis podoby je
-  v meshi-hero/meshi-door/INTEGRATION.md, část 2. Hodnoty i rozložení jsou
+  Převzaté z hotového prototypu dveří. Hodnoty i rozložení jsou
   odsouhlasené s klientem, takže se tady nic nepřekresluje. Styly sedí
   v global.css, sekce 6; chování (cyklus tří slov, navázání na průběh
   otvírání dveří, magnetické tlačítko) je v app.js, sekce 9b.
@@ -48,20 +47,25 @@
 
   <div class="hero-stage">
     <div class="hero-copy">
-      <!-- Kicker jen hloubkou ostrosti, bez jediné dekorativní linky:
+      <!-- Kicker „味 Taste · 心 Feel · 間 Connect“:
            1. vyjede ze spáry mezi křídly šódži, jak se dveře otvírají (--door-p: 0 → 1)
-           2. slova dělí prázdno a přeostřování, takže jediná kresba na ploše
-              je porcelánový talíř pod „Plate“ -->
+           2. každé slovo nese svůj znak — chuť, srdce a ma, prázdno mezi
+              lidmi, ve kterém se potkávají. Znak aktivního slova se rozzáří
+              a dopadne jako otisk razítka, cyklus tak jde slovo za slovem.
+           Znaky jsou v podmnožině Yuji Syuku (scripts/build-jp-subset.sh). -->
       <div class="hero-kicker" role="group" aria-label="Taste, Feel, Connect">
         <button type="button" class="kicker-node" data-word="0">
+          <span class="kicker-node-seal" aria-hidden="true">味</span>
           <span class="kicker-node-text">Taste</span>
         </button>
 
-        <button type="button" class="kicker-node is-serif" data-word="1">
+        <button type="button" class="kicker-node" data-word="1">
+          <span class="kicker-node-seal" aria-hidden="true">心</span>
           <span class="kicker-node-text">Feel</span>
         </button>
 
         <button type="button" class="kicker-node" data-word="2">
+          <span class="kicker-node-seal" aria-hidden="true">間</span>
           <span class="kicker-node-text">Connect</span>
         </button>
       </div>
@@ -191,47 +195,21 @@
         rel="noopener noreferrer"
         aria-label="Hodnocení Google 4,9 z 5 — restaurace MESHi Plzeň, otevřít na Google Maps"
       >
-        <!-- Vytesané skóre -->
+        <!-- Jen „4,9★“: číslo a jedna hvězda, žádná stupnice ani graf -->
         <span class="rating-monolith">
           <span class="rating-score" id="gRatingScore">4,9</span>
-          <span class="rating-scale" aria-hidden="true">/5</span>
+          <svg class="rating-star" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 1.8l3.02 6.36 6.98.86-5.15 4.8 1.34 6.9L12 17.33l-6.19 3.39 1.34-6.9L2 9.02l6.98-.86z" />
+          </svg>
         </span>
 
-        <!-- Souhvězdí pěti hvězd a přetáčecí popisek -->
-        <span class="rating-detail">
-          <svg class="rating-constellation" viewBox="0 0 88 14" fill="none" aria-hidden="true">
-            <!-- Zlatá nit souhvězdí -->
-            <path
-              class="constellation-line"
-              d="M 7 9 L 25 5 L 44 8 L 63 4 L 81 7"
-              stroke="rgba(236, 208, 156, 0.38)"
-              stroke-width="0.85"
-              stroke-linecap="round"
-            />
-            <path
-              class="constellation-pulse"
-              d="M 7 9 L 25 5 L 44 8 L 63 4 L 81 7"
-              stroke="#fff6e0"
-              stroke-width="1.15"
-              stroke-linecap="round"
-            />
-            <!-- Pět hvězd -->
-            <g class="constellation-nodes" fill="#ecd09c">
-              <path class="c-node n-1" d="M7 5.2L8.1 7.9L10.8 9L8.1 10.1L7 12.8L5.9 10.1L3.2 9L5.9 7.9Z" />
-              <path class="c-node n-2" d="M25 1.2L26.1 3.9L28.8 5L26.1 6.1L25 8.8L23.9 6.1L21.2 5L23.9 3.9Z" />
-              <path class="c-node n-3" d="M44 4.2L45.1 6.9L47.8 8L45.1 9.1L44 11.8L42.9 9.1L40.2 8L42.9 6.9Z" />
-              <path class="c-node n-4" d="M63 0.2L64.1 2.9L66.8 4L64.1 5.1L63 7.8L61.9 5.1L59.2 4L61.9 2.9Z" />
-              <path class="c-node n-5" d="M81 3.2L82.1 5.9L84.8 7L82.1 8.1L81 10.8L79.9 8.1L77.2 7L79.9 5.9Z" />
-            </g>
-          </svg>
-
-          <span class="rating-reel">
-            <span class="reel-track">
-              <span class="reel-line" data-i18n="hero.reviews">Google Reviews</span>
-              <span class="reel-line is-hover" aria-hidden="true" data-i18n="hero.map">Plzeň · Mapa</span>
-            </span>
-            <span class="rating-arrow" aria-hidden="true">↗</span>
+        <!-- Přetáčecí popisek -->
+        <span class="rating-reel">
+          <span class="reel-track">
+            <span class="reel-line" data-i18n="hero.reviews">Google Reviews</span>
+            <span class="reel-line is-hover" aria-hidden="true" data-i18n="hero.map">Plzeň · Mapa</span>
           </span>
+          <span class="rating-arrow" aria-hidden="true">↗</span>
         </span>
       </a>
 

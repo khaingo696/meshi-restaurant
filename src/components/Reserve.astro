@@ -2,43 +2,38 @@
 /*
   Rezervace — text vlevo, formulář v panelu vpravo.
 
-  Formulář je ten původní, funkční: validace, souhlas se zpracováním údajů,
-  schovaná poznámka a hláška o přijetí. Datum, čas a počet osob sedí v jedné
-  řadě — to je to, co host vyplňuje jako jednu větu.
+  Krok 1 je věta „2 osoby ve středu 28. 10. v 18:00“ s popiskem nad ní;
+  každá hodnota je kus se zlatou linkou a šipkou, pod ním nativní
+  <select> / <input type="date">. Pole s kontaktem spí za
+  tlačítkem Pokračovat (app.js §6, gate html.js) a probudí se na místě
+  řady, která se složí do jednoho řádku — na telefonu se oba kroky vejdou
+  na jednu obrazovku. Bez JavaScriptu je vidět všechno najednou a datum
+  je obyčejné pole.
 */
 import Blend from "./Blend.astro";
 ---
 
 <section class="res" id="rezervace" data-tone="lift">
-  <div class="secbg secbg--lift" aria-hidden="true"><img src="/assets/bg/res.webp" alt="" /></div>
-  <span class="wm wm--res" aria-hidden="true">席</span>
+  <!-- Podklad: Sesshū, Zimní krajina (viz ASSET-CREDITS.md) — poutník
+       sněhem k chrámu pod skálou. Jen tlumeně, pod hustým závojem tuše.
+       Vodoznak 席 odešel: přes tušovou malbu byl jen další šum. -->
+  <div class="secbg secbg--lift res__bg" aria-hidden="true"><img src="/assets/bg/sesshu-winter.webp" alt="" loading="lazy" /></div>
 
   <div class="wrap res__in">
     <div class="res__copy">
-      <!-- Znak 席 tahle sekce nesla dvakrát: jednou tady v hlavičce
-           a jednou jako vodoznak <span class="wm wm--res"> nahoře. -->
       <span class="eyebrow eyebrow--gold" data-i18n="res.eyebrow">Rezervovat stůl</span>
       <h2 class="h2">
         <span class="ml"><span class="ml__i" data-i18n="res.title1">Rezervujte si</span></span>
         <span class="ml"><span class="ml__i"><em data-i18n="res.title2">svůj stůl</em></span></span>
       </h2>
       <!-- Druhá polovina věty je ve vlastním spanu, protože na telefonu
-           odchází — telefon je tam zlatá deska o dva řádky níž. Stejné
+           odchází — telefon tam stojí pod tlačítkem (.rCall). Stejné
            členění musí být i v i18n.js: data-i18n-html přepíše innerHTML. -->
       <p class="lead" data-i18n-html="res.sub">
         Potvrzení posíláme <strong>do 15 minut</strong>.<span class="res-sub-more">
         <br />Raději telefonicky?
         <a class="inlineLink" href="tel:+420778585688">+420 778 585 688</a></span>
       </p>
-
-      <!-- Na telefonu formulář spí a sekce nabízí jen dvě akce: zavolat
-           (zlatá deska, jediná plná plocha na obrazovce) nebo otevřít
-           formulář. Na desktopu je celý blok schovaný — tam formulář
-           stojí vedle textu a schovávat ho nemá co. -->
-      <div class="actRow" id="resActs">
-        <a class="btn btn--act btn--lg" href="tel:+420778585688"><span data-i18n="nav.call">Zavolat</span></a>
-        <button class="btn btn--line" type="button" id="resOpen" aria-expanded="false" aria-controls="resForm" data-i18n="nav.reserveTable">Rezervovat stůl</button>
-      </div>
 
       <div class="hours hours--compact">
         <div class="hours__row"><span data-i18n="hours.monThu">Po - Čt</span><b>11:00-22:00</b></div>
@@ -48,40 +43,78 @@ import Blend from "./Blend.astro";
     </div>
 
     <form class="panel form" id="resForm" tabindex="-1" novalidate>
-      <label class="field field--full">
+      <!-- Krok 1 · věta s popiskem nad ní: „2 osoby ve středu 28. 10.
+           v 18:00“ / „2 guests on Wed 28/10 at 18:00“. Každá hodnota je
+           samostatný kus se zlatou linkou a šipkou; nativní pole leží
+           průhledně PŘES něj (.rPick--over), takže ťuknutí kamkoli na kus
+           otevře výběr. Text kusů i spojek (ve / v / on / at) skládá app.js. -->
+      <fieldset class="rSent">
+        <legend class="rSent__lbl" data-i18n="res.when">Kdy a pro kolik osob</legend>
+        <div class="rLine">
+          <label class="rPick rPick--over">
+            <span class="sr-only" data-i18n="res.lblPpl">Počet osob</span>
+            <span class="rPick__face" id="rPplFace" aria-hidden="true"></span>
+            <select id="r-ppl" name="people" required>
+              <option data-i18n="res.ppl1">1 osoba</option><option selected data-i18n="res.ppl2">2 osoby</option>
+              <option data-i18n="res.ppl3">3 osoby</option><option data-i18n="res.ppl4">4 osoby</option>
+              <option data-i18n="res.ppl5">5 osob</option><option data-i18n="res.ppl6">6 osob</option>
+              <option data-i18n="res.ppl7">7 osob</option><option data-i18n="res.ppl8">8 osob</option>
+            </select>
+          </label>
+          <!-- Věta se láme podle smyslu, ne podle šířky: řádek 1 KDO
+               (2 osoby), řádek 2 KDY (datum + čas) — čas nikdy nespadne
+               na řádek sám. První spojka (ve / on) visí v levém sloupci
+               (.rConn--hang), takže „2 osoby“ a „středu“ začínají pod
+               sebou. Spojka a hodnota za ní se nesmí rozdělit: „v“ na
+               konci řádku je v české sazbě chyba. -->
+          <span class="rConn rConn--hang" id="rConnDate" aria-hidden="true"></span>
+          <span class="rWhen">
+          <label class="rPick rPick--over rPick--date">
+            <span class="sr-only" data-i18n="res.lblDate">Datum</span>
+            <span class="rPick__face" id="rDateFace" aria-hidden="true"></span>
+            <input id="r-date" name="date" type="date" required />
+          </label>
+          <span class="rSeg">
+          <span class="rConn" id="rConnTime" aria-hidden="true"></span>
+          <label class="rPick rPick--over">
+            <span class="sr-only" data-i18n="res.lblTime">Čas</span>
+            <span class="rPick__face" id="rTimeFace" aria-hidden="true"></span>
+            <select id="r-time" name="time" required>
+              <option>17:00</option><option>17:30</option><option selected>18:00</option><option>18:30</option>
+              <option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option>
+            </select>
+          </label>
+          </span>
+          </span>
+        </div>
+      </fieldset>
+
+      <div class="rGo">
+        <button class="btn btn--act btn--lg" type="button" id="resNext" aria-expanded="false" aria-controls="resForm">
+          <span data-i18n="res.next">Pokračovat</span>
+          <span class="btn__arrow" aria-hidden="true"><svg><use href="#ic-arrow"/></svg></span>
+        </button>
+        <a class="rCall" href="tel:+420778585688"><span data-i18n="res.orCall">nebo zavolejte</span> <b>+420 778 585 688</b></a>
+      </div>
+
+      <!-- Krok 2 · věta složená do řádku; ťuknutím se vrací. -->
+      <button class="rSum" type="button" id="resEdit">
+        <span class="rSum__txt"></span>
+        <span class="rSum__edit" data-i18n="res.edit">Změnit</span>
+      </button>
+
+      <label class="field">
         <span class="field__label" data-i18n="res.name">Jméno a příjmení *</span>
         <input id="r-name" name="name" type="text" placeholder="Jan Novák" data-i18n-placeholder="res.namePh" autocomplete="name" required />
-      </label>
-      <label class="field res-field--email">
-        <span class="field__label" data-i18n="res.mail">E-mail *</span>
-        <input id="r-mail" name="email" type="email" placeholder="jan.novak@email.cz" data-i18n-placeholder="res.mailPh" autocomplete="email" required />
       </label>
       <label class="field">
         <span class="field__label" data-i18n="res.phone">Telefon *</span>
         <input id="r-phone" name="phone" type="tel" placeholder="+420 777 000 000" autocomplete="tel" required />
       </label>
-      <div class="form-row form-row--3">
-        <label class="field">
-          <span class="field__label" data-i18n="res.date">Datum *</span>
-          <input id="r-date" name="date" type="date" required />
-        </label>
-        <label class="field">
-          <span class="field__label" data-i18n="res.time">Čas *</span>
-          <select id="r-time" name="time" required>
-            <option>17:00</option><option>17:30</option><option selected>18:00</option><option>18:30</option>
-            <option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option>
-          </select>
-        </label>
-        <label class="field">
-          <span class="field__label" data-i18n="res.ppl">Počet osob *</span>
-          <select id="r-ppl" name="people" required>
-            <option data-i18n="res.ppl1">1 osoba</option><option selected data-i18n="res.ppl2">2 osoby</option>
-            <option data-i18n="res.ppl3">3 osoby</option><option data-i18n="res.ppl4">4 osoby</option>
-            <option data-i18n="res.ppl5">5 osob</option><option data-i18n="res.ppl6">6 osob</option>
-            <option data-i18n="res.ppl7">7 osob</option><option data-i18n="res.ppl8">8 osob</option>
-          </select>
-        </label>
-      </div>
+      <label class="field field--full">
+        <span class="field__label" data-i18n="res.mail">E-mail *</span>
+        <input id="r-mail" name="email" type="email" placeholder="jan.novak@email.cz" data-i18n-placeholder="res.mailPh" autocomplete="email" required />
+      </label>
 
       <!-- Poznámku chce málokdo, proto se rozbaluje až na vyžádání. -->
       <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteField">

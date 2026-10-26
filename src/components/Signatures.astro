@@ -2,8 +2,8 @@
 /*
   Signatures — ukázka jídel.
 
-  Podmalba je pravé křídlo Tōhakuových borovic, nabarvené jako wash
-  u „O nás“ — stejná škola, trochu tmavší, ať talíře mají klidné pole.
+  Podmalba je pravé křídlo Tōhakuovy zástěny (levé je pod „O nás“),
+  v téže tušové škále — sekce na sebe navazují jednou mlhou.
 
   Sekce se připíchne na obrazovku a jídla jedou vodorovně: to uprostřed je
   největší a stojí v ose, ta po stranách se zmenší a nakloní. Fotky jsou
@@ -22,18 +22,20 @@
 import { categories, formatPrice } from "../data/menu";
 import Blend from "./Blend.astro";
 
-/* Pořadí na scéně: nejdřív hlavní jídla, pak předkrmy. Osm jídel je strop:
+/* Pořadí na scéně: hlavní jídla, předkrmy, sushi. Osm jídel je strop:
    délku připíchnuté scény určuje jejich počet, a každé další přidá přes
-   500 px rolování. */
+   500 px rolování. Jen cutouty, kde je talíř celý a alfa obkresluje
+   skutečný obrys — oříznuté scény (rýže uříznutá rámem, deska jako
+   obdélník) sem nepatří. */
 const SHOWCASE = [
   "duck-teriyaki",
-  "pad-thai",
-  "mama-bowl",
-  "chicken-katsu-kare",
-  "mongolian-beef",
+  "chahan",
+  "bossam",
   "ebi-tempura",
-  "gyoza",
-  "tori-karagge",
+  "soft-shell-crab",
+  "nigiri",
+  "samuraj-roll",
+  "geisha-tempura-roll",
 ];
 
 const dishes = SHOWCASE.map((slug) => {
@@ -53,11 +55,14 @@ const first = dishes[0];
 ---
 
 <section class="show" id="menu" data-tone="lift">
-  <div class="secbg secbg--lift" aria-hidden="true"><img src="/assets/bg/paper-pines.webp" alt="" /></div>
-  <!-- Stejně jako u „O nás“: znak zůstává, jen jde z řady do pozadí. -->
-  <span class="wm wm--show" aria-hidden="true">匠</span>
-
   <div class="show__pin" id="showPin">
+    <!-- Pravé křídlo zástěny, jejíž levé křídlo leží pod „O nás“ — sekce
+         na sebe navazují jednou mlhou. Podklad je UVNITŘ pinu: přes celou
+         sekci (vysokou o celé rolování scény) ho „cover“ zvětšil tak, že
+         z obrazu zbyl jen kus prázdného papíru. Vodoznak 匠 odešel: přes
+         tušovou malbu za talířem byl jen další šum. -->
+    <div class="secbg secbg--lift show__bg" aria-hidden="true"><img src="/assets/bg/pines-mist.webp" alt="" /></div>
+
     <!-- Nadpis patří DO pinu: jinak na telefonu zmizí, jakmile se scéna
          připíchne, a od talíře ho dělí celá výška okna. -->
     <div class="wrap show__head">

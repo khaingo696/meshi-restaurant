@@ -100,7 +100,7 @@
     paintRatingAria();
   }
 
-  /* Tiráž hera ukazuje jen číslo a souhvězdí, slovy ho nese až popisek pro
+  /* Tiráž hera ukazuje jen číslo a hvězdu, slovy ho nese až popisek pro
      čtečky — a ten musí nést totéž číslo jako .rating-score, i po přepnutí
      jazyka. Proto se skládá tady, ne přes data-i18n-aria. */
   function paintRatingAria() {
@@ -159,7 +159,7 @@
      2b · DVEŘE MESHI-DOOR
 
      Overlay se šódži dveřmi si kreslí a ovládá vlastní modul
-     (src/components/meshi-door/, popis v meshi-hero/meshi-door/INTEGRATION.md).
+     (src/components/meshi-door/).
      Tady se s ním jen domlouvá zbytek webu:
 
        · Lenis po dobu dveří stojí. Dveře drží <html> na overflow: hidden a
@@ -352,8 +352,8 @@
 
   /* ======================================================================
      4 · LIGHTBOX
-     Zvětšení fotky v jídelním lístku. V galerii lightbox není: fotky
-     drží celou plochu a jsou už v měřítku místnosti.
+     Zvětšení fotky v jídelním lístku a v galerii (koláž ukazuje fotky
+     malé, plná velikost je v data-full).
      ====================================================================== */
   lb = $('#lb');
   var lbImg = $('#lbImg');
@@ -380,6 +380,13 @@
     lb.addEventListener('click', function (e) { if (e.target !== lbImg) closeLb(); });
     $('#lbClose').addEventListener('click', closeLb);
   }
+
+  $$('.gal__ph').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var im = b.querySelector('img');
+      openLb(b.getAttribute('data-full'), im ? im.alt : '');
+    });
+  });
 
   /* ======================================================================
      5 · JÍDELNÍ LÍSTEK
@@ -564,6 +571,7 @@
       ok.classList.add('on');
       f.reset();
       setDefaultDate();
+      paintReserve();
       if (hasGsap && !reduced) gsap.from(ok, { opacity: 0, y: 8, duration: .45, ease: 'power2.out' });
       ok.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' });
     });
@@ -572,10 +580,11 @@
   wire('#vForm', '#vOk');
 
   /* Na telefonu spí formulář poukazu (CSS, sekce 18 — gate je html.js,
-     takže bez JavaScriptu zůstane vidět). Rezervace spí schválně ne:
-     kdo chce stůl, má mít pole rovnou před sebou. Tlačítko formulář
-     probudí a spotlight se přesune — fotka poukazu ustoupí a zlato
-     přejde z tlačítka na odeslání. Třída jde na sekci, ne na formulář. */
+     takže bez JavaScriptu zůstane vidět). Vzhůru je jen poukaz sám:
+     hodnota, řádky o doručení a tlačítko. Rezervace spí schválně ne:
+     kdo chce stůl, má mít pole rovnou před sebou. Tlačítko probudí
+     zbylá pole a zlato přejde z tlačítka na odeslání. Třída jde na
+     sekci, ne na formulář. */
   function wakeForm(btnId, formId) {
     var btn = $(btnId), form = $(formId);
     if (!btn || !form) return;
@@ -584,12 +593,10 @@
       if (!sec || sec.classList.contains('is-open')) return;
       sec.classList.add('is-open');
       btn.setAttribute('aria-expanded', 'true');
-      /* Panel má vlastní reveal (9e) a ten mu mohl nechat opacity: 0,
-         protože se spustil, když byl formulář ještě display: none. */
+      // Najíždějí jen pole, která právě vyšla ze spánku — poukaz už stojí.
+      var woke = $$(':scope > .field:not(.field--val), :scope > .consent, :scope > .btn', form);
       if (hasGsap && !reduced) {
-        gsap.fromTo(form, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' });
-      } else if (hasGsap) {
-        gsap.set(form, { opacity: 1, y: 0 });
+        gsap.fromTo(woke, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .55, stagger: .05, ease: 'power3.out' });
       }
       /* Fokus na formulář, ne na první pole: na telefonu by vyskočila
          klávesnice dřív, než host uvidí, co se otevřelo. */
@@ -598,6 +605,25 @@
     });
   }
   wakeForm('#giftOpen', '#vForm');
+
+  /* Poukaz na telefonu (CSS, sekce 18): ťuknutí na hodnotu rovnou
+     probudí formulář — host už vybírá, další ťuknutí na tlačítko by
+     bylo navíc. A výseky trhací linky jsou maska, která musí vědět,
+     v jaké výšce linka leží; ta se mění s písmem i šířkou. */
+  (function () {
+    var form = $('#vForm'), open = $('#giftOpen'), tear = $('.vTear');
+    if (!form || !open) return;
+    var phone = window.matchMedia('(max-width: 809px)');
+    form.addEventListener('change', function (e) {
+      if (e.target.name !== 'val' || !phone.matches) return;
+      if (!open.closest('section').classList.contains('is-open')) open.click();
+    });
+    if (tear && window.ResizeObserver) {
+      new ResizeObserver(function () {
+        form.style.setProperty('--tear', (tear.offsetTop + tear.offsetHeight / 2) + 'px');
+      }).observe(form);
+    }
+  })();
 
   // Poznámka je nepovinná — ukážeme ji, až o ni někdo stojí.
   var noteToggle = $('#noteToggle'), noteField = $('#noteField');
@@ -621,6 +647,122 @@
     el.value = d.toISOString().slice(0, 10);
   }
   setDefaultDate();
+
+  /* Rezervace (Reserve.astro): krok 1 je věta „2 osoby ve středu 28. 10.
+     v 18:00“ / „2 guests on Wed 28/10 at 18:00“, krok 2 kontaktní pole na
+     jejím místě. Nativní pole leží průhledně pod kusy věty, které se tady
+     skládají: číslo rovně, slovo kurzívou (<b> / <i>). Den a datum dává
+     Intl; jen český 4. pád dne i s předložkou (ve středu) je v tabulce,
+     Intl ho neumí. Předložka před časem se řídí výslovností (prep, sekce
+     7): ve 20:00. Krok 2 je .is-open na sekci, gate html.js — stejně jako
+     u poukazu. */
+  var CS_ON_DAY = [['v', 'neděli'], ['v', 'pondělí'], ['v', 'úterý'], ['ve', 'středu'],
+    ['ve', 'čtvrtek'], ['v', 'pátek'], ['v', 'sobotu']];
+
+  function resDate() {
+    var el = $('#r-date');
+    if (!el || !el.value) return null;
+    var p = el.value.split('-');
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    var en = LANG === 'en';
+    var loc = en ? 'en-GB' : 'cs-CZ';
+    return {
+      on: en ? 'on' : CS_ON_DAY[d.getDay()][0],
+      day: en ? new Intl.DateTimeFormat(loc, { weekday: 'short' }).format(d) : CS_ON_DAY[d.getDay()][1],
+      num: new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'numeric' }).format(d)
+    };
+  }
+
+  // parts = [['b', '2'], ['i', 'osoby']] → <b>2</b><i>osoby</i>
+  function fillFace(el, parts) {
+    if (!el) return;
+    el.textContent = '';
+    parts.forEach(function (pt) {
+      if (!pt[1]) return;
+      var n = document.createElement(pt[0]);
+      n.textContent = pt[1];
+      el.appendChild(n);
+    });
+  }
+
+  function paintReserve() {
+    var form = $('#resForm');
+    if (!form) return;
+    var time = $('#r-time'), ppl = $('#r-ppl'), dp = resDate();
+    if (!time || !ppl) return;
+    var pplTxt = ppl.options[ppl.selectedIndex].text;
+    var n = parseInt(pplTxt, 10);
+    var at = LANG === 'en' ? 'at' : prep(parseInt(time.value, 10));
+    fillFace($('#rPplFace'), [['b', String(n || pplTxt)], ['i', n ? pplTxt.replace(/^\d+\s*/, '') : '']]);
+    fillFace($('#rDateFace'), dp ? [['i', dp.day], ['b', dp.num]] : []);
+    fillFace($('#rTimeFace'), [['b', time.value]]);
+    var cd = $('#rConnDate'), ct = $('#rConnTime'), sum = $('.rSum__txt', form);
+    if (cd) cd.textContent = dp ? dp.on : '';
+    if (ct) ct.textContent = at;
+    if (sum) {
+      sum.textContent = [pplTxt, dp ? dp.on + ' ' + dp.day + ' ' + dp.num : '', at + ' ' + time.value]
+        .filter(Boolean).join(' ');
+    }
+  }
+
+  (function () {
+    var form = $('#resForm'), next = $('#resNext'), edit = $('#resEdit');
+    if (!form || !next || !edit) return;
+    var sec = form.closest('section'), date = $('#r-date');
+    var sentence = $$('.rSent, .rGo', form);
+
+    // Na popisu data leží průhledné nativní pole. Chrome a Edge po kliknutí
+    // jen označí den, kalendář otevře až showPicker.
+    if (date && date.showPicker) {
+      date.addEventListener('click', function () { try { date.showPicker(); } catch (e) {} });
+    }
+
+    // Nová hodnota se zaostří z rozmazání — jako kicker v heru.
+    form.addEventListener('change', function (e) {
+      var pick = e.target.closest('.rPick');
+      if (!pick) return;
+      paintReserve();
+      if (hasGsap && !reduced) {
+        gsap.fromTo(pick, { filter: 'blur(6px)', opacity: .3 },
+          { filter: 'blur(0px)', opacity: 1, duration: .6, ease: 'power3.out', clearProps: 'filter,opacity' });
+      }
+    });
+
+    function setOpen(on) {
+      sec.classList.toggle('is-open', on);
+      next.setAttribute('aria-expanded', String(on));
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+    }
+
+    /* Věta odjede nahoru a na jejím místě se zespoda zvednou pole —
+       jedno hnutí, ne dvě, takže výška sekce se nikde neskokne. Fokus
+       jde na formulář, ne na první pole: klávesnice by na telefonu
+       vyskočila dřív, než host uvidí, co se otevřelo. */
+    next.addEventListener('click', function () {
+      if (date && !date.checkValidity()) { date.reportValidity(); return; }
+      paintReserve();
+      if (hasGsap && !reduced) {
+        var woke = $$(':scope > .rSum, :scope > .field:not([hidden]), :scope > .note-toggle, :scope > .consent, :scope > .btn', form);
+        gsap.timeline()
+          .to(sentence, { opacity: 0, y: -14, duration: .26, stagger: .035, ease: 'power2.in' })
+          .add(function () { setOpen(true); gsap.set(sentence, { clearProps: 'opacity,transform' }); })
+          .fromTo(woke, { opacity: 0, y: 16 },
+            { opacity: 1, y: 0, duration: .55, stagger: .05, ease: 'power3.out', clearProps: 'opacity,transform' });
+      } else {
+        setOpen(true);
+      }
+      form.focus({ preventScroll: true });
+    });
+
+    edit.addEventListener('click', function () {
+      setOpen(false);
+      if (hasGsap && !reduced) {
+        gsap.fromTo(sentence, { opacity: 0, y: 14 },
+          { opacity: 1, y: 0, duration: .55, stagger: .06, ease: 'power3.out', clearProps: 'opacity,transform' });
+      }
+      $('#r-ppl').focus({ preventScroll: true });
+    });
+  })();
 
   /* ======================================================================
      7 · MÁME TEĎ OTEVŘENO?
@@ -680,7 +822,7 @@
      7b · HERO: TŘI SLOVA, PRÁH DVEŘÍ, MAGNETICKÉ TLAČÍTKO
 
      Chování kickeru „Taste  Feel  Connect“ a tlačítka v heru. Hodnoty jsou
-     z prototypu (meshi-hero/main.js, popis v INTEGRATION.md, část 2, bod 4).
+     z prototypu dveří.
      Leží to tady, ne v <script> u komponenty, protože zdejší web drží
      všechno chování v tomhle jednom souboru z public/ — viz hlavička.
 
@@ -802,9 +944,8 @@
     if (next !== iframe.src && next !== src) iframe.src = next;
   }
 
-  /* Ukázka jídel a galerie: překlad popisků se přepíše tady. */
+  /* Ukázka jídel: překlad popisků se přepíše tady. */
   var paintShowcase = function () {};
-  var paintGallery = function () {};
 
   function applyLang(next, persist) {
     LANG = next === 'en' ? 'en' : 'cs';
@@ -857,7 +998,7 @@
     paintZoomLabels();
     paintMapLang();
     paintShowcase();
-    paintGallery();
+    paintReserve();
     buildSplitWords();
     if (ratingData) applyGoogleRating(ratingData);
     else paintRatingAria();
@@ -1011,243 +1152,6 @@
   }
   initShowcase();
 
-  /* ======================================================================
-     9g · GALERIE — „Prah“
-
-     Signatures už jedou vodorovně; tady se jde do hloubky. Fotka drží
-     celou plochu. První dva až tři vteřiny ukáže vrstva .gal__intro vchod
-     a sál (leží NAD scénou, takže si s pinovanou osou nic nepřebíjí),
-     pak zmizí. Rolování je chůze: každé další otevření má jiné gesto,
-     protože každá místnost se jinak vchází.
-
-     Časová osa pinu (0–1):
-       0 – .16   stát ve dveřích, pomalý krok dopředu
-       pak       šest prahů, každý = přechod + stání v místnosti
-     ====================================================================== */
-  function initGallery() {
-    var pin = $('#galPin');
-    if (!pin) return;
-
-    var scenes = $$('.gal__scene', pin);
-    var roomEl = $('#galRoom');
-    var railEl = $('#galRail');
-    var steps = $$('.gal__step', pin);
-    var intro = $('#galIntro');
-    var wmEl = $('.wm--gal', pin);
-    var n = scenes.length;
-    if (!n) return;
-
-    var roomKeys = scenes.map(function (el) { return el.getAttribute('data-room'); });
-    var cur = 0;
-    var holds = [];
-    var st = null;
-    var introTl = null;
-
-    function writeHud(i) {
-      if (roomEl) roomEl.textContent = t(roomKeys[i]) || '';
-      steps.forEach(function (b, k) {
-        b.classList.toggle('on', k === i);
-        if (k === i) b.setAttribute('aria-current', 'true');
-        else b.removeAttribute('aria-current');
-      });
-    }
-
-    paintGallery = function () { writeHud(cur); };
-    writeHud(0);
-
-    if (reduced || !hasST) {
-      pin.classList.add('is-static');
-      return;
-    }
-
-    function plan() {
-      var first = 0.16;
-      var segs = n - 1;
-      var trans = 0.056;
-      var hold = (1 - first - segs * trans) / segs;
-      holds = [{ start: 0, end: first, mid: first * 0.6 }];
-      var t0 = first;
-      for (var i = 1; i < n; i++) {
-        var t1 = t0 + trans;
-        var t2 = i === n - 1 ? 1 : t1 + hold;
-        holds.push({ start: t1, end: t2, mid: t1 + (t2 - t1) * 0.45, transStart: t0, transEnd: t1 });
-        t0 = t2;
-      }
-      return { first: first, trans: trans };
-    }
-
-    function roomAt(p) {
-      var i = 0;
-      for (var k = 0; k < n; k++) {
-        if (p >= (holds[k].transStart != null ? holds[k].transStart : holds[k].start)) i = k;
-      }
-      return i;
-    }
-
-    function paintCaption(p) {
-      if (!roomEl) return;
-      var h = holds[cur];
-      var op = 1;
-      if (h.transStart != null && p < h.start) {
-        op = gsap.utils.clamp(0, 1, (p - h.transStart) / Math.max(0.001, h.start - h.transStart));
-      } else if (cur < n - 1 && p > holds[cur + 1].transStart) {
-        var nx = holds[cur + 1];
-        op = 1 - gsap.utils.clamp(0, 1, (p - nx.transStart) / Math.max(0.001, nx.transEnd - nx.transStart));
-      }
-      roomEl.style.opacity = op.toFixed(3);
-    }
-
-    function near(i) {
-      scenes.forEach(function (el, j) {
-        el.style.visibility = Math.abs(j - i) <= 1 ? 'visible' : 'hidden';
-      });
-    }
-
-    function killIntro() {
-      if (introTl) { introTl.kill(); introTl = null; }
-      if (intro) gsap.set(intro, { autoAlpha: 0 });
-    }
-
-    function playIntro() {
-      if (!intro) return;
-      var door = $('.gal__flash--door', intro);
-      var hall = $('.gal__flash--hall', intro);
-      killIntro();
-      gsap.set(intro, { autoAlpha: 1 });
-      gsap.set(door, { scale: 1.12, opacity: 1 });
-      gsap.set(hall, { scale: 1.08, opacity: 0 });
-      introTl = gsap.timeline({
-        defaults: { ease: 'power2.inOut' },
-        onComplete: function () {
-          introTl = null;
-          gsap.set(intro, { autoAlpha: 0 });
-        }
-      });
-      introTl.to(door, { scale: 1, duration: 0.7 }, 0);
-      introTl.to(hall, { opacity: 1, scale: 1, duration: 0.55 }, 0.8);
-      introTl.to(door, { scale: 1.1, duration: 0.55 }, 0.8);
-      introTl.to(intro, { autoAlpha: 0, duration: 0.55 }, 1.85);
-    }
-
-    function outVars(verb, dur) {
-      var v = { opacity: 0, ease: 'none', duration: dur, force3D: true };
-      if (verb === 'through') { v.scale = 1.36; }
-      else if (verb === 'open') { v.yPercent = -14; v.scale = 1.08; }
-      else if (verb === 'lean') { v.scale = 1.24; }
-      else if (verb === 'glance') { v.xPercent = -11; }
-      else if (verb === 'pass') { v.scale = 1.2; v.xPercent = -7; }
-      else if (verb === 'sit') { v.yPercent = -8; v.scale = 1.1; }
-      else { v.scale = 1.18; }
-      return v;
-    }
-
-    function inFrom(verb, cinematic) {
-      var v = { opacity: 0, scale: 1.1, xPercent: 0, yPercent: 0 };
-      if (verb === 'sit') { v.yPercent = 14; v.scale = 1.16; }
-      else if (verb === 'glance') { v.xPercent = 12; v.scale = 1.04; }
-      else if (verb === 'lean') { v.scale = 1.18; }
-      else if (verb === 'open') { v.yPercent = 10; v.scale = 1.08; }
-      else if (verb === 'through' || verb === 'pass') { v.scale = 1.14; }
-      if (cinematic && verb === 'through') {
-        v.clipPath = 'inset(16% 22% 10% 22%)';
-        v.scale = 1.12;
-      } else if (cinematic && verb === 'pass') {
-        v.clipPath = 'inset(10% 4% 12% 46%)';
-        v.scale = 1.08;
-      }
-      return v;
-    }
-
-    function inTo(verb, cinematic, dur) {
-      var v = { opacity: 1, scale: 1, xPercent: 0, yPercent: 0, ease: 'none', duration: dur, force3D: true };
-      if (cinematic && (verb === 'through' || verb === 'pass')) {
-        v.clipPath = 'inset(0% 0% 0% 0%)';
-      }
-      return v;
-    }
-
-    var mm = gsap.matchMedia();
-    mm.add('(min-width: 810px)', function () { return build(4.6, true); });
-    mm.add('(max-width: 809px)', function () { return build(3.4, false); });
-
-    function build(vhs, cinematic) {
-      var p = plan();
-      var origins = scenes.map(function (el) { return el.getAttribute('data-origin') || '50% 50%'; });
-
-      gsap.set(scenes, {
-        opacity: 0, scale: 1, xPercent: 0, yPercent: 0, zIndex: 1,
-        clipPath: 'inset(0% 0% 0% 0%)',
-        transformOrigin: function (i) { return origins[i]; },
-        force3D: true
-      });
-      gsap.set(scenes[0], { opacity: 1, zIndex: 2, visibility: 'visible' });
-      if (intro) gsap.set(intro, { autoAlpha: 0 });
-      near(0);
-
-      var tl = gsap.timeline({
-        defaults: { ease: 'none' },
-        scrollTrigger: {
-          trigger: pin,
-          start: 'top top',
-          end: function () { return '+=' + Math.round(window.innerHeight * vhs); },
-          pin: true,
-          scrub: 0.7,
-          invalidateOnRefresh: true,
-          onEnter: function (self) {
-            pin.classList.add('is-live');
-            if (self.progress < 0.02) playIntro();
-          },
-          onEnterBack: function () { pin.classList.add('is-live'); },
-          onLeave: function () { pin.classList.remove('is-live'); killIntro(); },
-          onLeaveBack: function () { pin.classList.remove('is-live'); killIntro(); },
-          onUpdate: function (self) {
-            if (self.progress > 0.018) killIntro();
-            var i = roomAt(self.progress);
-            if (i !== cur) { cur = i; writeHud(i); near(i); }
-            paintCaption(self.progress);
-            if (railEl) gsap.set(railEl, { width: (self.progress * 100).toFixed(2) + '%' });
-          }
-        }
-      });
-      st = tl.scrollTrigger;
-
-      tl.to(scenes[0], { scale: 1.08, duration: p.first, force3D: true }, 0);
-      if (wmEl) tl.fromTo(wmEl, { x: 0, scale: 1 }, { x: 36, scale: 0.9, duration: 1 }, 0);
-
-      for (var i = 1; i < n; i++) {
-        var from = scenes[i - 1];
-        var to = scenes[i];
-        var start = holds[i].transStart;
-        var dur = p.trans;
-        var verb = to.getAttribute('data-verb') || 'open';
-        var holdDur = holds[i].end - holds[i].start;
-
-        tl.set(to, { zIndex: 3, visibility: 'visible' }, start);
-        tl.set(from, { zIndex: 2 }, start);
-        tl.to(from, outVars(verb, dur), start);
-        tl.fromTo(to, inFrom(verb, cinematic), Object.assign(inTo(verb, cinematic, dur), { immediateRender: false }), start);
-        tl.to(to, { scale: 1.07, duration: holdDur, force3D: true }, holds[i].start);
-      }
-
-      return function () {
-        killIntro();
-        st = null;
-        pin.classList.remove('is-live');
-      };
-    }
-
-    steps.forEach(function (b, i) {
-      b.addEventListener('click', function () {
-        if (!st || !holds[i]) return;
-        killIntro();
-        var y = st.start + holds[i].mid * (st.end - st.start);
-        if (window.lenis) window.lenis.scrollTo(y, { duration: 0.85 });
-        else window.scrollTo({ top: y, behavior: 'smooth' });
-      });
-    });
-  }
-  initGallery();
-
   /* ---- Jazyk se nasadí teprve teď: applyLang sahá na scénu i odstavce --- */
   var fromUrl = '';
   try { fromUrl = new URLSearchParams(location.search).get('lang') || ''; } catch (e) {}
@@ -1328,13 +1232,112 @@
   });
 
   /* ---- 9d · fotka se otevře výřezem, nejen prolnutím ------------------- */
+  /* Výřez se po dojetí smaže: zůstal by na figure napořád a natočené
+     fotce (desktop) by ořezával rohy. */
   gsap.utils.toArray('.giftShot').forEach(function (el, i) {
     gsap.fromTo(el,
       { clipPath: 'inset(14% 0% 14% 0% round 4px)', opacity: 0 },
-      { clipPath: 'inset(0% 0% 0% 0% round 4px)', opacity: 1,
+      { clipPath: 'inset(0% 0% 0% 0% round 4px)', opacity: 1, clearProps: 'clipPath',
         duration: 1.15, ease: 'expo.out', delay: i * .06,
         scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
   });
+
+  /* ---- 9g · galerie: hromádka → koláž → zhasnutí ----------------------- */
+  /* Žádný pin a nic se nespouští jednou: všechno jede se scrubem, takže
+     cesta zpět koláž zase složí. CSS drží složený stav, tady se počítá
+     jen odkud fotky letí a jak zhasnou.
+
+     Desktop: plocha je vysoká jako okno, takže jedna osa pro celou sekci.
+     Fotky začnou jako hromádka uprostřed plochy (pod ní je schovaný
+     nadpis), rozletí se, když střed plochy vjede do okna, a složené stojí,
+     když plocha vyplní okno.
+
+     Konec: fotky NEODLÉTAJÍ. Dřív proletěly do stran — spodní řada letěla
+     dolů proti směru rolování a poloprůhledné rozmazané fotky visely přes
+     nadpis rezervace. Teď se jen o kus vzdálí a ztmavnou, řada po řadě
+     shora dolů, ve směru rolování — jako když v místnosti zhasínají
+     světla. Poslední zhasne dřív, než přijede nadpis rezervace.
+     Telefon: plocha je vyšší než okno — jedna osa by spodní fotky složila
+     až pod ohybem. Každá fotka tam má vlastní osu podle své polohy.
+
+     Za letu rozmazané a tmavé, složené ostré. Rozmazání jen na desktopu:
+     sedm filtrů přepočítávaných každý snímek telefon nedá. */
+  var galStage = $('#galStage');
+  if (galStage) {
+    var galPh = $$('.gal__ph', galStage);
+    var galHead = $('.gal__head', galStage);
+    var galTilt = [-9, 6, -4, 8, -6, 4, -2];
+
+    // Vektor od středu fotky ke středu plochy (px). Funkce, ne čísla:
+    // invalidateOnRefresh je po změně okna spočítá znovu.
+    var toMid = function (el, axis) {
+      return axis === 'x'
+        ? galStage.clientWidth / 2 - (el.offsetLeft + el.offsetWidth / 2)
+        : galStage.clientHeight / 2 - (el.offsetTop + el.offsetHeight / 2);
+    };
+    var look = function (blur, light, withBlur) {
+      return (withBlur ? 'blur(' + blur + 'px) ' : '') + 'brightness(' + light + ')';
+    };
+
+    gsap.matchMedia().add({ wide: '(min-width: 810px)', narrow: '(max-width: 809px)' }, function (ctx) {
+      if (ctx.conditions.wide) {
+        // Střed plochy vjede do okna při ~.25, plocha ho vyplní při .5.
+        // Hromádka vydrží, dokud není vidět (~.29), pak se rychle rozletí;
+        // složená stojí .48–.56, pak zhasíná podle výšky řady (.56–.74).
+        var tl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: { trigger: galStage, start: 'top bottom', end: 'bottom top', scrub: .6, invalidateOnRefresh: true }
+        });
+        galPh.forEach(function (el, i) {
+          var k = i / (galPh.length - 1);
+          tl.fromTo(el, {
+            x: function () { return toMid(el, 'x'); },
+            y: function () { return toMid(el, 'y'); },
+            rotation: galTilt[i], scale: .5, filter: look(9, .4, true)
+          }, {
+            x: 0, y: 0, rotation: 0, scale: 1, filter: look(0, 1, true),
+            duration: .17, ease: 'power2.out'
+          }, .29 + k * .02);
+          // Výška řady v ploše (0 nahoře, ~.6 dole) určuje, kdy zhasne.
+          var row = el.offsetTop / galStage.clientHeight;
+          tl.to(el, {
+            scale: .94, opacity: .35, filter: look(3, .15, true),
+            duration: .12, ease: 'power1.inOut'
+          }, .56 + row * .1);
+        });
+        var headRow = galHead.offsetTop / galStage.clientHeight;
+        tl.fromTo(galHead, { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: .12, ease: 'power2.out' }, .36)
+          .to(galHead, { opacity: 0, duration: .12, ease: 'power1.inOut' }, .56 + headRow * .1)
+          .set({}, {}, 1);
+        return;
+      }
+
+      // Telefon: osa každé fotky běží od chvíle, kdy její střed vjede
+      // zdola do okna, do chvíle, kdy vyjede nahoře.
+      galPh.forEach(function (el, i) {
+        var at = function (edge) {
+          return function () { return 'top+=' + Math.round(el.offsetTop + el.offsetHeight / 2) + ' ' + edge; };
+        };
+        gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: { trigger: galStage, start: at('bottom'), end: at('top'), scrub: .5, invalidateOnRefresh: true }
+        })
+          .fromTo(el, {
+            x: function () { return toMid(el, 'x') * .8; },
+            rotation: galTilt[i], scale: .55, filter: look(0, .4, false)
+          }, { x: 0, rotation: 0, scale: 1, filter: look(0, 1, false), duration: .4, ease: 'power2.out' }, 0)
+          // Konec jako na desktopu: na místě se vzdálí a zhasne.
+          .to(el, {
+            scale: .94, opacity: .35, filter: look(0, .15, false),
+            duration: .3, ease: 'power1.inOut'
+          }, .62);
+      });
+      gsap.fromTo(galHead, { opacity: 0, y: 24 }, {
+        opacity: 1, y: 0, ease: 'none',
+        scrollTrigger: { trigger: galHead, start: 'top 92%', end: 'top 62%', scrub: .5 }
+      });
+    });
+  }
 
   /* ---- 9e · formuláře --------------------------------------------------- */
   gsap.utils.toArray('.panel').forEach(function (el) {
@@ -1349,9 +1352,11 @@
   });
 
   /* ---- 9f · pozadí pluje pomaleji než obsah --------------------------- */
+  /* Signatures ne: sekce je připíchnutá a roluje přes několik obrazovek,
+     takže by pozadí za talířem viditelně ujíždělo. Tam stojí. */
   gsap.utils.toArray('.secbg').forEach(function (el) {
     var im = el.querySelector('img');
-    if (!im) return;
+    if (!im || el.closest('.show')) return;
     gsap.fromTo(im, { yPercent: -5, scale: 1.1 }, {
       yPercent: 5, ease: 'none',
       scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true }
@@ -1363,7 +1368,7 @@
   });
 
   /* ---- 9h · vodoznaky a vysazené MESHi -------------------------------- */
-  gsap.utils.toArray('.wm:not(.wm--gal)').forEach(function (el, i) {
+  gsap.utils.toArray('.wm').forEach(function (el, i) {
     gsap.fromTo(el, { y: 0 }, {
       y: i % 2 ? 80 : -80, ease: 'none',
       scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true }
