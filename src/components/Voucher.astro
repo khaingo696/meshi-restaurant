@@ -1,42 +1,39 @@
 ---
 /*
-  Dárkový poukaz — jediná světlá plocha webu.
+  Dárkový poukaz — vitrína v tónu tuše.
 
-  Mění vzduch mezi řadou tmavých sekcí. Oba okraje se rozplývají přesně do
-  barvy sekce nad a pod, takže na přechodu nevzniká linka (viz .gift::before
-  a ::after v global.css).
-
-  Mockup tady místo formuláře kreslí jen tlačítko. Objednávka poukazu je ale
-  funkce, kterou web má, takže v pravém sloupci zůstal formulář — jen ve
-  světlé variantě panelu, aby na prosvětlené ploše nedělal tmavou díru.
+  Podmalba je světlejší list Kōrin (zlato + meruňka), stejná škola tuše
+  jako ostatní plochy. Poukaz zůstává předmětem na skle.
 */
+import Blend from "./Blend.astro";
 ---
 
-<section class="gift" id="poukaz">
-  <div class="secbg" aria-hidden="true"><img src="/assets/bg/gift.webp" alt="" /></div>
+<section class="gift" id="poukaz" data-tone="lift">
+  <div class="secbg secbg--lift" aria-hidden="true"><img src="/assets/bg/paper-plum.webp" alt="" /></div>
 
   <div class="wrap giftIn">
     <div class="giftCopy">
-      <span class="eyebrow eyebrow--onLight" data-i18n="gift.eyebrow">Darujte zážitek</span>
-      <h2 class="h2 h2--onLight">
+      <h2 class="h2">
         <span class="ml"><span class="ml__i" data-i18n="gift.title1">Dárkový poukaz</span></span>
         <span class="ml"><span class="ml__i"><em data-i18n="gift.title2">do MESHi</em></span></span>
       </h2>
-      <p class="lead lead--onLight" data-i18n-html="gift.body">
-        Chcete udělat radost svým blízkým a dopřát jim kousek ráje na talíři? Vyplňte hodnotu a kontakt —
-        ozveme se obratem s platebními údaji. Poukaz pošleme <strong>v PDF k tisku</strong>, nebo si ho
-        vyzvednete osobně v dárkovém balení.
+      <p class="lead" data-i18n-html="gift.body">
+        Chcete udělat radost svým blízkým a dopřát jim kousek ráje na talíři? Vyplňte hodnotu a kontakt.
+        <span class="gift-lead-more"> Ozveme se obratem s platebními údaji. Poukaz pošleme <strong>v PDF k tisku</strong>, nebo si ho
+        vyzvednete osobně v dárkovém balení.</span>
       </p>
 
       <figure class="giftShot">
         <img src="/assets/voucher.webp" width="1600" height="800"
              alt="Dárkový poukaz MESHi: jméno, hodnota a platnost" data-i18n-alt="gift.alt" loading="lazy" />
       </figure>
+
+      <div class="actRow" id="giftActs">
+        <button class="btn btn--act btn--lg" type="button" id="giftOpen" aria-expanded="false" aria-controls="vForm" data-i18n="gift.submit">Objednat poukaz</button>
+      </div>
     </div>
 
-    <form class="panel panel--light form" id="vForm" novalidate>
-      <h3 data-i18n="gift.formTitle">Darujte poukaz</h3>
-
+    <form class="panel form" id="vForm" tabindex="-1" novalidate>
       <div class="field field--full">
         <span class="field__label" data-i18n="gift.value">Požadovaná hodnota poukazu</span>
         <div class="vals">
@@ -68,11 +65,13 @@
         <label for="v-gdpr" data-i18n="gift.gdpr">Souhlasím se zpracováním osobních údajů pro vyřízení objednávky.</label>
       </div>
 
-      <button class="btn btn--ink btn--lg" type="submit">
-        <span data-i18n="gift.submit">Objednat poukaz</span> <span class="btn__arrow" aria-hidden="true">→</span>
+      <button class="btn btn--act btn--lg" type="submit">
+        <span data-i18n="gift.submit">Objednat poukaz</span>
+        <span class="btn__arrow" aria-hidden="true"><svg><use href="#ic-arrow"/></svg></span>
       </button>
 
       <p class="ok-box" id="vOk" role="status" data-i18n="gift.ok">Děkujeme! Ozveme se vám do hodiny s instrukcemi k platbě a vyzvednutí.</p>
     </form>
   </div>
+  <Blend to="lift" />
 </section>

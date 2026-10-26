@@ -2,12 +2,15 @@
 /*
   Signatures — ukázka jídel.
 
+  Podmalba je pravé křídlo Tōhakuových borovic, nabarvené jako wash
+  u „O nás“ — stejná škola, trochu tmavší, ať talíře mají klidné pole.
+
   Sekce se připíchne na obrazovku a jídla jedou vodorovně: to uprostřed je
   největší a stojí v ose, ta po stranách se zmenší a nakloní. Fotky jsou
   WebP s alfa kanálem (vyříznuté z pozadí), takže drop-shadow() obkresluje
   skutečný obrys jídla. Kruh, zář a zapuštěné logo tvoří podstavec.
 
-  Tlačítko vpravo dole otevírá <MenuOverlay> s celým lístkem. Kategorii mu
+  Tlačítko pod názvem jídla otevírá <MenuOverlay> s celým lístkem. Kategorii mu
   app.js průběžně přepisuje na tu, ze které je jídlo právě uprostřed, takže
   překryv se otevře v kategorii, kterou si člověk prohlížel.
 
@@ -17,6 +20,7 @@
   nebudou, řádek s cenou se nevykreslí — žádné „0 Kč“ ani vymyšlená čísla.
 */
 import { categories, formatPrice } from "../data/menu";
+import Blend from "./Blend.astro";
 
 /* Pořadí na scéně: nejdřív hlavní jídla, pak předkrmy. Osm jídel je strop:
    délku připíchnuté scény určuje jejich počet, a každé další přidá přes
@@ -48,22 +52,30 @@ const dishes = SHOWCASE.map((slug) => {
 const first = dishes[0];
 ---
 
-<section class="show" id="menu">
-  <div class="wrap show__head">
-    <span class="kanji" aria-hidden="true">匠</span>
-    <span class="eyebrow eyebrow--gold" data-i18n="sig.title">Naše signatures</span>
-    <h2 class="h2">
-      <span class="ml"><span class="ml__i" data-i18n="sig.sub1">Harmonie poctivé chuti</span></span>
-      <span class="ml"><span class="ml__i"><em data-i18n="sig.sub2">v každém soustu</em></span></span>
-    </h2>
-  </div>
+<section class="show" id="menu" data-tone="lift">
+  <div class="secbg secbg--lift" aria-hidden="true"><img src="/assets/bg/paper-pines.webp" alt="" /></div>
+  <!-- Stejně jako u „O nás“: znak zůstává, jen jde z řady do pozadí. -->
+  <span class="wm wm--show" aria-hidden="true">匠</span>
 
   <div class="show__pin" id="showPin">
-    <div class="show__ring" aria-hidden="true"></div>
-    <div class="show__glow" aria-hidden="true"></div>
-    <img class="show__mark" id="showMark" src="/assets/meshi_logo_hero.png?v=gold" alt="" aria-hidden="true" />
+    <!-- Nadpis patří DO pinu: jinak na telefonu zmizí, jakmile se scéna
+         připíchne, a od talíře ho dělí celá výška okna. -->
+    <div class="wrap show__head">
+      <h2 class="h2">
+        <span class="ml"><span class="ml__i" data-i18n="sig.title1">Naše</span></span>
+        <span class="ml"><span class="ml__i"><em data-i18n="sig.title2">signatures</em></span></span>
+      </h2>
+      <p class="lead" data-i18n="sig.lead">Harmonie poctivé chuti v každém soustu.</p>
+    </div>
 
-    <div class="show__stage" id="showStage">
+    <!-- Talíř, kruh a logo sdílejí jednu studnu: na telefonu se pak
+         nemůžou rozjet — dřív byl kruh na 40 % pinu a jídlo na 50 %. -->
+    <div class="show__well">
+      <div class="show__ring" aria-hidden="true"></div>
+      <div class="show__glow" aria-hidden="true"></div>
+      <img class="show__mark" id="showMark" src="/assets/meshi_logo_hero.png?v=gold" alt="" aria-hidden="true" />
+
+      <div class="show__stage" id="showStage">
       {dishes.map((d) => (
         <figure class="dish" data-cat={d.cat} data-kicker={d.kicker} data-name={d.name} data-price={d.price}>
           <img src={d.img} alt={d.name} width="900" height="900" loading="lazy" decoding="async" />
@@ -77,6 +89,7 @@ const first = dishes[0];
           </figcaption>
         </figure>
       ))}
+      </div>
     </div>
 
     <!-- Název jídla uprostřed. Pro čtečky je to duplikát — jméno každého
@@ -90,9 +103,11 @@ const first = dishes[0];
 
     <div class="show__bar" aria-hidden="true"><i id="showBar"></i></div>
 
-    <button class="show__cta btn btn--line" id="showMenuBtn" type="button"
+    <button class="show__cta btn btn--act" id="showMenuBtn" type="button"
             data-cat={first.cat} aria-haspopup="dialog" aria-expanded="false">
-      <span data-i18n="sig.full">Zobrazit celé menu</span> <span class="btn__arrow" aria-hidden="true">→</span>
+      <span data-i18n="sig.full">Zobrazit celé menu</span>
+      <span class="btn__arrow" aria-hidden="true"><svg><use href="#ic-arrow"/></svg></span>
     </button>
   </div>
+  <Blend to="ink" />
 </section>

@@ -10,18 +10,21 @@
   aby se dal nakreslit. .splitwords rozsvěcuje slova podle rolování, dělení
   dělá app.js až po doplnění jazyka.
 
-  Konec sekce dojíždí přechodem .toInk do barvy další sekce; bez něj tam
-  byla vodorovná hrana.
+  Konec sekce dojíždí fade do signatures (lift).
 */
+import Blend from "./Blend.astro";
 ---
 
 <section class="about" id="o-nas">
   <div class="about__bgWrap" aria-hidden="true"><img class="about__bg" src="/assets/wash.webp" alt="" /></div>
   <div class="about__top" aria-hidden="true"></div>
+  <!-- 心 se z hlavičky přestěhovalo sem. Pět sekcí za sebou mělo stejnou
+       trojici „kanji + eyebrow + nadpis“ a četlo se to jako pětkrát totéž;
+       znak zůstává, jen už nestojí v řadě. -->
+  <span class="wm wm--about" aria-hidden="true">心</span>
 
   <div class="about__in">
     <header class="secHead">
-      <span class="kanji" aria-hidden="true">心</span>
       <span class="eyebrow eyebrow--gold" data-i18n="about.eyebrow">O nás</span>
       <h2 class="h2">
         <span class="ml"><span class="ml__i" data-i18n="about.title1">Chuť, kterou</span></span>
@@ -33,21 +36,21 @@
       <p class="lead splitwords" data-i18n-html="about.p1">
         Jsme malá rodina s velkou vášní pro asijskou kuchyni a právě z této vášně vzniklo <strong>MESHi</strong>.
         „Meshi“ v japonštině znamená jídlo, respektive domácí jídlo či pokrm. Pro nás však představuje mnohem
-        víc – chvíle strávené u společného stolu, radost ze sdílení a spojení mezi lidmi.
+        víc: chvíle strávené u společného stolu, radost ze sdílení a spojení mezi lidmi.
       </p>
 
       <blockquote class="pull" data-i18n="about.p2">
-        Naše kuchyně harmonicky propojuje japonskou eleganci s autentickými chutěmi Asie – jednoduchými,
+        Naše kuchyně harmonicky propojuje japonskou eleganci s autentickými chutěmi Asie: jednoduchými,
         osobitými a plnými charakteru.
       </blockquote>
 
       <p class="lead splitwords" data-i18n="about.p3">
         Pečlivě vybíráme kvalitní suroviny a každému pokrmu věnujeme čas, péči a srdce. MESHi jsme vytvořili
-        jako místo, kam se budete rádi vracet – za dobrým jídlem, příjemnou atmosférou a společnými chvílemi,
+        jako místo, kam se budete rádi vracet: za dobrým jídlem, příjemnou atmosférou a společnými chvílemi,
         přímo v srdci Plzně, na náměstí Republiky.
       </p>
     </div>
   </div>
 
-  <div class="toInk" aria-hidden="true"></div>
+  <Blend to="lift" />
 </section>

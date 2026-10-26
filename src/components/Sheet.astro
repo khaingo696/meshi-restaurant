@@ -3,9 +3,13 @@
   Panel s navigací — hlavní nabídka webu, otevírá ji tlačítko Menu v liště.
 
   V mockupu je lišta prázdná a všechno se otevírá odsud, takže tady musí být
-  i to, co dřív viselo v liště: telefon a online objednávka. Odkazy mají
-  šipku a plnou výšku řádku, aby se trefovaly palcem; aktivní sekci značí
-  stejná šipka jako při přejezdu myší.
+  i to, co dřív viselo v liště: telefon a online objednávka.
+
+  Podoba a pohyb sedí v global.css, sekci 16: panel se zavírá jako šódži,
+  dvě křídla přijedou ze stran a text jede s nimi. Šipka u odkazu odešla —
+  aktivní sekci značí svislý paprsek u levé hrany řádku a řádek pod rukou
+  se doostří. Plnou výšku řádku si odkazy nechávají, aby se trefovaly
+  palcem.
 */
 const links = [
   { href: "#top", key: "nav.home", label: "Domů" },
@@ -21,19 +25,17 @@ const links = [
 <div class="sheet" id="sheet">
   <nav class="sheet-nav" aria-label="Hlavní nabídka" data-i18n-aria="nav.main">
     {links.map((l) => (
-      <a href={l.href}>
-        <span data-i18n={l.key}>{l.label}</span>
-        <svg class="sheet-arr" aria-hidden="true"><use href="#ic-arrow"/></svg>
-      </a>
+      <a href={l.href}><span data-i18n={l.key}>{l.label}</span></a>
     ))}
   </nav>
 
   <!-- Rezervace tu není schválně — sedí v liště, kde je vidět pořád, a
        dvakrát na jedné obrazovce nemá co dělat.
 
-       Zbylé dvě akce drží mřížka na půl, ať nemá každá jinou šířku podle
-       délky popisku. Přepínač jazyka je nad nimi jako malá pilulka: je to
-       stav, ne akce, a přes celou šířku vypadal jako třetí tlačítko. -->
+       Zbylé dvě akce jsou holý text (global.css, sekce 4, stupeň 2), takže
+       je vedle sebe drží prázdno; mřížka na půl dávala smysl, dokud to byly
+       rámečky. Přepínač jazyka má vlastní řádek nad nimi: je to stav, ne
+       akce. -->
   <div class="sheet-foot">
     <div class="lang" role="group" aria-label="Jazyk" data-i18n-aria="nav.lang">
       <button type="button" class="on" data-lang="cs" aria-pressed="true">CZ</button>

@@ -1,64 +1,79 @@
 ---
 /*
-  Kontakt — text v levé polovině, mapa v pravé.
+  Kontakt — text vlevo, mapa vpravo, obojí v .wrap jako zbytek webu.
 
-  Otevírací doba stojí v rezervaci a v patičce, tady by byla potřetí; místo
-  ní jsou v řádcích adresa, telefon a e-mail. Sítě a údaje o provozovateli
-  zůstaly — mockup je nekreslí, ale do kontaktu patří.
-
-  Mapa jde přes <iframe> z Google Maps; jazyk v odkazu přepíná app.js.
+  Otevírací doba stojí v rezervaci a v patičce, tady by byla potřetí.
+  Údaje o provozovateli patří do patičky, ne sem. Mapa je tmavá deska
+  s kartou, která nese odkaz do Google Maps — tlačítko „Otevřít v Mapách“
+  vedle ní by bylo totéž podruhé.
 */
+import Blend from "./Blend.astro";
+
 const MAPS = "https://maps.app.goo.gl/UFdjuugsRDGuJuGq6";
 ---
 
-<section class="con" id="kontakt">
-  <div class="secbg" aria-hidden="true"><img src="/assets/bg/con.webp" alt="" /></div>
+<section class="con" id="kontakt" data-tone="lift">
+  <div class="secbg secbg--lift" aria-hidden="true"><img src="/assets/bg/con.webp" alt="" /></div>
 
-  <div class="con__copy">
-    <span class="eyebrow eyebrow--gold" data-i18n="con.eyebrow">Kde nás najdete</span>
-    <h2 class="h2">
-      <span class="ml"><span class="ml__i" data-i18n="con.title1">Navštivte nás</span></span>
-      <span class="ml"><span class="ml__i"><em data-i18n="con.title2">v srdci Plzně</em></span></span>
-    </h2>
+  <div class="wrap con__in">
+    <div class="con__copy">
+      <h2 class="h2">
+        <span class="ml"><span class="ml__i" data-i18n="con.title1">Navštivte nás</span></span>
+        <span class="ml"><span class="ml__i"><em data-i18n="con.title2">v srdci Plzně</em></span></span>
+      </h2>
 
-    <div class="hours">
-      <div class="hours__row">
-        <span data-i18n="con.address">Adresa</span>
-        <b><a href={MAPS} target="_blank" rel="noopener">nám. Republiky 107/14, Plzeň</a></b>
+      <div class="con__facts">
+        <div class="con__fact">
+          <span data-i18n="con.address">Adresa</span>
+          <b><a href={MAPS} target="_blank" rel="noopener">nám. Republiky 107/14<br />301 00 Plzeň</a></b>
+        </div>
+        <div class="con__fact">
+          <span data-i18n="con.phone">Telefon</span>
+          <b><a href="tel:+420778585688">+420 778 585 688</a></b>
+        </div>
+        <div class="con__fact">
+          <span data-i18n="con.mail">E-mail</span>
+          <b><a href="mailto:info@meshi-restaurant.cz">info@meshi-restaurant.cz</a></b>
+        </div>
       </div>
-      <div class="hours__row">
-        <span data-i18n="con.phone">Telefon</span>
-        <b><a href="tel:+420778585688">+420 778 585 688</a></b>
-      </div>
-      <div class="hours__row">
-        <span data-i18n="con.mail">E-mail</span>
-        <b><a href="mailto:info@meshi-restaurant.cz">info@meshi-restaurant.cz</a></b>
-      </div>
+
+      <p class="con__social">
+        <span data-i18n="con.follow">Sledujte nás</span>
+        <a href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener">
+          <svg aria-hidden="true"><use href="#ic-instagram"/></svg><span>Instagram</span>
+        </a>
+        <a href="https://www.facebook.com/profile.php?id=61578757887900" target="_blank" rel="noopener">
+          <svg aria-hidden="true"><use href="#ic-facebook"/></svg><span>Facebook</span>
+        </a>
+      </p>
     </div>
 
-    <p class="con__social">
-      <span data-i18n="con.follow">Sledujte nás</span>
-      <a href="https://www.instagram.com/meshi_restaurant.cz/" target="_blank" rel="noopener">
-        <svg aria-hidden="true"><use href="#ic-instagram"/></svg><span>Instagram</span>
+    <div class="con__map">
+      <div class="con__mapFrame">
+        <iframe title="Mapa: MESHi Restaurant Plzeň, nám. Republiky 107/14" data-i18n-title="con.mapTitle"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1305.5!2d13.3785312!3d49.7466407!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470af101904b4569%3A0xf3c31f42fa8945cf!2sMeshi%20Restaurant%20Plze%C5%88!5e0!3m2!1scs!2scz"></iframe>
+      </div>
+      <!-- Na telefonu je vložená mapa pastí na prst: scroll v ní uvázne
+           a v 210 px se stejně nikam nedojede. Pod 810 px proto mapa
+           nereaguje a celou plochu překrývá tenhle odkaz do Map. -->
+      <a class="con__mapTap" href={MAPS} target="_blank" rel="noopener">
+        <span data-i18n="con.openMaps">Otevřít v Mapách</span>
+        <svg aria-hidden="true"><use href="#ic-arrow"/></svg>
       </a>
-      <a href="https://www.facebook.com/profile.php?id=61578757887900" target="_blank" rel="noopener">
-        <svg aria-hidden="true"><use href="#ic-facebook"/></svg><span>Facebook</span>
+
+      <a class="con__badge" href={MAPS} target="_blank" rel="noopener">
+        <span class="con__badgePin" aria-hidden="true"><svg><use href="#ic-pin"/></svg></span>
+        <span class="con__badgeCopy">
+          <strong>MESHi</strong>
+          <span>nám. Republiky 107/14</span>
+        </span>
+        <span class="con__badgeGo">
+          <span data-i18n="con.openMaps">Otevřít v Mapách</span>
+          <svg aria-hidden="true"><use href="#ic-arrow"/></svg>
+        </span>
       </a>
-    </p>
-
-    <a class="btn btn--line" href={MAPS} target="_blank" rel="noopener">
-      <span data-i18n="con.openMaps">Otevřít v Mapách</span> <span class="btn__arrow" aria-hidden="true">→</span>
-    </a>
-
-    <p class="con__biz">
-      <b data-i18n="con.operator">Provozovatel</b><br />
-      Nguyen Quoc Vinh OSVČ · IČO: 23517034 · DIČ: CZ9303301480
-    </p>
+    </div>
   </div>
-
-  <div class="con__map">
-    <iframe title="Mapa — MESHi Restaurant Plzeň, nám. Republiky 107/14" data-i18n-title="con.mapTitle"
-      loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1305.5!2d13.3785312!3d49.7466407!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x470af101904b4569%3A0xf3c31f42fa8945cf!2sMeshi%20Restaurant%20Plze%C5%88!5e0!3m2!1scs!2scz"></iframe>
-  </div>
+  <Blend to="ink" />
 </section>

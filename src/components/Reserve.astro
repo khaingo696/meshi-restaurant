@@ -3,37 +3,51 @@
   Rezervace — text vlevo, formulář v panelu vpravo.
 
   Formulář je ten původní, funkční: validace, souhlas se zpracováním údajů,
-  schovaná poznámka a hláška o přijetí. Mockup tu kreslí jen atrapu, takže
-  se převzala jeho mřížka (dva sloupce, celé řádky pro jméno, počet osob a
-  poznámku) a obsah zůstal.
+  schovaná poznámka a hláška o přijetí. Datum, čas a počet osob sedí v jedné
+  řadě — to je to, co host vyplňuje jako jednu větu.
 */
+import Blend from "./Blend.astro";
 ---
 
-<section class="res" id="rezervace">
-  <div class="secbg" aria-hidden="true"><img src="/assets/bg/res.webp" alt="" /></div>
+<section class="res" id="rezervace" data-tone="lift">
+  <div class="secbg secbg--lift" aria-hidden="true"><img src="/assets/bg/res.webp" alt="" /></div>
   <span class="wm wm--res" aria-hidden="true">席</span>
 
   <div class="wrap res__in">
     <div class="res__copy">
-      <span class="kanji" aria-hidden="true">席</span>
+      <!-- Znak 席 tahle sekce nesla dvakrát: jednou tady v hlavičce
+           a jednou jako vodoznak <span class="wm wm--res"> nahoře. -->
       <span class="eyebrow eyebrow--gold" data-i18n="res.eyebrow">Rezervovat stůl</span>
       <h2 class="h2">
         <span class="ml"><span class="ml__i" data-i18n="res.title1">Rezervujte si</span></span>
         <span class="ml"><span class="ml__i"><em data-i18n="res.title2">svůj stůl</em></span></span>
       </h2>
+      <!-- Druhá polovina věty je ve vlastním spanu, protože na telefonu
+           odchází — telefon je tam zlatá deska o dva řádky níž. Stejné
+           členění musí být i v i18n.js: data-i18n-html přepíše innerHTML. -->
       <p class="lead" data-i18n-html="res.sub">
-        Potvrzení posíláme <strong>do 15 minut</strong>.<br />Raději telefonicky?
-        <a class="inlineLink" href="tel:+420778585688">+420 778 585 688</a>
+        Potvrzení posíláme <strong>do 15 minut</strong>.<span class="res-sub-more">
+        <br />Raději telefonicky?
+        <a class="inlineLink" href="tel:+420778585688">+420 778 585 688</a></span>
       </p>
 
+      <!-- Na telefonu formulář spí a sekce nabízí jen dvě akce: zavolat
+           (zlatá deska, jediná plná plocha na obrazovce) nebo otevřít
+           formulář. Na desktopu je celý blok schovaný — tam formulář
+           stojí vedle textu a schovávat ho nemá co. -->
+      <div class="actRow" id="resActs">
+        <a class="btn btn--act btn--lg" href="tel:+420778585688"><span data-i18n="nav.call">Zavolat</span></a>
+        <button class="btn btn--line" type="button" id="resOpen" aria-expanded="false" aria-controls="resForm" data-i18n="nav.reserveTable">Rezervovat stůl</button>
+      </div>
+
       <div class="hours hours--compact">
-        <div class="hours__row"><span data-i18n="hours.monThu">Po – Čt</span><b>11:00 – 22:00</b></div>
-        <div class="hours__row"><span data-i18n="hours.friSat">Pá – So</span><b>11:00 – 23:00</b></div>
-        <div class="hours__row"><span data-i18n="hours.sun">Neděle</span><b>12:00 – 22:00</b></div>
+        <div class="hours__row"><span data-i18n="hours.monThu">Po - Čt</span><b>11:00-22:00</b></div>
+        <div class="hours__row"><span data-i18n="hours.friSat">Pá - So</span><b>11:00-23:00</b></div>
+        <div class="hours__row"><span data-i18n="hours.sun">Neděle</span><b>12:00-22:00</b></div>
       </div>
     </div>
 
-    <form class="panel form" id="resForm" novalidate>
+    <form class="panel form" id="resForm" tabindex="-1" novalidate>
       <label class="field field--full">
         <span class="field__label" data-i18n="res.name">Jméno a příjmení *</span>
         <input id="r-name" name="name" type="text" placeholder="Jan Novák" data-i18n-placeholder="res.namePh" autocomplete="name" required />
@@ -46,26 +60,28 @@
         <span class="field__label" data-i18n="res.phone">Telefon *</span>
         <input id="r-phone" name="phone" type="tel" placeholder="+420 777 000 000" autocomplete="tel" required />
       </label>
-      <label class="field">
-        <span class="field__label" data-i18n="res.date">Datum *</span>
-        <input id="r-date" name="date" type="date" required />
-      </label>
-      <label class="field">
-        <span class="field__label" data-i18n="res.time">Čas *</span>
-        <select id="r-time" name="time" required>
-          <option>17:00</option><option>17:30</option><option selected>18:00</option><option>18:30</option>
-          <option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option>
-        </select>
-      </label>
-      <label class="field field--full res-field--people">
-        <span class="field__label" data-i18n="res.ppl">Počet osob *</span>
-        <select id="r-ppl" name="people" required>
-          <option data-i18n="res.ppl1">1 osoba</option><option selected data-i18n="res.ppl2">2 osoby</option>
-          <option data-i18n="res.ppl3">3 osoby</option><option data-i18n="res.ppl4">4 osoby</option>
-          <option data-i18n="res.ppl5">5 osob</option><option data-i18n="res.ppl6">6 osob</option>
-          <option data-i18n="res.ppl7">7 osob</option><option data-i18n="res.ppl8">8 osob</option>
-        </select>
-      </label>
+      <div class="form-row form-row--3">
+        <label class="field">
+          <span class="field__label" data-i18n="res.date">Datum *</span>
+          <input id="r-date" name="date" type="date" required />
+        </label>
+        <label class="field">
+          <span class="field__label" data-i18n="res.time">Čas *</span>
+          <select id="r-time" name="time" required>
+            <option>17:00</option><option>17:30</option><option selected>18:00</option><option>18:30</option>
+            <option>19:00</option><option>19:30</option><option>20:00</option><option>20:30</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label" data-i18n="res.ppl">Počet osob *</span>
+          <select id="r-ppl" name="people" required>
+            <option data-i18n="res.ppl1">1 osoba</option><option selected data-i18n="res.ppl2">2 osoby</option>
+            <option data-i18n="res.ppl3">3 osoby</option><option data-i18n="res.ppl4">4 osoby</option>
+            <option data-i18n="res.ppl5">5 osob</option><option data-i18n="res.ppl6">6 osob</option>
+            <option data-i18n="res.ppl7">7 osob</option><option data-i18n="res.ppl8">8 osob</option>
+          </select>
+        </label>
+      </div>
 
       <!-- Poznámku chce málokdo, proto se rozbaluje až na vyžádání. -->
       <button class="note-toggle" type="button" id="noteToggle" aria-expanded="false" aria-controls="noteField">
@@ -80,14 +96,16 @@
 
       <div class="consent">
         <input id="r-gdpr" name="gdpr" type="checkbox" required />
-        <label for="r-gdpr" data-i18n-html="res.gdpr">Souhlasím se zpracováním údajů pro vyřízení rezervace. <a href="#">Zásady ochrany osobních údajů</a>. U skupin nad 8 osob volejte prosím telefonicky.</label>
+        <label for="r-gdpr" data-i18n-html="res.gdpr">Souhlasím se zpracováním údajů pro vyřízení rezervace. <a href="#">Zásady ochrany osobních údajů</a>. <span class="consent__extra">U skupin nad 8 osob volejte prosím telefonicky.</span></label>
       </div>
 
-      <button class="btn btn--gold btn--lg" type="submit">
-        <span data-i18n="res.submit">Odeslat rezervaci</span> <span class="btn__arrow" aria-hidden="true">→</span>
+      <button class="btn btn--act btn--lg" type="submit">
+        <span data-i18n="res.submit">Odeslat rezervaci</span>
+        <span class="btn__arrow" aria-hidden="true"><svg><use href="#ic-arrow"/></svg></span>
       </button>
 
       <p class="ok-box" id="resOk" role="status" data-i18n="res.ok">Děkujeme! Vaši rezervaci jsme přijali a potvrzení vám zašleme do 15 minut.</p>
     </form>
   </div>
+  <Blend to="lift" class="blend--merge" />
 </section>

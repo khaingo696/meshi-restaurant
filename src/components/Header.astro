@@ -10,8 +10,15 @@
   v panelu je vidět až po otevření, kdežto tady visí nad celou stránkou.
   V <Sheet> proto stejné tlačítko není — jedna akce, jedno místo.
 
+  Materiál je .btn--act, tedy kouřové sklo z hera (global.css, sekce 4).
+  Dřív to byla zlatá deska s gradientem, a ta byla na první obrazovce
+  nejkontrastnější věc z celé plochy — hlasitější než nadpis a talíř pod
+  ním. Čitelná na videu zůstala, spotlight si už nebere; a pod kurzorem
+  se přelije do zlata a probudí hůlky u „Plate“ (global.css, sekce 6).
+
   Přepínač jazyka je vedle ní jen na širokém displeji: CZ/EN je stav,
-  ne cíl. Pod 810 px odchází do panelu.
+  ne cíl, a tak se taky kreslí — dvě slova dělená prázdnem, to vypnuté
+  o vlas rozostřené. Pod 810 px odchází do panelu.
 */
 ---
 
@@ -25,7 +32,7 @@
       <span class="nav__burgerLabel" data-i18n="nav.menu">Menu</span>
     </button>
 
-    <a class="nav__logo" href="#top" aria-label="MESHi — domů" data-i18n-aria="nav.brandHome">
+    <a class="nav__logo" href="#top" aria-label="MESHi, domů" data-i18n-aria="nav.brandHome">
       <img src="/assets/meshi_logo_hero.png?v=gold" width="593" height="421" alt="MESHi" />
     </a>
 
@@ -34,7 +41,7 @@
         <button type="button" class="on" data-lang="cs" aria-pressed="true">CZ</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
       </div>
-      <a class="btn btn--gold" href="#rezervace" data-i18n="nav.reserve">Rezervace</a>
+      <a class="btn btn--act" href="#rezervace" data-i18n="nav.reserve">Rezervace</a>
     </div>
   </div>
 </header>

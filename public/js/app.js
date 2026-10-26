@@ -259,11 +259,28 @@
     }
   }
 
+  /* Panel přikrývá celou stránku, takže se s ním musí stěhovat i fokus.
+     Zavřený panel schovává CSS přes visibility: hidden (global.css, sekce
+     16), čímž odejde z pořadí tabulátoru; tady zbývá dovnitř fokus poslat
+     a při zavření ho vrátit na tlačítko, odkud vyšel. Bez toho skončí fokus
+     na <body> a další Tab začíná zase od začátku stránky. */
+  var sheet = $('#sheet');
+
+  function sheetFocusables() {
+    if (!sheet) return [];
+    return $$('a[href], button, input, select, textarea', sheet)
+      .filter(function (el) { return el.offsetParent !== null && !el.disabled; });
+  }
+
   function closeMenu() {
     if (!body.classList.contains('menu-open')) return;
+    var inside = sheet && sheet.contains(document.activeElement);
     body.classList.remove('menu-open');
     paintBurger(false);
     if (lenis) lenis.start();
+    // Jen když fokus opravdu byl uvnitř — jinak bychom ho uživateli sebrali
+    // odjinud (zavření klávesou Escape při psaní ve formuláři).
+    if (inside && burger) burger.focus();
   }
 
   if (burger) {
@@ -271,6 +288,14 @@
       var open = body.classList.toggle('menu-open');
       paintBurger(open);
       if (lenis) open ? lenis.stop() : lenis.start();
+      if (open) {
+        // Až po dojetí křídel: dřív je panel ještě visibility: hidden
+        // a .focus() by na něm neudělal nic.
+        setTimeout(function () {
+          var f = sheetFocusables();
+          if (f.length && body.classList.contains('menu-open')) f[0].focus();
+        }, 180);
+      }
     });
   }
 
@@ -327,8 +352,8 @@
 
   /* ======================================================================
      4 · LIGHTBOX
-     Zvětšení fotky v jídelním lístku. V galerii lightbox není: fotky se
-     tam sunou přes obrazovku a klepat na pohyblivý cíl je past.
+     Zvětšení fotky v jídelním lístku. V galerii lightbox není: fotky
+     drží celou plochu a jsou už v měřítku místnosti.
      ====================================================================== */
   lb = $('#lb');
   var lbImg = $('#lbImg');
@@ -449,10 +474,22 @@
   }
 
   // Fokus nesmí utéct za překryv, dokud je otevřený.
+  /* Past na fokus. Platí pro překryv s lístkem i pro panel s navigací —
+     obojí leží přes celou stránku, takže se z nich tabulátorem nemá
+     odcházet dozadu na obsah, který není vidět. */
   function trapFocus(e) {
-    if (!ovOpen || e.key !== 'Tab' || !ovPanel) return;
-    var f = $$('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])', ovPanel)
-      .filter(function (el) { return el.offsetParent !== null && !el.disabled; });
+    if (e.key !== 'Tab') return;
+    var f;
+    if (ovOpen && ovPanel) {
+      f = $$('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])', ovPanel)
+        .filter(function (el) { return el.offsetParent !== null && !el.disabled; });
+    } else if (body.classList.contains('menu-open')) {
+      // Tlačítko Menu zůstává v kruhu: je to jediná cesta ven myší i klávesou.
+      f = sheetFocusables();
+      if (burger) f.unshift(burger);
+    } else {
+      return;
+    }
     if (!f.length) return;
     var first = f[0], last = f[f.length - 1];
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -533,6 +570,34 @@
   }
   wire('#resForm', '#resOk');
   wire('#vForm', '#vOk');
+
+  /* Na telefonu spí formulář poukazu (CSS, sekce 18 — gate je html.js,
+     takže bez JavaScriptu zůstane vidět). Rezervace spí schválně ne:
+     kdo chce stůl, má mít pole rovnou před sebou. Tlačítko formulář
+     probudí a spotlight se přesune — fotka poukazu ustoupí a zlato
+     přejde z tlačítka na odeslání. Třída jde na sekci, ne na formulář. */
+  function wakeForm(btnId, formId) {
+    var btn = $(btnId), form = $(formId);
+    if (!btn || !form) return;
+    btn.addEventListener('click', function () {
+      var sec = btn.closest('section');
+      if (!sec || sec.classList.contains('is-open')) return;
+      sec.classList.add('is-open');
+      btn.setAttribute('aria-expanded', 'true');
+      /* Panel má vlastní reveal (9e) a ten mu mohl nechat opacity: 0,
+         protože se spustil, když byl formulář ještě display: none. */
+      if (hasGsap && !reduced) {
+        gsap.fromTo(form, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' });
+      } else if (hasGsap) {
+        gsap.set(form, { opacity: 1, y: 0 });
+      }
+      /* Fokus na formulář, ne na první pole: na telefonu by vyskočila
+         klávesnice dřív, než host uvidí, co se otevřelo. */
+      form.focus({ preventScroll: true });
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+    });
+  }
+  wakeForm('#giftOpen', '#vForm');
 
   // Poznámka je nepovinná — ukážeme ji, až o ni někdo stojí.
   var noteToggle = $('#noteToggle'), noteField = $('#noteField');
@@ -737,9 +802,9 @@
     if (next !== iframe.src && next !== src) iframe.src = next;
   }
 
-  /* Ukázka jídel: kategorie a názvy jídel přijdou ze src/data/menu.ts přes
-     data atributy, ale popisek kategorie se překládá. Přepíše se tady. */
+  /* Ukázka jídel a galerie: překlad popisků se přepíše tady. */
   var paintShowcase = function () {};
+  var paintGallery = function () {};
 
   function applyLang(next, persist) {
     LANG = next === 'en' ? 'en' : 'cs';
@@ -792,6 +857,7 @@
     paintZoomLabels();
     paintMapLang();
     paintShowcase();
+    paintGallery();
     buildSplitWords();
     if (ratingData) applyGoogleRating(ratingData);
     else paintRatingAria();
@@ -945,6 +1011,243 @@
   }
   initShowcase();
 
+  /* ======================================================================
+     9g · GALERIE — „Prah“
+
+     Signatures už jedou vodorovně; tady se jde do hloubky. Fotka drží
+     celou plochu. První dva až tři vteřiny ukáže vrstva .gal__intro vchod
+     a sál (leží NAD scénou, takže si s pinovanou osou nic nepřebíjí),
+     pak zmizí. Rolování je chůze: každé další otevření má jiné gesto,
+     protože každá místnost se jinak vchází.
+
+     Časová osa pinu (0–1):
+       0 – .16   stát ve dveřích, pomalý krok dopředu
+       pak       šest prahů, každý = přechod + stání v místnosti
+     ====================================================================== */
+  function initGallery() {
+    var pin = $('#galPin');
+    if (!pin) return;
+
+    var scenes = $$('.gal__scene', pin);
+    var roomEl = $('#galRoom');
+    var railEl = $('#galRail');
+    var steps = $$('.gal__step', pin);
+    var intro = $('#galIntro');
+    var wmEl = $('.wm--gal', pin);
+    var n = scenes.length;
+    if (!n) return;
+
+    var roomKeys = scenes.map(function (el) { return el.getAttribute('data-room'); });
+    var cur = 0;
+    var holds = [];
+    var st = null;
+    var introTl = null;
+
+    function writeHud(i) {
+      if (roomEl) roomEl.textContent = t(roomKeys[i]) || '';
+      steps.forEach(function (b, k) {
+        b.classList.toggle('on', k === i);
+        if (k === i) b.setAttribute('aria-current', 'true');
+        else b.removeAttribute('aria-current');
+      });
+    }
+
+    paintGallery = function () { writeHud(cur); };
+    writeHud(0);
+
+    if (reduced || !hasST) {
+      pin.classList.add('is-static');
+      return;
+    }
+
+    function plan() {
+      var first = 0.16;
+      var segs = n - 1;
+      var trans = 0.056;
+      var hold = (1 - first - segs * trans) / segs;
+      holds = [{ start: 0, end: first, mid: first * 0.6 }];
+      var t0 = first;
+      for (var i = 1; i < n; i++) {
+        var t1 = t0 + trans;
+        var t2 = i === n - 1 ? 1 : t1 + hold;
+        holds.push({ start: t1, end: t2, mid: t1 + (t2 - t1) * 0.45, transStart: t0, transEnd: t1 });
+        t0 = t2;
+      }
+      return { first: first, trans: trans };
+    }
+
+    function roomAt(p) {
+      var i = 0;
+      for (var k = 0; k < n; k++) {
+        if (p >= (holds[k].transStart != null ? holds[k].transStart : holds[k].start)) i = k;
+      }
+      return i;
+    }
+
+    function paintCaption(p) {
+      if (!roomEl) return;
+      var h = holds[cur];
+      var op = 1;
+      if (h.transStart != null && p < h.start) {
+        op = gsap.utils.clamp(0, 1, (p - h.transStart) / Math.max(0.001, h.start - h.transStart));
+      } else if (cur < n - 1 && p > holds[cur + 1].transStart) {
+        var nx = holds[cur + 1];
+        op = 1 - gsap.utils.clamp(0, 1, (p - nx.transStart) / Math.max(0.001, nx.transEnd - nx.transStart));
+      }
+      roomEl.style.opacity = op.toFixed(3);
+    }
+
+    function near(i) {
+      scenes.forEach(function (el, j) {
+        el.style.visibility = Math.abs(j - i) <= 1 ? 'visible' : 'hidden';
+      });
+    }
+
+    function killIntro() {
+      if (introTl) { introTl.kill(); introTl = null; }
+      if (intro) gsap.set(intro, { autoAlpha: 0 });
+    }
+
+    function playIntro() {
+      if (!intro) return;
+      var door = $('.gal__flash--door', intro);
+      var hall = $('.gal__flash--hall', intro);
+      killIntro();
+      gsap.set(intro, { autoAlpha: 1 });
+      gsap.set(door, { scale: 1.12, opacity: 1 });
+      gsap.set(hall, { scale: 1.08, opacity: 0 });
+      introTl = gsap.timeline({
+        defaults: { ease: 'power2.inOut' },
+        onComplete: function () {
+          introTl = null;
+          gsap.set(intro, { autoAlpha: 0 });
+        }
+      });
+      introTl.to(door, { scale: 1, duration: 0.7 }, 0);
+      introTl.to(hall, { opacity: 1, scale: 1, duration: 0.55 }, 0.8);
+      introTl.to(door, { scale: 1.1, duration: 0.55 }, 0.8);
+      introTl.to(intro, { autoAlpha: 0, duration: 0.55 }, 1.85);
+    }
+
+    function outVars(verb, dur) {
+      var v = { opacity: 0, ease: 'none', duration: dur, force3D: true };
+      if (verb === 'through') { v.scale = 1.36; }
+      else if (verb === 'open') { v.yPercent = -14; v.scale = 1.08; }
+      else if (verb === 'lean') { v.scale = 1.24; }
+      else if (verb === 'glance') { v.xPercent = -11; }
+      else if (verb === 'pass') { v.scale = 1.2; v.xPercent = -7; }
+      else if (verb === 'sit') { v.yPercent = -8; v.scale = 1.1; }
+      else { v.scale = 1.18; }
+      return v;
+    }
+
+    function inFrom(verb, cinematic) {
+      var v = { opacity: 0, scale: 1.1, xPercent: 0, yPercent: 0 };
+      if (verb === 'sit') { v.yPercent = 14; v.scale = 1.16; }
+      else if (verb === 'glance') { v.xPercent = 12; v.scale = 1.04; }
+      else if (verb === 'lean') { v.scale = 1.18; }
+      else if (verb === 'open') { v.yPercent = 10; v.scale = 1.08; }
+      else if (verb === 'through' || verb === 'pass') { v.scale = 1.14; }
+      if (cinematic && verb === 'through') {
+        v.clipPath = 'inset(16% 22% 10% 22%)';
+        v.scale = 1.12;
+      } else if (cinematic && verb === 'pass') {
+        v.clipPath = 'inset(10% 4% 12% 46%)';
+        v.scale = 1.08;
+      }
+      return v;
+    }
+
+    function inTo(verb, cinematic, dur) {
+      var v = { opacity: 1, scale: 1, xPercent: 0, yPercent: 0, ease: 'none', duration: dur, force3D: true };
+      if (cinematic && (verb === 'through' || verb === 'pass')) {
+        v.clipPath = 'inset(0% 0% 0% 0%)';
+      }
+      return v;
+    }
+
+    var mm = gsap.matchMedia();
+    mm.add('(min-width: 810px)', function () { return build(4.6, true); });
+    mm.add('(max-width: 809px)', function () { return build(3.4, false); });
+
+    function build(vhs, cinematic) {
+      var p = plan();
+      var origins = scenes.map(function (el) { return el.getAttribute('data-origin') || '50% 50%'; });
+
+      gsap.set(scenes, {
+        opacity: 0, scale: 1, xPercent: 0, yPercent: 0, zIndex: 1,
+        clipPath: 'inset(0% 0% 0% 0%)',
+        transformOrigin: function (i) { return origins[i]; },
+        force3D: true
+      });
+      gsap.set(scenes[0], { opacity: 1, zIndex: 2, visibility: 'visible' });
+      if (intro) gsap.set(intro, { autoAlpha: 0 });
+      near(0);
+
+      var tl = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: pin,
+          start: 'top top',
+          end: function () { return '+=' + Math.round(window.innerHeight * vhs); },
+          pin: true,
+          scrub: 0.7,
+          invalidateOnRefresh: true,
+          onEnter: function (self) {
+            pin.classList.add('is-live');
+            if (self.progress < 0.02) playIntro();
+          },
+          onEnterBack: function () { pin.classList.add('is-live'); },
+          onLeave: function () { pin.classList.remove('is-live'); killIntro(); },
+          onLeaveBack: function () { pin.classList.remove('is-live'); killIntro(); },
+          onUpdate: function (self) {
+            if (self.progress > 0.018) killIntro();
+            var i = roomAt(self.progress);
+            if (i !== cur) { cur = i; writeHud(i); near(i); }
+            paintCaption(self.progress);
+            if (railEl) gsap.set(railEl, { width: (self.progress * 100).toFixed(2) + '%' });
+          }
+        }
+      });
+      st = tl.scrollTrigger;
+
+      tl.to(scenes[0], { scale: 1.08, duration: p.first, force3D: true }, 0);
+      if (wmEl) tl.fromTo(wmEl, { x: 0, scale: 1 }, { x: 36, scale: 0.9, duration: 1 }, 0);
+
+      for (var i = 1; i < n; i++) {
+        var from = scenes[i - 1];
+        var to = scenes[i];
+        var start = holds[i].transStart;
+        var dur = p.trans;
+        var verb = to.getAttribute('data-verb') || 'open';
+        var holdDur = holds[i].end - holds[i].start;
+
+        tl.set(to, { zIndex: 3, visibility: 'visible' }, start);
+        tl.set(from, { zIndex: 2 }, start);
+        tl.to(from, outVars(verb, dur), start);
+        tl.fromTo(to, inFrom(verb, cinematic), Object.assign(inTo(verb, cinematic, dur), { immediateRender: false }), start);
+        tl.to(to, { scale: 1.07, duration: holdDur, force3D: true }, holds[i].start);
+      }
+
+      return function () {
+        killIntro();
+        st = null;
+        pin.classList.remove('is-live');
+      };
+    }
+
+    steps.forEach(function (b, i) {
+      b.addEventListener('click', function () {
+        if (!st || !holds[i]) return;
+        killIntro();
+        var y = st.start + holds[i].mid * (st.end - st.start);
+        if (window.lenis) window.lenis.scrollTo(y, { duration: 0.85 });
+        else window.scrollTo({ top: y, behavior: 'smooth' });
+      });
+    });
+  }
+  initGallery();
+
   /* ---- Jazyk se nasadí teprve teď: applyLang sahá na scénu i odstavce --- */
   var fromUrl = '';
   try { fromUrl = new URLSearchParams(location.search).get('lang') || ''; } catch (e) {}
@@ -1011,7 +1314,7 @@
 
   // kanji, eyebrow a doprovodný text u nadpisu
   gsap.utils.toArray('.secHead, .show__head, .res__copy, .giftCopy, .con__copy').forEach(function (head) {
-    var bits = head.querySelectorAll(':scope > .kanji, :scope > .eyebrow, :scope > .lead, :scope > .btn, :scope > .hours, :scope > .con__social, :scope > .con__biz');
+    var bits = head.querySelectorAll(':scope > .kanji, :scope > .eyebrow, :scope > .lead, :scope > .btn, :scope > .hours, :scope > .con__social, :scope > .con__facts');
     if (!bits.length) return;
     gsap.fromTo(bits, { opacity: 0, y: 20 }, {
       opacity: 1, y: 0, duration: .9, stagger: .07, ease: 'power3.out',
@@ -1027,8 +1330,8 @@
   /* ---- 9d · fotka se otevře výřezem, nejen prolnutím ------------------- */
   gsap.utils.toArray('.giftShot').forEach(function (el, i) {
     gsap.fromTo(el,
-      { clipPath: 'inset(14% 0% 14% 0% round 24px)', opacity: 0 },
-      { clipPath: 'inset(0% 0% 0% 0% round 24px)', opacity: 1,
+      { clipPath: 'inset(14% 0% 14% 0% round 4px)', opacity: 0 },
+      { clipPath: 'inset(0% 0% 0% 0% round 4px)', opacity: 1,
         duration: 1.15, ease: 'expo.out', delay: i * .06,
         scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
   });
@@ -1059,20 +1362,8 @@
     scrollTrigger: { trigger: '.about', start: 'top bottom', end: 'bottom top', scrub: true }
   });
 
-  /* ---- 9g · galerie: dva pruhy jedou proti sobě ----------------------- */
-  var tickL = $('#tickL'), tickR = $('#tickR');
-  if (tickL && tickR) {
-    var drift = function () { return Math.max(tickL.scrollHeight - window.innerHeight, 320); };
-    gsap.fromTo(tickL, { y: 0 }, { y: function () { return -drift(); }, ease: 'none',
-      scrollTrigger: { trigger: '.tick', start: 'top top', end: 'bottom bottom', scrub: .7, invalidateOnRefresh: true } });
-    gsap.fromTo(tickR, { y: function () { return -drift(); } }, { y: 0, ease: 'none',
-      scrollTrigger: { trigger: '.tick', start: 'top top', end: 'bottom bottom', scrub: .7, invalidateOnRefresh: true } });
-    gsap.fromTo('.tick__label > *', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 1, stagger: .09, ease: 'expo.out',
-      scrollTrigger: { trigger: '.tick', start: 'top 60%', once: true } });
-  }
-
   /* ---- 9h · vodoznaky a vysazené MESHi -------------------------------- */
-  gsap.utils.toArray('.wm').forEach(function (el, i) {
+  gsap.utils.toArray('.wm:not(.wm--gal)').forEach(function (el, i) {
     gsap.fromTo(el, { y: 0 }, {
       y: i % 2 ? 80 : -80, ease: 'none',
       scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true }
@@ -1092,19 +1383,6 @@
       onLeaveBack: function () { nav.classList.remove('is-hidden'); }
     });
   }
-  // Lišta nad jedinou světlou plochou webu — viz .nav.is-onLight.
-  var gift = $('.gift');
-  if (nav && gift) {
-    var barBottom = function () { return headerGap() - 24; };
-    ScrollTrigger.create({
-      trigger: gift,
-      start: function () { return 'top top+=' + barBottom(); },
-      end: function () { return 'bottom top+=' + barBottom(); },
-      invalidateOnRefresh: true,
-      onToggle: function (self) { nav.classList.toggle('is-onLight', self.isActive); }
-    });
-  }
-
   if (toTop) {
     ScrollTrigger.create({
       trigger: '.hero', start: 'bottom 65%',

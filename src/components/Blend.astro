@@ -1,0 +1,12 @@
+---
+/*
+  Měkký přechod mezi dvěma plochami. Barva na dně je barva NÁSLEDUJÍCÍ
+  sekce, ať se hrana nerozlomí. Žádná trhlina — jen alfa.
+*/
+interface Props {
+  to: "ink" | "lift";
+  class?: string;
+}
+const { to, class: extra = "" } = Astro.props;
+---
+<div class={`blend blend--${to} ${extra}`.trim()} aria-hidden="true"></div>
