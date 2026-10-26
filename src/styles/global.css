@@ -50,6 +50,14 @@
   --seam: rgb(98, 67, 38);
   /* O stupeň světlejší než --ink. Střídá se s tmou, text zůstává krémový. */
   --lift: #322114;
+  /* Den: listy washi a tuš na nich. Teplý béž, ne krémová: krémová
+     #efe5d2 (L* 92) svítila třikrát víc než nejsvětlejší zbytek stránky
+     a medové tóny byly žluté. Signatures (--paper) má kaluž světla, která
+     se ke hranám usadí; rezervace je plochá, a stejný béž na ní působil
+     bíle — proto je její list o stupeň tmavší (L* 75). */
+  --paper: #dacbbe;
+  --res-paper: #c8b6a6;
+  --sumi:  #2a1b0e;
 
   --gold:       #d8ae69;
   --gold-deep:  #bc8c4c;
@@ -373,6 +381,19 @@ body.menu-open .nav__bars i:nth-child(3) { transform: translateY(-6px) rotate(-4
    povolí ostrost. Ukázka přestřihu, ne jen zvýraznění cíle. */
 .lang:hover button.on:not(:hover):not(:focus-visible) {
   color: rgba(236, 208, 156, .62); filter: blur(.45px); text-shadow: none; }
+
+/* Lišta nad světlou plochou (Signatures, rezervace). Krémové písmo by na
+   papíře zmizelo, takže se přepne do tuše; .is-day přepíná app.js
+   (setDay), až když pod lištou opravdu leží papír — ne v jantaru švu.
+   Tlačítko rezervace zůstává kouřovým sklem: tmavá deska na papíře se
+   čte sama. Zlaté logo na krémové splývá, proto se o stupeň propálí. */
+.nav__burger { transition: color .5s var(--ease); }
+.nav__logo img { transition: filter .5s var(--ease); }
+.nav.is-day .nav__burger { color: var(--sumi); }
+.nav.is-day .nav__logo img { filter: brightness(.58) saturate(1.25); }
+.nav.is-day .lang button { color: rgba(42, 27, 14, .66); text-shadow: none; }
+.nav.is-day .lang button:is(.on, :hover, :focus-visible) { color: var(--sumi); text-shadow: none; }
+.nav.is-day .lang:hover button.on:not(:hover):not(:focus-visible) { color: rgba(42, 27, 14, .58); }
 
 /* ==========================================================================
    6 · HERO — „cinema lower-third“, navázané na dveře meshi-door
@@ -1253,6 +1274,51 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 
 [data-tone="lift"] { background: var(--lift); }
 
+/* --- Den -----------------------------------------------------------------
+   Signatures a rezervace jsou listy washi mezi tmou. Tokeny se tu
+   převrací: „krémová“ textu je tuš a zlatá je hluboká, propálená — světlá
+   zlatá #d8ae69 má na papíře 1,8 : 1. Text stojí i v usazené části
+   kaluže světla (Signatures) a ve stínu borovice (rezervace), tedy až na
+   L* ~70: drobná zlatá #573a1e tam drží 4,3–5 : 1, --gold-bright #6b4626
+   (3,5–4,5 : 1) nese jen velké písmo — kurzívu nadpisů, větu rezervace.
+   Co je napsané natvrdo rgba(248, 242, 231, …) mimo tokeny, přepisuje
+   každá sekce sama. */
+[data-tone="day"] {
+  --cream: var(--sumi);
+  --cream-soft: rgba(42, 27, 14, .84);
+  --gold: #573a1e;
+  --gold-deep: #4e331b;
+  --gold-dim: #573a1e;
+  --gold-bright: #6b4626;
+  --gold-light: #573a1e;
+  --t-1: #4e331b;
+  --t-2: rgba(42, 27, 14, .86);
+  --t-3: rgba(42, 27, 14, .8);
+  --t-4: rgba(42, 27, 14, .74);
+  --hair: rgba(42, 27, 14, .14);
+  --hair-gold: rgba(87, 58, 30, .36);
+  color: var(--t-2);
+}
+.secbg--day img { opacity: 1; }
+.secbg--day::after { background: none; }
+
+/* Hlavní akce na papíře: deska z tuše, ne kouřové sklo — sklo by se na
+   krémové ztratilo. Tatáž deska jako .btn--ink; zlato je tu doslovné
+   (#ecd09c), protože tokeny jsou v den převrácené. */
+[data-tone="day"] .btn--act {
+  color: #ecd09c; border-color: rgba(42, 27, 14, .5);
+  background: linear-gradient(135deg, #2a1c10, #160e07);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  box-shadow: 0 14px 30px -16px rgba(42, 27, 14, .6), inset 0 1px 0 rgba(255, 242, 216, .12); }
+[data-tone="day"] .btn--act::before { background: #ecd09c; box-shadow: 0 0 8px rgba(236, 208, 156, .8); }
+[data-tone="day"] .btn--act:hover,
+[data-tone="day"] .btn--act:focus-visible {
+  background: linear-gradient(135deg, #ecd09c, #d8ae69);
+  border-color: #2a1c10; color: #140c07;
+  box-shadow: 0 16px 34px -14px rgba(188, 140, 76, .5), inset 0 1px 0 rgba(255, 255, 255, .45); }
+[data-tone="day"] .btn--act:hover::before,
+[data-tone="day"] .btn--act:focus-visible::before { background: #140c07; box-shadow: none; }
+
 /* ==========================================================================
    8 · O NÁS
    ========================================================================== */
@@ -1306,73 +1372,143 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
    rolování. Fotky jsou WebP s alfa kanálem, takže drop-shadow() obkresluje
    skutečný obrys jídla, ne obdélník.
    ========================================================================== */
-.show { position: relative; overflow: hidden; padding: 0;
-  background: var(--seam); }
-/* Pravé křídlo téže zástěny, jejíž levé křídlo leží pod O nás (Tōhaku,
-   Borovicový les — viz ASSET-CREDITS.md), v téže tušové škále. Kdo roluje
-   z O nás, jde dál podél jedné zástěny: stejný papír, stejná mlha.
-   Šev mezi sekcemi je MLHA, ne pruh: O nás se dole rozpustí do barvy
-   papíru (--brown — na tu barvu vyjde papír wash.webp pod svými závoji)
-   a obraz tady z téže barvy vyroste maskou. Dřív obě sekce končily
-   a začínaly plochou #4a321c a mezi papírem a rozmazaným hedvábím zůstal
-   pás hnědého bláta.
-   Bez rozostření: talíře nese jejich vlastní stín a kruh, za nimi stojí
-   mlha zástěny, ne kresba. Dole tmavne k tuši, do které jde blend--ink. */
+/* Den, ale pod lampou, ne pod sluncem. Krémový papír (L* 92) svítil
+   třikrát víc než nejsvětlejší plocha zbytku stránky (O nás, L* 33)
+   a byl skoro bez sytosti — četl se jako cizí web vložený mezi hnědé
+   plochy. Papír je proto teplý béž (#dacbbe, L* 83) a světlo je KALUŽ:
+   uprostřed, kde stojí talíř, nejsvětlejší, k horní a dolní hraně se
+   usadí do --honey-edge (L* 65). Medová #e0cba5 i #dccbb7 byly na celou
+   obrazovku moc žluté — chroma je teď nižší než u původní krémové
+   a odstín se pootočil od žluté k růžovějšímu béži. */
+.show { --honey: var(--paper); --honey-edge: rgb(174, 155, 141);
+  position: relative; overflow: hidden; padding: 0;
+  background: var(--honey-edge); }
+/* Utržená hrana přesahuje nahoru přes O nás, takže svisle sekce nesmí
+   ořezávat. Vodorovně ano — pás jídel jede přes okraje. Bez podpory
+   overflow: clip zůstává hidden a hrana se jen ořízne o hranu sekce. */
+@supports (overflow: clip) {
+  .show { overflow: visible; overflow-x: clip; }
+}
+/* Utržená hrana listu washi (tear-edge.webp, scripts/build-day-bg.mjs).
+   Barevný přechod mezi papírem O nás (L* 33, sytý hnědý) a tímhle béžem
+   se nedal udělat tak, aby nebyl vidět — tak ho nahradil předmět: list
+   položený přes list. Hrana je kozo trhané rukou — pomalá vlna, chlupatý
+   světlejší okraj, pár vláken přes hranu; žádná pila ani lepicí páska.
+   Obraz se opakuje vodorovně bez švu, jeho spodek se rozplývá do barvy
+   horní hrany pinu (--honey-edge i s vláknem). Hrana leží v horních
+   ~47 % výšky obrazu, hranice O nás / Signatures v 62 %, takže ji list
+   vždy zakryje.
+   Stín je zvlášť (::before — tentýž obraz, zčernalý a rozmazaný) a jen
+   kolem hrany: drop-shadow na celém prvku stínoval i rozplývající se
+   spodek obrazu a přes papír pinu z toho byl tmavý vodorovný pruh. */
+.show__tear {
+  --tear-h: clamp(110px, 10.5vw, 160px);
+  position: absolute; left: 0; right: 0; z-index: 3; pointer-events: none;
+  top: calc(var(--tear-h) * -.62); height: var(--tear-h);
+}
+.show__tear::before,
+.show__tear::after {
+  content: ""; position: absolute; inset: 0;
+  background: url("/assets/bg/tear-edge.webp") 0 0 / auto 100% repeat-x;
+}
+.show__tear::before {
+  transform: translateY(-1px);
+  filter: brightness(0) blur(5px); opacity: .34;
+  -webkit-mask-image: linear-gradient(180deg, #000 40%, transparent 58%);
+          mask-image: linear-gradient(180deg, #000 40%, transparent 58%);
+}
 /* Pod obsahem pinu (z-index -1 v kontextu pinu), nad pozadím sekce. */
-.show .secbg { z-index: -1; background: var(--seam); }
-/* Noc a lucerna. Na světlém papíře (bez závoje) splývala jídla — oranžová
-   rýže a hnědé maso na hnědém kartonu — a celá plocha byla stejně světlá,
-   bez místa, kam se dívat. Teď se scéna setmí a nechá kaluž světla jen
-   kolem talíře; borovice zůstanou siluetami v mlze po stranách.
-   Závoj je maskou rozpuštěný na horních 24 %: tam musí plocha zůstat
-   čisté --brown, jinak se šev s O nás vrátí jako tmavý pruh. Připíchnutá
-   scéna tak má nahoře teplé světlo za nadpisem a dolů tmavne. */
-/* Šev: papír O nás a papír zástěny se mají potkat skoro bez hladkého
-   pruhu mezi nimi — dřív zbyl mezi oběma texturami ~180 px čisté hnědé
-   bez vlákna a četl se jako přerušení. Proto obraz mizí jen na horních
-   10 % a závoj nabíhá zvolna přes 45 % výšky, ne skokem. */
-/* Borovice jen jako tušená mlha: ostrá kresba za talířem tahala oko od
-   jídla. Ztišení průhledností na barvě papíru (--seam), ne tmou — celkový
-   tón scény zůstává, jen kresba ustoupí. */
-.show .secbg img {
-  opacity: .25;
-  object-position: 100% 50%;
-  filter: contrast(.75);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
-          mask-image: linear-gradient(180deg, transparent 0%, #000 18%);
+.show .secbg { z-index: -1; background: var(--honey); }
+.show .secbg img { object-position: 50% 50%; }
+/* Kaluž světla. Násobí obraz, nepřekrývá ho: krycí vrstva by na hranách
+   schovala vlákno a na švu s rozbřeskem by zůstal hladký pruh. Násobení
+   poměrem rgb(204 195 189) dá ze středu přesně --honey-edge; průběh je
+   1 − sin(πt)^1,4, týž jako ve schváleném náhledu. */
+.show .secbg--day::after {
+  mix-blend-mode: multiply;
+  background: linear-gradient(180deg,
+    rgb(204, 195, 189) 0%,
+    rgb(208, 199, 194) 5%,
+    rgb(214, 206, 202) 10%,
+    rgb(221, 215, 211) 15%,
+    rgb(228, 224, 221) 20%,
+    rgb(236, 232, 230) 25%,
+    rgb(242, 239, 238) 30%,
+    rgb(247, 246, 245) 35%,
+    rgb(251, 251, 250) 40%,
+    #fff 47%,
+    #fff 53%,
+    rgb(251, 251, 250) 60%,
+    rgb(247, 246, 245) 65%,
+    rgb(242, 239, 238) 70%,
+    rgb(236, 232, 230) 75%,
+    rgb(228, 224, 221) 80%,
+    rgb(221, 215, 211) 85%,
+    rgb(214, 206, 202) 90%,
+    rgb(208, 199, 194) 95%,
+    rgb(204, 195, 189) 100%);
 }
-/* O nás je den — světlý papír na čtení. Signatures je soumrak a lucerna:
-   scéna o stupeň tmavší a za talířem teplá jantarová kaluž světla, která
-   v O nás není. Tím se sekce liší, i když šev mezi nimi zůstává měkký. */
-.show .secbg--lift::after {
+
+/* Konec pinu = zhasnutí v kině (app.js, initShowcase). Žádný mezistupeň
+   barvy: jantar mezi papírem a tmou se četl jako další, žlutá plocha.
+   Tma přichází od krajů okna ke středu jako clona (iris) a nechá kuželem
+   světla nasvícený jen poslední talíř; uvnitř kužele papír pohasne na
+   lucernu. Poloměry clony (--r0 průsvitné jádro, --r1 plná tma), střed
+   (--cy, střed kruhu pod talířem), ztlumení jádra (--a0) a teplo lucerny
+   (--warm) dopočítává app.js každý snímek z průběhu soumraku. Plná tma je
+   rgb(35 24 14) — tam pin skončí a navazuje .show .blend. Pod studnou
+   (z 2), takže talíř zůstane nad tmou. */
+.show__dusk { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.show__dusk i { position: absolute; inset: 0; opacity: 0;
   background:
-    radial-gradient(30% 28% at 50% 50%, rgba(236, 176, 104, .16) 0%, rgba(236, 176, 104, .06) 55%, rgba(236, 176, 104, 0) 100%),
-    radial-gradient(38% 34% at 50% 50%, rgba(18, 11, 6, 0) 0%, rgba(18, 11, 6, 0) 55%, rgba(18, 11, 6, .42) 100%),
-    linear-gradient(180deg, rgba(18, 11, 6, 0) 0%, rgba(18, 11, 6, .34) 40%, rgba(18, 11, 6, .42) 72%, rgba(18, 11, 6, .62) 100%);
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .5) 22%, #000 45%);
-          mask-image: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, .5) 22%, #000 45%);
-}
-.show .h2,
-.show .lead { text-shadow: 0 2px 22px rgba(12, 7, 4, .7); }
-/* Dlouhý a pozvolný. Zástěna pod Signatures je ztlumená na čtvrtinu,
-   takže papír O nás musí svou texturu (vlákno, svislé tahy) odevzdat
-   postupně — krátký přechod nechal plnou texturu až skoro k hraně a pak
-   ji uťal: barva navazovala, ale „zeď“ vlákna byla vidět. */
-.about .blend--lift {
-  height: clamp(160px, 26vh, 280px);
-  background: linear-gradient(
-    rgba(98, 67, 38, 0) 0%,
-    rgba(98, 67, 38, .3) 35%,
-    rgba(98, 67, 38, .68) 70%,
-    var(--seam) 100%);
-}
-/* Fade až ZA pin, ať nepřekryje talíř a tlačítko. Pin dole končí skoro
-   v tuši (závoj .62, změřeno ~rgb 35 24 14), kdežto obecný blend--ink
-   jede přes holé --seam pod ním — mezi pinem a galerií tak svítil
-   světlý hnědý pruh s ostrou horní hranou. Tady proto začíná v barvě
-   dna pinu a je neprůhledný. */
+    radial-gradient(circle at 50% var(--cy, 46%), rgba(236, 176, 104, var(--warm, 0)) 0, rgba(236, 176, 104, 0) var(--r1, 200vmax)),
+    radial-gradient(circle at 50% var(--cy, 46%),
+      rgba(35, 24, 14, var(--a0, 0)) 0, rgba(35, 24, 14, var(--a0, 0)) var(--r0, 150vmax), rgb(35, 24, 14) var(--r1, 200vmax)); }
+
+/* Noc: popisek jídla, průběh a tlačítko menu NEzhasnou se scénou — byla
+   by po nich černá díra mezi talířem a galerií. Přepnou se do nočního
+   materiálu, jaký mají zbytek webu: krémové jméno, zlatý kicker, deska
+   z kouřového skla se zlatým vlasem. Poslední záběr scény je tak talíř
+   v kuželu světla, pod ním jeho jméno a cesta do celého lístku. Třídu
+   .is-night dává app.js v půlce soumraku; přechod barvy dělá CSS. */
+.show__kicker, .show__name, .show__price { transition: color .6s var(--ease); }
+.show__bar { transition: background-color .6s var(--ease); }
+.show__pin.is-night { --cream: #f7efe2; --gold: #d8ae69; --gold-dim: #b8915a; }
+.show__pin.is-night .show__bar { background: rgba(248, 242, 231, .14); }
+.show__pin.is-night .show__cta {
+  color: var(--cream); border-color: rgba(216, 178, 116, .46);
+  background: linear-gradient(135deg, rgba(22, 14, 9, .78), rgba(12, 7, 4, .66));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 242, 216, .14); }
+.show__pin.is-night .show__cta:hover,
+.show__pin.is-night .show__cta:focus-visible {
+  background: linear-gradient(135deg, rgba(216, 178, 116, .96), rgba(236, 208, 156, .92));
+  border-color: #ecd09c; color: #140c07; }
+/* Papír O nás jde až pod utrženou hranu Signatures (.show__tear) — list
+   leží přes něj, takže tu žádný přechod do barvy švu není potřeba.
+   Kdyby se papír pod hranou rozpouštěl do hnědé, list by ležel na
+   blátě, ne na papíře. */
+.about .blend--lift { display: none; }
+/* Fade až ZA pin, ať nepřekryje talíř a tlačítko. Pin dole končí v noci
+   soumraku (rgb 35 24 14), odtud je to do tuše galerie jen krok. */
 .show .blend { position: relative; bottom: auto; height: clamp(48px, 8vh, 96px);
   background: linear-gradient(rgb(35, 24, 14), var(--ink)); }
+/* Bez pohybu (nebo bez skriptu) žádný soumrak není a scéna končí na
+   hraně kaluže. Tma galerie pak přichází tímhle švem — přímka v OKLab
+   z --honey-edge do tuše, bez jantaru navíc. */
+.show:has(.show__pin.is-static) .blend,
+html.no-js .show .blend {
+  height: clamp(180px, 26vh, 300px);
+  background: linear-gradient(180deg,
+    var(--honey-edge) 0%,
+    rgb(167, 148, 135) 12.5%,
+    rgb(149, 132, 118) 25%,
+    rgb(124, 108, 96) 37.5%,
+    rgb(97, 83, 71) 50%,
+    rgb(71, 58, 48) 62.5%,
+    rgb(50, 38, 28) 75%,
+    rgb(35, 25, 16) 87.5%,
+    var(--ink) 100%);
+}
 /* Nadpis leží v pinu, ne nad ním — jinak ho připíchnutá scéna odsouvá
    z okna a od talíře ho dělí prázdno na výšku displeje. */
 .show__head { position: absolute; left: 0; right: 0; z-index: 5;
@@ -1382,7 +1518,7 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 .show__head .lead {
   max-width: 38ch;
   font-size: clamp(16.5px, 1.45vw, 19.5px);
-  color: rgba(248, 242, 231, .9);
+  color: var(--t-2);
 }
 
 /* Tady NESMÍ být grid + place-items: vycentroval by .show__stage a offsetLeft
@@ -1395,24 +1531,28 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
    poskládají jinak. */
 .show__well { position: absolute; inset: 0; z-index: 2; }
 
-/* kruh a zář tvoří podstavec pro jídlo, které je právě uprostřed */
+/* Kruh a zář tvoří podstavec pro jídlo, které je právě uprostřed. Na
+   papíře je kruh vlas tuše s prosvětleným vnitřkem a zář je kaluž
+   denního světla, ne zlatá — zlatá zář na krémové jen špiní. */
 .show__ring {
   position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
   width: clamp(290px, 34vw, 470px); aspect-ratio: 1; border-radius: 50%;
-  border: 1px solid rgba(216, 174, 105, .22);
-  box-shadow: inset 0 0 90px rgba(216, 174, 105, .07);
+  border: 1px solid rgba(87, 58, 30, .2);
+  box-shadow: inset 0 0 80px rgba(255, 240, 210, .4);
   transition: transform .65s var(--ease), border-color .5s var(--ease), box-shadow .5s var(--ease);
 }
 .show__glow {
   position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
   width: clamp(360px, 46vw, 660px); aspect-ratio: 1; border-radius: 50%;
-  background: radial-gradient(circle, rgba(216, 174, 105, .16) 0%, rgba(216, 174, 105, .05) 46%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 240, 210, .5) 0%, rgba(255, 240, 210, .16) 46%, transparent 70%);
   filter: blur(14px);
-  transition: transform .65s var(--ease), opacity .5s var(--ease);
+  transition: transform .65s var(--ease);
 }
 
-/* Oficiální logo zapuštěné do kruhu. Zlatá zůstává, jen se stáhne krytí —
-   působí to jako slepotisk na ploše, ne jako nalepené logo. */
+/* Oficiální logo zapuštěné do kruhu. Ve dne zlatá jen jako slepotisk
+   v papíře (krytí ~.12). Za soumraku ho app.js rozsvítí — zlatá je v té
+   chvíli jediné, co na zhasnuté scéně svítí, a záře z drop-shadow, na
+   papíře neviditelná, se teprve teď ukáže. */
 .show__mark {
   position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
   width: clamp(200px, 23vw, 320px); height: auto; z-index: 1;
@@ -1425,8 +1565,8 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 .show__pin:has(.show__cta:hover) .show__ring,
 .show__pin:has(.show__cta:focus-visible) .show__ring {
   transform: translate(-50%, -50%) scale(1.05);
-  border-color: rgba(236, 208, 156, .62);
-  box-shadow: inset 0 0 110px rgba(236, 208, 156, .18), 0 0 36px rgba(236, 208, 156, .16);
+  border-color: rgba(87, 58, 30, .5);
+  box-shadow: inset 0 0 110px rgba(255, 240, 210, .62), 0 0 36px rgba(87, 58, 30, .12);
 }
 .show__pin:has(.show__cta:hover) .show__glow,
 .show__pin:has(.show__cta:focus-visible) .show__glow {
@@ -1435,9 +1575,19 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 
 .show__stage { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center;
   gap: clamp(3rem, 9vw, 9.5rem); padding-inline: 50vw; will-change: transform; }
-.dish { margin: 0; flex: 0 0 auto; transform-origin: 50% 60%; }
-.dish img { width: clamp(260px, 32vw, 460px); height: auto;
-  filter: drop-shadow(0 34px 42px rgba(0, 0, 0, .78)) drop-shadow(0 6px 14px rgba(0, 0, 0, .5)); }
+.dish { position: relative; margin: 0; flex: 0 0 auto; transform-origin: 50% 60%; }
+/* Drop-shadow jen drží obrys talíře na papíře — těsný, v tónu tuše, ne
+   černý: černá kaluž na krémové vypadá jako špína. Směr a délku stínu
+   nese .dish__shadow pod ním. */
+.dish img { position: relative; z-index: 1; width: clamp(260px, 32vw, 460px); height: auto;
+  filter: drop-shadow(0 18px 22px rgba(74, 48, 22, .26)) drop-shadow(0 4px 8px rgba(74, 48, 22, .26)); }
+/* Vržený stín na papíře. Měkkost nese sám gradient, žádný filter: app.js
+   ho každý snímek posouvá a natahuje (od středu pryč, čím dál od středu,
+   tím delší a slabší) a filtr by se přepočítával s ním. Za soumraku zmizí
+   — bez slunce není stín. V klidové podobě scény stojí pod talířem rovně. */
+.dish__shadow { position: absolute; z-index: 0; left: 11%; width: 78%; bottom: 7%; height: 15%;
+  border-radius: 50%; pointer-events: none; transform-origin: 50% 50%;
+  background: radial-gradient(closest-side, rgba(74, 48, 22, .36) 0%, rgba(74, 48, 22, .16) 55%, rgba(74, 48, 22, 0) 100%); }
 
 /* název se mění podle jídla uprostřed */
 .show__meta { position: absolute; z-index: 4; left: 0; right: 0; bottom: clamp(7.2rem, 14vh, 11rem);
@@ -1449,7 +1599,7 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 .show__price:empty { display: none; }
 
 .show__bar { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: clamp(5.4rem, 11vh, 8.2rem);
-  width: clamp(130px, 18vw, 230px); height: 1px; background: rgba(248, 242, 231, .14); }
+  width: clamp(130px, 18vw, 230px); height: 1px; background: rgba(42, 27, 14, .16); }
 .show__bar i { display: block; height: 100%; width: 12%; background: var(--gold); }
 
 .show__cta { position: absolute; z-index: 4; left: 50%; bottom: clamp(1.8rem, 4.2vh, 3.2rem); transform: translateX(-50%); }
@@ -1474,7 +1624,9 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 :is(.show__pin.is-static, html.no-js .show__pin) .show__glow,
 :is(.show__pin.is-static, html.no-js .show__pin) .show__mark,
 :is(.show__pin.is-static, html.no-js .show__pin) .show__meta,
-:is(.show__pin.is-static, html.no-js .show__pin) .show__bar { display: none; }
+:is(.show__pin.is-static, html.no-js .show__pin) .show__bar,
+:is(.show__pin.is-static, html.no-js .show__pin) .show__dusk,
+:is(.show__pin.is-static, html.no-js .show__pin) .dish__shadow { display: none; }
 :is(.show__pin.is-static, html.no-js .show__pin) .show__stage {
   position: relative; inset: auto;
   gap: clamp(1.5rem, 4vw, 3rem); padding: clamp(2rem, 5vh, 4rem) var(--pad);
@@ -1503,13 +1655,29 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
    dopočítává app.js §9g z těchto pozic. Pozice jsou v % plochy:
    --l/--t levý horní roh, --w/--h rozměr.
 
-   Plocha jde z tuše (konec Signatures) do --lift (začátek rezervace),
-   takže ani jeden šev nemá hranu. Fotky z plochy nikdy nevyjedou
-   (hromádka leží uprostřed, konec je na místě), takže se nic neořezává.
+   Plocha je noc mezi dvěma listy: shora končí zhasnutím Signatures, dole
+   má pod fotkami vlastní prázdný konec (--gal-tail) a teprve v něm
+   dojde do barvy, ve které začíná neosvětlená horní hrana papíru
+   rezervace (rgb 92 75 60, L* 33). Šev tak neběží pod spodní řadou
+   fotek. Zbytek skoku tma → papír dělá světlo na papíře (.res::before).
+   Fotky z plochy nikdy nevyjedou (hromádka leží uprostřed, konec je na
+   místě), takže se nic neořezává.
    ========================================================================== */
-.gal {
+.gal { --gal-tail: clamp(180px, 28svh, 300px);
   position: relative;
-  background: linear-gradient(180deg, var(--ink) 0%, var(--ink) 45%, var(--lift) 100%);
+  padding-bottom: var(--gal-tail);
+  background:
+    linear-gradient(180deg,
+      var(--ink) 0%,
+      rgb(32, 22, 13) 12.5%,
+      rgb(39, 28, 18) 25%,
+      rgb(48, 36, 25) 37.5%,
+      rgb(60, 46, 34) 50%,
+      rgb(71, 57, 44) 62.5%,
+      rgb(82, 66, 52) 75%,
+      rgb(89, 72, 58) 87.5%,
+      rgb(92, 75, 60) 100%) 0 100% / 100% var(--gal-tail) no-repeat,
+    var(--ink);
 }
 
 .gal__stage {
@@ -1581,23 +1749,56 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 /* ==========================================================================
    11 · REZERVACE A FORMULÁŘE
    ========================================================================== */
-/* Shora jen část --sec: galerie nad tím končí vlastní vycpávkou, která už
-   do --lift doběhla — plná vycpávka by se četla jako díra. */
-.res { position: relative; overflow: hidden; background: var(--ink); padding: calc(var(--sec) * .6) 0 var(--sec); }
-.res[data-tone="lift"] { background: var(--lift); }
-/* Podklad: Sesshū, Zimní krajina, v duotónu tuše (viz ASSET-CREDITS.md).
-   Ostrá, ne rozostřená — rozostřená fotka stolu byla hnědé bláto se
-   skvrnami. Tlumí ji jen jas a hustý závoj, takže tahy tuše zůstanou
-   čitelné jako textura a text na nich drží kontrast. Na telefonu je
-   vidět chrám s poutníkem pod textem, na širokém displeji pás skal. */
-.res__bg img { opacity: 1; object-position: 50% 58%; filter: brightness(.6) saturate(.9); }
-/* Svislý přechod leží NAD závojem: pod ním závoj horní hranu ztmavil pod
-   --lift a na švu s galerií zůstávala vodorovná čára. */
-.res__bg::after {
-  background:
-    linear-gradient(180deg, var(--lift) 0%, rgba(50, 33, 20, 0) 14%, rgba(50, 33, 20, 0) 86%, var(--lift) 100%),
-    radial-gradient(85% 65% at 30% 40%, rgba(22, 14, 8, .78) 0%, rgba(22, 14, 8, .64) 100%);
-}
+/* Rezervace: papír mezi tmou galerie a zlatem poukazu. Ploché švy (barva
+   přes papír) tu dělaly stovky pixelů šedé mlhy bez vlákna — přechod byl
+   hladký, ale četl se jako prázdná zeď. Teď je přechod SVĚTLO: horní
+   a dolní hranu papíru ztmavuje vrstva v režimu multiply, takže vlákno
+   i stín borovice zůstávají vidět i v šeru. Papír je u hran neosvětlený:
+   nahoře L* 33 (kde končí galerie), dole přesně barva zlaté desky poukazu
+   pod závojem (~rgb 102 78 47). Násobící barvy jsou cíl / --res-paper,
+   průběh smoothstep. Obsah začíná a končí ve světle. */
+.res { --lit-top: clamp(320px, 44vh, 480px); --lit-bot: clamp(300px, 42vh, 460px);
+  position: relative; overflow: hidden; isolation: isolate; background: var(--res-paper);
+  padding: calc(var(--lit-top) * .8 + clamp(.5rem, 2vh, 1.5rem)) 0 calc(var(--lit-bot) * .75 + 1rem); }
+.res::before,
+.res::after {
+  content: ""; position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none;
+  mix-blend-mode: multiply; }
+.res::before { top: 0; height: var(--lit-top);
+  background: linear-gradient(180deg,
+    rgb(117, 105, 92) 0%,
+    rgb(123, 111, 99) 12.5%,
+    rgb(139, 128, 117) 25%,
+    rgb(161, 152, 144) 37.5%,
+    rgb(186, 180, 174) 50%,
+    rgb(211, 208, 203) 62.5%,
+    rgb(233, 232, 230) 75%,
+    rgb(249, 249, 248) 87.5%,
+    #fff 100%); }
+.res::after { bottom: 0; height: var(--lit-bot);
+  background: linear-gradient(180deg,
+    #fff 0%,
+    rgb(250, 249, 247) 12.5%,
+    rgb(235, 232, 226) 25%,
+    rgb(215, 209, 197) 37.5%,
+    rgb(193, 182, 164) 50%,
+    rgb(170, 155, 130) 62.5%,
+    rgb(150, 132, 101) 75%,
+    rgb(135, 115, 80) 87.5%,
+    rgb(130, 109, 72) 100%); }
+/* Podklad: stín borovice na šódži (viz Reserve.astro). Stojí — žádná
+   paralaxa (app.js §9f ho vynechává): stín, který by ujížděl pod
+   formulářem, by tahal oko od polí. */
+.res__bg img { object-position: 50% 50%; }
+/* Obraz (vlákno papíru a stín borovice) se v šeru u hran rozpustí do
+   holé barvy papíru. Pod rezervací začíná rozmazaný obraz poukazu, nad
+   ní tma galerie — ostré vlákno, které končilo rovnou čarou na hraně
+   sekce, se četlo jako schod mezi dvěma materiály, i když barva seděla.
+   Takhle se obě strany potkají v téže hladké barvě a jediná textura,
+   která švem projde, je zrno celé stránky (.grain). */
+.res__bg {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 calc(var(--lit-top) * .6), #000 calc(100% - var(--lit-bot) * .9), transparent calc(100% - var(--lit-bot) * .15));
+          mask-image: linear-gradient(180deg, transparent 0, #000 calc(var(--lit-top) * .6), #000 calc(100% - var(--lit-bot) * .9), transparent calc(100% - var(--lit-bot) * .15)); }
 /* 心 a 匠 přišly z hlaviček sekcí (viz About.astro a Signatures.astro). */
 .wm--about { left: 1%; top: 7%; font-size: clamp(11rem, 21vw, 21rem); }
 .wm--show { right: 1%; top: 4%; font-size: clamp(10rem, 18vw, 18rem); }
@@ -1616,7 +1817,7 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 .hours--compact { margin-top: 1.6rem; max-width: 380px; }
 .hours__row { display: flex; align-items: baseline; justify-content: space-between; gap: 1.2rem; padding: 0; }
 .hours__row span { font-family: var(--sans); font-size: 10.5px; font-weight: 500;
-  letter-spacing: .22em; text-transform: uppercase; color: rgba(248, 242, 231, .62); }
+  letter-spacing: .22em; text-transform: uppercase; color: var(--t-4); }
 .hours__row b { font-size: 17px; font-weight: 600; color: var(--gold-light); letter-spacing: .01em; }
 .hours__row a { transition: color .35s var(--ease); }
 .hours__row a:hover { color: var(--gold-bright); }
@@ -1732,7 +1933,7 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 .rSent { grid-column: 1 / -1; min-width: 0; margin: 0; padding: 0; border: 0; }
 .rSent__lbl { display: block; padding: 0; margin: 0 0 .5rem;
   font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .2em;
-  line-height: 1.4; text-transform: uppercase; color: rgba(216, 174, 105, .82); }
+  line-height: 1.4; text-transform: uppercase; color: var(--gold); }
 /* Dva řádky podle smyslu: KDO (2 osoby), pod ním KDY (datum + čas v .rWhen,
    který se nezalamuje). Krátký řádek nad dlouhým — čas nikdy nestojí sám. */
 /* Visací spojka: první spojka řádku KDY (ve / on) stojí v úzkém levém
@@ -1757,24 +1958,24 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
   /* Linka je tichá (.28) — tři plné linky nad sebou dělaly žebřík.
      Rozsvítí se až pod kurzorem, při výběru a z tlačítka. To, že se na
      kus dá ťuknout, nese hlavně šipka. */
-  border-bottom: 1px solid rgba(216, 174, 105, .28); cursor: pointer;
+  border-bottom: 1px solid rgba(125, 86, 49, .36); cursor: pointer;
   transition: opacity .5s var(--ease), filter .5s var(--ease), border-color .45s var(--ease); }
 .rPick__face { display: inline-flex; align-items: baseline; gap: .2em; padding-right: .7em; white-space: nowrap;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ecd09c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right .02em center / .42em; }
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a6038' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right .02em center / .42em; }
 .rPick__face b { font-weight: 300; }
 .rPick__face i { font-style: italic; color: var(--gold-bright); }
 .rPick select {
   appearance: none; -webkit-appearance: none; border: 0; border-radius: 0; background: transparent;
   font: inherit; letter-spacing: inherit; line-height: inherit; color: inherit; cursor: pointer; }
 .rPick select:focus-visible { outline: none; }
-.rPick select option { font-family: var(--sans); font-size: 15px; letter-spacing: 0; background: var(--ink); }
+.rPick select option { font-family: var(--sans); font-size: 15px; letter-spacing: 0; background: var(--paper); color: var(--sumi); }
 .rPick:has(:focus-visible) { outline: 2px solid var(--gold); outline-offset: 4px; border-radius: 6px; }
 .rPick:is(:hover, :focus-within) { border-color: var(--gold-bright); }
 /* Nativní pole průhledně přes celý kus, vidět je jen sazba v .rPick__face.
    Ikona kalendáře v Chromu se roztáhne přes celé pole, takže kalendář
    otevře ťuknutí kamkoli. */
 .rPick--over :is(select, input) { position: absolute; inset: 0; width: 100%; height: 100%;
-  margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; font-size: 16px; color-scheme: dark; }
+  margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; font-size: 16px; color-scheme: light; }
 .rPick--date input::-webkit-calendar-picker-indicator {
   position: absolute; inset: 0; width: auto; height: auto; margin: 0; padding: 0; cursor: pointer; }
 html.no-js .rPick__face { display: none; }
@@ -1794,10 +1995,10 @@ html.no-js .rPick--over :is(select, input) { position: static; width: auto; heig
 #resForm:has(#resNext:is(:hover, :focus-visible)) .rPick { border-color: var(--gold-bright); }
 
 /* Bez rámu: kouřové sklo panelu bylo karta v ploše a uvnitř zůstával
-   prázdný roh. Věta leží rovnou na tušové krajině jako na telefonu;
-   čitelnost drží měkká kaluž tmy za formulářem (::before) — stín, ne
-   hrana. Zlatá deska je zlatá i v klidu, ne až pod kurzorem: na tmavé
-   ploše se kouřové sklo jako hlavní akce nepoznalo do půl vteřiny. */
+   prázdný roh. Věta leží rovnou na papíře; za formulářem je měkká kaluž
+   světla (::before) — tam, kam svítí okno, stín borovice ustoupí.
+   Hlavní akce je deska z tuše (sekce 7, den): na krémové je to jediná
+   plná tmavá plocha, takže se jako tlačítko pozná do půl vteřiny. */
 #resForm { margin-inline: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
 /* Ve dvou sloupcích je mezi textem a větou dost místa, aby spojky visely
    úplně venku a hodnoty stály na téže hraně jako popisek nad nimi. Na
@@ -1807,14 +2008,8 @@ html.no-js .rPick--over :is(select, input) { position: static; width: auto; heig
 }
 @media (min-width: 810px) {
   #resForm::before { content: ""; position: absolute; inset: -4rem -5rem; z-index: -1; pointer-events: none;
-    background: radial-gradient(closest-side, rgba(14, 9, 5, .62), rgba(14, 9, 5, .38) 55%, rgba(14, 9, 5, 0)); }
+    background: radial-gradient(closest-side, rgba(255, 246, 236, .34), rgba(255, 246, 236, .16) 55%, rgba(255, 246, 236, 0)); }
 }
-#resForm :is(.rLine, .rSum__txt, .field__label) { text-shadow: 0 2px 22px rgba(12, 7, 4, .75); }
-#resForm .btn--act {
-  color: #140c07; border-color: var(--gold-bright);
-  background: linear-gradient(135deg, rgba(216, 178, 116, .96), rgba(236, 208, 156, .92));
-  box-shadow: 0 12px 34px -14px rgba(216, 178, 116, .5), inset 0 1px 0 rgba(255, 255, 255, .35); }
-#resForm .btn--act::before { background: #140c07; box-shadow: none; }
 
 .rGo { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.6rem; margin-top: .6rem; }
 .form .rGo .btn { margin: 0; }
@@ -1834,6 +2029,24 @@ html.no-js .rPick--over :is(select, input) { position: static; width: auto; heig
 html.js .res:not(.is-open) #resForm > :is(.rSum, .field, .note-toggle, .consent, .btn, .ok-box) { display: none; }
 html.js .res.is-open #resForm > :is(.rSent, .rGo) { display: none; }
 html.no-js :is(#resNext, .rSum) { display: none; }
+
+/* Pole na papíře. .field, souhlas a potvrzení sdílí rezervace s poukazem,
+   který zůstává ve tmě — proto přepis jen pod .res. Popisek pole se pod
+   kurzorem „rozsvítí“ do tuše: na papíře je důraz tmavší, ne světlejší. */
+.res .field__label { color: var(--gold); }
+.res .field:is(:hover, :focus-within) .field__label { color: var(--sumi); }
+.res .field > :is(input, select, textarea) { border-bottom-color: rgba(42, 27, 14, .3); }
+.res .field > :is(input, select, textarea):hover { border-color: rgba(125, 86, 49, .6); }
+.res .field > :is(input, select, textarea):focus { border-color: var(--gold); }
+.res .field > :is(input, textarea)::placeholder { color: rgba(42, 27, 14, .42); }
+.res .field > input[type="date"] { color-scheme: light; }
+.res .field > select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237d5631' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
+.res .field select option { background: var(--paper); color: var(--sumi); }
+.res .consent input { border-color: rgba(125, 86, 49, .55); background: rgba(255, 252, 246, .6); }
+.res .consent input:is(:hover, :checked) { border-color: var(--gold); }
+.res .consent input:checked { background: rgba(125, 86, 49, .1); }
+.res .consent input::before { box-shadow: none; }
 
 /* Jak poukaz doručit — ostré řádky se zlatým kosočtvercem bez rozmazání */
 .radio-rows { display: grid; gap: .2rem; }
@@ -1877,10 +2090,18 @@ html.no-js :is(#resNext, .rSum) { display: none; }
   opacity: 1;
   filter: blur(6px) saturate(1.05) brightness(.82);
 }
+/* Horní hrana začíná v barvě, kterou má zlatá deska pod závojem sama
+   (~rgb 102 78 47) — tam končí šev z papíru rezervace (.res::after).
+   Dřív tu bylo --lift, protože rezervace byla tmavá. */
+/* Horní barva je NEJVYŠŠÍ vrstva: tmavá kaluž vlevo nahoře ležela nad ní
+   a hrana pod papírem rezervace pak nebyla tou barvou, do které se papír
+   usadil. Obraz se z ní vynořuje pozvolna (do ~40 % výšky) — větve hned
+   pod hranou se četly jako nový materiál položený na šev. */
 .gift .secbg--lift::after {
   background:
+    linear-gradient(180deg, rgb(102, 78, 47) 0%, rgb(102, 78, 47) 4%, rgba(102, 78, 47, .85) 10%, rgba(102, 78, 47, .55) 18%, rgba(102, 78, 47, .25) 28%, transparent 40%),
     radial-gradient(48% 52% at 22% 30%, rgba(22, 14, 7, .26) 0%, transparent 68%),
-    linear-gradient(180deg, var(--lift) 0%, rgba(50, 33, 20, .45) 7%, rgba(50, 33, 20, .12) 22%, transparent 36%, transparent 78%, rgba(30, 20, 11, .22) 100%),
+    linear-gradient(180deg, transparent 78%, rgba(30, 20, 11, .22) 100%),
     radial-gradient(80% 70% at 50% 46%, rgba(30, 20, 11, 0) 0%, rgba(30, 20, 11, .22) 62%, rgba(30, 20, 11, .5) 100%),
     linear-gradient(rgba(96, 70, 38, .64), rgba(96, 70, 38, .64));
 }
@@ -2532,15 +2753,31 @@ body.ov-open { overflow: hidden; }
 
   /* --- rezervace: jedna celá obrazovka --------------------------------
      Sekce je vysoká aspoň jako okno, takže nekončí useknutá, a obsah stojí
-     uprostřed výšky — zbytek je rozostřený stůl (.res__bg) pod tuší, ne
-     díra. Vertikálně na střed, ne nahoru s tlačítkem u dna: tak mezi
-     textem a tlačítkem nikdy nevznikne mezera. Shora 4,4rem kvůli liště. */
-  .res { min-height: 100svh; display: flex; flex-direction: column; justify-content: center;
-    padding-top: 4.4rem; padding-bottom: 3.2rem; }
+     uprostřed výšky. Vertikálně na střed, ne nahoru s tlačítkem u dna: tak
+     mezi textem a tlačítkem nikdy nevznikne mezera. Švy jsou kratší než na
+     desktopu, ale obsah pořád začíná až za nimi (a tím i pod lištou). */
+  .res { --lit-top: clamp(230px, 32svh, 300px); --lit-bot: clamp(210px, 28svh, 270px);
+    min-height: 100svh; display: flex; flex-direction: column; justify-content: center;
+    padding-top: calc(var(--lit-top) * .8 + .5rem); padding-bottom: calc(var(--lit-bot) * .75 + .5rem); }
+  /* Na telefonu má zlatá deska poukazu slabší závoj (.5 místo .64), takže
+     je světlejší (~rgb 124 98 60) a dolní hrana papíru se usadí tam. */
+  .res::after {
+    background: linear-gradient(180deg,
+      #fff 0%,
+      rgb(251, 250, 248) 12.5%,
+      rgb(240, 237, 230) 25%,
+      rgb(224, 218, 203) 37.5%,
+      rgb(207, 196, 174) 50%,
+      rgb(189, 174, 144) 62.5%,
+      rgb(173, 155, 117) 75%,
+      rgb(162, 142, 99) 87.5%,
+      rgb(158, 137, 92) 100%); }
   .res__in { gap: 1.5rem; }
   .res__copy { gap: .55rem; }
   #resForm { padding-top: 0; padding-bottom: 0; gap: 1rem .95rem; background: none; }
-  .res__bg img { object-position: 30% 62%; }
+  /* Na výšku je vidět jen pruh obrazu: pravý okraj stínu borovice vlevo,
+     pod poli čistý papír. */
+  .res__bg img { object-position: 50% 50%; }
   /* Řádek KDY musí vyjít na šířku i se „ve čtvrtek 29. 10.“ na 360 px. */
   .rLine { font-size: clamp(29px, 9vw, 36px); }
   .rSent__lbl { font-size: 10px; letter-spacing: .16em; }
@@ -2616,11 +2853,11 @@ body.ov-open { overflow: hidden; }
   html.js .gift.is-open #giftActs { display: none; }
 
   /* --- poukaz: zlatá stěna na konci pultu ------------------------- */
-  /* Po rezervaci (formulář na tmě) přijde jediná zlatá plocha v patě
+  /* Po rezervaci (formulář na papíře) přijde jediná zlatá plocha v patě
      webu: list Kōrin přes celou sekci. Obraz sám dělí plochu úhlopříčně
      — nahoře zlato se švestkou, dole tmavá řeka. Nadpis a poukaz stojí
      na zlatě, akce na řece, kde zlaté tlačítko svítí nejvíc.
-     Rezervace se do poukazu rozpouští (blend--merge) a řeka se dole
+     Papír rezervace se do zlata pozvolna usadí (.res::after) a řeka se dole
      rozpouští do tuše kontaktu, takže mezi sekcemi není žádná hrana. */
   .gift { padding-top: 4.5rem; padding-bottom: 5.5rem; }
   /* Pod obrazem tuš, ne --lift: obraz dole končí v tuši a [data-tone]
@@ -2640,15 +2877,12 @@ body.ov-open { overflow: hidden; }
      a s tuší dole zůstal v plné barvě sousední sekce, bez pruhu. */
   .gift .secbg--lift::after {
     background:
-      linear-gradient(180deg, var(--lift) 0%, rgba(50, 33, 20, .62) 7%, rgba(50, 33, 20, .3) 15%,
-        rgba(50, 33, 20, .08) 26%, transparent 36%, transparent 46%, rgba(30, 20, 11, .4) 60%,
+      linear-gradient(180deg, rgb(124, 98, 60) 0%, rgb(124, 98, 60) 4%, rgba(124, 98, 60, .82) 10%, rgba(124, 98, 60, .5) 18%,
+        rgba(124, 98, 60, .2) 28%, transparent 38%, transparent 46%, rgba(30, 20, 11, .4) 60%,
         rgba(30, 20, 11, .76) 72%, rgba(30, 20, 11, .95) 82%, var(--ink) 90%),
       radial-gradient(82% 58% at 50% 40%, rgba(30, 20, 11, 0) 0%, rgba(30, 20, 11, .18) 60%, rgba(30, 20, 11, .46) 100%),
       linear-gradient(rgba(96, 70, 38, .5), rgba(96, 70, 38, .5));
   }
-  /* Přechod do poukazu má jinak z-index 3, tedy nad obsahem, a ztmavil
-     by řádek s telefonem i spodek zlaté desky. Tady jde pod obsah. */
-  .res .blend--merge { height: 4rem; z-index: 1; }
   /* Spodní přechod do tuše dělá už ::after obrazu; vlastní blend by
      zbytečně ztmavil zlaté tlačítko nad sebou. */
   .gift .blend--lift { display: none; }
@@ -2793,10 +3027,6 @@ body.ov-open { overflow: hidden; }
   .show__cta { position: relative; bottom: auto; left: auto; transform: none;
     grid-area: cta; margin-top: 1rem; }
   .show__name { font-size: 26px; }
-  /* Na výšku je vidět jen úzký pruh obrazu — řeka a mlha uprostřed,
-     ne skály s pavilony vpravo. Menší obraz, menší blur. */
-  /* Na telefonu stojí velká borovice vlevo jako silueta, za talířem mlha. */
-  .show .secbg img { object-position: 40% 50%; }
   .toTop__label { display: none; }
   .toTop { padding: .9rem; }
   .menu-grid { grid-template-columns: 1fr; }

@@ -1062,6 +1062,21 @@
     });
   }
 
+  /* Lišta nad světlou plochou. Krémové písmo lišty by na papíře zmizelo,
+     takže lišta dostane .is-day, kdykoli pod ní leží papír. Plochy hlásí
+     každá svým klíčem (rozbřesk, pin, rezervace…) a stačí jedna. Pin
+     signatures se hlásí sám z onUpdate, protože jeho konec je soumrak. */
+  var dayZones = {};
+  function setDay(key, on) {
+    if (dayZones[key] === on) return;
+    dayZones[key] = on;
+    var nav = $('#nav');
+    if (!nav) return;
+    var any = false;
+    for (var k in dayZones) if (dayZones[k]) any = true;
+    nav.classList.toggle('is-day', any);
+  }
+
   /* Ukázka jídel. Musí se postavit dřív, než applyLang poprvé zavolá
      paintShowcase(), proto je to tady a ne až na konci. */
   function initShowcase() {
@@ -1074,6 +1089,7 @@
     var priceEl = $('#showPrice');
     var markEl = $('#showMark');
     var barEl = $('#showBar');
+    var duskEl = $('#showDusk');
     if (!dishes.length || !nameEl) return;
 
     var cur = 0;
@@ -1117,38 +1133,102 @@
     var off = function (i) { return dishes[i].offsetLeft + dishes[i].offsetWidth / 2 - window.innerWidth / 2; };
     var span = function () { return off(dishes.length - 1) - off(0); };
 
-    gsap.fromTo(stage, { x: function () { return -off(0); } }, {
-      x: function () { return -off(dishes.length - 1); },
-      ease: 'none',
+    /* Zhasnutí: za posledním jídlem pin pokračuje ještě o DUSK délky pásu.
+       Na tom kousku se od krajů okna stáhne tma k talíři (clona v
+       .show__dusk), stíny talířů zmizí a nadpis odejde. Popisek, průběh
+       a tlačítko zůstanou a v půlce přejdou do nočního materiálu
+       (.is-night) — jinak by mezi talířem a galerií zbyla černá díra. */
+    var DUSK = .14;
+    var pinEl = $('#showPin');
+    var ringEl = $('.show__ring');
+    var nightEl = duskEl ? duskEl.firstElementChild : null;
+    var fadeEls = $$('.show__head');
+    // Kruh a zář jsou denní světlo (prosvětlený papír) — ve tmě by z nich
+    // zbyl šedý kotouč. Za talířem pak svítí jen lucerna noční vrstvy.
+    var dayLight = $$('.show__ring, .show__glow');
+    var shadows = dishes.map(function (el) { return $('.dish__shadow', el); });
+    var lastStop = 1 / (1 + DUSK);   // průběh, při kterém stojí uprostřed poslední jídlo
+    var dusk = 0;
+
+    var tl = gsap.timeline({
       scrollTrigger: {
         trigger: '.show__pin', start: 'top top',
-        end: function () { return '+=' + span() * 1.15; },
+        end: function () { return '+=' + span() * 1.15 * (1 + DUSK); },
         pin: true, scrub: .55, invalidateOnRefresh: true,
-        // zastavit se má na jídle, ne v mezeře mezi dvěma
-        snap: { snapTo: 1 / (dishes.length - 1), duration: { min: .18, max: .42 }, delay: .06, ease: 'power2.inOut' },
+        // zastavit se má na jídle, ne v mezeře mezi dvěma; v soumraku volně
+        snap: {
+          snapTo: function (v) {
+            if (v > lastStop + .002) return v;
+            var step = lastStop / (dishes.length - 1);
+            return Math.round(v / step) * step;
+          },
+          duration: { min: .18, max: .42 }, delay: .06, ease: 'power2.inOut'
+        },
+        onToggle: function (self) { setDay('pin', self.isActive && dusk < .5); },
         onUpdate: function (self) {
-          setMeta(Math.round(self.progress * (dishes.length - 1)));
-          gsap.set(barEl, { width: (12 + self.progress * 88) + '%' });
+          var p = self.progress * (1 + DUSK);
+          var sp = Math.min(1, p);                        // průběh pásu jídel
+          var k = gsap.utils.clamp(0, 1, (p - 1) / DUSK); // průběh soumraku
+          dusk = k = k * k * (3 - 2 * k);
+
+          setMeta(Math.round(sp * (dishes.length - 1)));
+          gsap.set(barEl, { width: (12 + sp * 88) + '%' });
           var cx = window.innerWidth / 2;
-          dishes.forEach(function (el) {
+          dishes.forEach(function (el, i) {
             var r = el.getBoundingClientRect();
             var d = (r.left + r.width / 2 - cx) / cx;        // -1 … 0 … 1
             var a = Math.abs(d);
+            var rot = gsap.utils.clamp(-8, 8, d * 9);
             gsap.set(el, {
               scale: gsap.utils.clamp(.6, 1, 1 - a * .34),
-              rotate: gsap.utils.clamp(-8, 8, d * 9),
+              rotate: rot,
               yPercent: a * 6,
               opacity: gsap.utils.clamp(.3, 1, 1 - a * .62)
+            });
+            // Světlo stojí nad středem: stín utíká od středu, s dálkou se
+            // natahuje a slábne. Natočení talíře se mu odečte — stín leží
+            // na papíře, ne na talíři.
+            if (shadows[i]) gsap.set(shadows[i], {
+              xPercent: d * 26, scaleX: 1 + a * .4, rotate: -rot,
+              opacity: (1 - a * .5) * (1 - k)
             });
           });
           // velmi lehké „dýchání“ loga, ať scéna nestojí úplně na místě
           gsap.set(markEl, {
-            scale: 1 + Math.sin(self.progress * Math.PI) * .07,
-            opacity: .11 + Math.sin(self.progress * Math.PI) * .05
+            scale: 1 + Math.sin(sp * Math.PI) * .07,
+            opacity: .11 + Math.sin(sp * Math.PI) * .05
           });
+          // Clona: začíná za rohy okna (polovina úhlopříčky), končí kuželem
+          // o něco širším než talíř uprostřed. Poloměr se zmenšuje
+          // geometricky, ne lineárně — jako clona objektivu: kraje zhasnou
+          // rychle, kolem talíře zpomalí.
+          if (nightEl) {
+            if (k > 0) {
+              var w = window.innerWidth, h = pinEl.clientHeight;
+              var hd = Math.sqrt(w * w + h * h) / 2;
+              var dish = dishes[dishes.length - 1].querySelector('img');
+              var dw = dish ? dish.offsetWidth : 300;
+              var rr = ringEl.getBoundingClientRect(), pr = pinEl.getBoundingClientRect();
+              var geo = function (a, b) { return a * Math.pow(b / a, k); };
+              duskEl.style.setProperty('--cy', Math.round(rr.top + rr.height / 2 - pr.top) + 'px');
+              duskEl.style.setProperty('--r0', Math.round(geo(hd * 1.02, dw * .42)) + 'px');
+              duskEl.style.setProperty('--r1', Math.round(geo(hd * 1.5, dw * 1.15)) + 'px');
+              duskEl.style.setProperty('--a0', (.55 * Math.pow(k, 1.5)).toFixed(3));
+              duskEl.style.setProperty('--warm', (.16 * k).toFixed(3));
+            }
+            gsap.set(nightEl, { opacity: k > 0 ? 1 : 0 });
+          }
+          pinEl.classList.toggle('is-night', k > .5);
+          gsap.set(fadeEls, { opacity: 1 - Math.min(1, k * 1.6) });
+          gsap.set(dayLight, { opacity: 1 - k });
+          setDay('pin', self.isActive && k < .5);
         }
       }
     });
+    tl.fromTo(stage, { x: function () { return -off(0); } }, {
+      x: function () { return -off(dishes.length - 1); },
+      ease: 'none', duration: 1
+    }).to({}, { duration: DUSK });
   }
   initShowcase();
 
@@ -1164,6 +1244,41 @@
   setInterval(renderOpenState, 60000);
 
   if (!hasST) return;
+
+  /* ---- Lišta nad papírem ------------------------------------------------
+     Bez pohybu i s ním — tohle není animace. Přepíná se, až pod lištou
+     (~36 px pod hranou okna) leží papír, ne jantar švu: u Signatures za
+     utrženou hranou listu, v rezervaci po většině horního švu, dole před
+     švem do zlata. */
+  var NAV_Y = 'top+=36';
+  var tearEl = $('.show__tear');
+  // Začátek: hrana listu (nejhlouběji v 47 % výšky .show__tear) už je nad
+  // lištou. Konec až za začátkem pinu — spodek .show__tear přesahuje do
+  // pinu, takže mezi oběma plochami nezůstane mezera, kdy lišta zhasne.
+  if (tearEl) ScrollTrigger.create({
+    trigger: tearEl, invalidateOnRefresh: true,
+    start: function () { return 'top+=' + Math.round(tearEl.offsetHeight * .5) + ' ' + NAV_Y; },
+    end: 'bottom top-=8',
+    onToggle: function (self) { setDay('tear', self.isActive); }
+  });
+  var showPin = $('#showPin');
+  if (showPin && showPin.classList.contains('is-static')) ScrollTrigger.create({
+    trigger: showPin, start: 'top ' + NAV_Y, end: 'bottom ' + NAV_Y,
+    onToggle: function (self) { setDay('showStatic', self.isActive); }
+  });
+  var resEl = $('#rezervace');
+  if (resEl) {
+    // Švy rezervace jsou .res::before (nahoře) a .res::after (dole). Papír
+    // pod lištou je až v posledních ~30 % horního šve; dole lišta zhasne
+    // dřív, než šev ztmavne k poukazu.
+    var seamPx = function (pseudo) { return parseFloat(getComputedStyle(resEl, pseudo).height) || 0; };
+    ScrollTrigger.create({
+      trigger: resEl, invalidateOnRefresh: true,
+      start: function () { return 'top+=' + Math.round(seamPx('::before') * .7) + ' ' + NAV_Y; },
+      end: function () { return 'bottom-=' + Math.round(seamPx('::after') * .6) + ' ' + NAV_Y; },
+      onToggle: function (self) { setDay('res', self.isActive); }
+    });
+  }
 
   if (reduced) {
     // Nic se nehýbe. Řádky nadpisů ani tak nejsou v CSS schované, takže
@@ -1354,9 +1469,11 @@
   /* ---- 9f · pozadí pluje pomaleji než obsah --------------------------- */
   /* Signatures ne: sekce je připíchnutá a roluje přes několik obrazovek,
      takže by pozadí za talířem viditelně ujíždělo. Tam stojí. */
+  /* Světlé podklady (.secbg--day) taky ne: stín borovice, který by
+     ujížděl pod formulářem rezervace, by tahal oko od polí. */
   gsap.utils.toArray('.secbg').forEach(function (el) {
     var im = el.querySelector('img');
-    if (!im || el.closest('.show')) return;
+    if (!im || el.closest('.show') || el.classList.contains('secbg--day')) return;
     gsap.fromTo(im, { yPercent: -5, scale: 1.1 }, {
       yPercent: 5, ease: 'none',
       scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true }

@@ -2,10 +2,12 @@
 /*
   Domovská stránka.
 
-  Plochy se střídají tónem: hero (ink) → O nás (wash.webp) → signatures
-  (paper-pines) → galerie (fotky) → rezervace (sesshu-winter.webp) → poukaz
-  (paper-plum) → kontakt (contact.webp) → patička (ink). Mezi nimi je fade.
-  Na telefonu rezervace a poukaz zůstanou jeden pult.
+  Plochy se střídají noc a den: hero (noc, ink) → O nás (soumrak,
+  wash.webp) → signatures (DEN, washi-day.webp; na konci pinu soumrak) →
+  galerie (noc) → rezervace (DEN, shoji-pine.webp) → poukaz (zlato,
+  paper-plum) → kontakt (contact.webp) → patička (ink).
+  Mezi tmou a světlem nestačí alfa — šev jde přes jantar v OKLCH (global.css,
+  sekce 7). Na telefonu rezervace a poukaz zůstanou jeden pult.
 */
 import Base from "../layouts/Base.astro";
 import Icons from "../components/Icons.astro";

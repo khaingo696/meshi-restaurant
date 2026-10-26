@@ -8,7 +8,7 @@
 - **Đã xử lý:** cắt bỏ khung sơn mài + viền gấm, chuyển duotone sang tông nâu
   (mực `#1d1208` → giấy `#8a6038`) cho khớp bảng màu của web.
 
-## pines-mist.webp — nền Signatures
+## pines-mist.webp — nguồn bóng thông của shoji-pine.webp (trước là nền Signatures)
 - **Tác phẩm:** *Shōrin-zu byōbu* cánh phải, Hasegawa Tōhaku — cùng bình phong với wash.webp (cánh trái, nền O nás)
 - **Giấy phép:** Public domain
 - **Tạo từ:** paper-pines.webp (bên dưới). Xóa 5 đường bản lề đen của bình phong
@@ -35,7 +35,7 @@
   CSS phủ blur + lớp màn cùng tông ảnh (giống Poukaz).
 - Nguồn gốc / giấy phép: chưa xác minh — cần kiểm tra trước khi bàn giao.
 
-## sesshu-winter.webp — nền Rezervace
+## sesshu-winter.webp — nền Rezervace cũ (không còn dùng, giữ dự phòng)
 - **Tác phẩm:** *Shūtō Sansui-zu* (秋冬山水図), bức "Mùa đông", Sesshū Tōyō (雪舟等楊, 1420–1506)
 - **Hiện vật:** Quốc bảo Nhật Bản, Bảo tàng Quốc gia Tokyo
 - **Giấy phép:** Public domain (tác giả mất 1506)
@@ -47,7 +47,20 @@
 - `res.webp` (nền cũ, tranh mái nhà + Phú Sĩ) không còn dùng; nguồn gốc chưa rõ và có dấu watermark.
 
 ## paper-mist.webp
-Không dùng trên web. Sesshū *Haboku Sansui*, public domain, giữ khi cần.
+Không dùng trực tiếp trên web. Sesshū *Haboku Sansui*, public domain.
+Vùng giấy trống bên trái là nguồn thớ giấy của washi-day.webp và shoji-pine.webp.
+
+## washi-day.webp — nền Signatures
+- **Tạo từ:** paper-mist.webp (Sesshū, public domain) — chỉ lấy thớ giấy ở vùng trống,
+  tách tần số cao, ghép patch ngẫu nhiên mép mềm, phủ lên màu giấy `#efe5d2`.
+- **Dựng bằng:** `node scripts/build-day-bg.mjs`
+- **Giấy phép:** Public domain (phái sinh từ tranh public domain)
+
+## shoji-pine.webp — nền Rezervace
+- **Tạo từ:** cùng tờ giấy với washi-day.webp + bóng cây thông giữa của pines-mist.webp
+  (Tōhaku, public domain), làm mờ như bóng nắng in qua giấy shōji.
+- **Dựng bằng:** `node scripts/build-day-bg.mjs`
+- **Giấy phép:** Public domain (phái sinh từ tranh public domain)
 
 ## grain.png — lớp hạt phủ toàn trang
 - **Nguồn gốc:** ảnh chụp giấy cũ, public domain — Wikimedia Commons `File:Old paper2.jpg`

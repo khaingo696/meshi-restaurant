@@ -2,13 +2,25 @@
 /*
   Signatures — ukázka jídel.
 
-  Podmalba je pravé křídlo Tōhakuovy zástěny (levé je pod „O nás“),
-  v téže tušové škále — sekce na sebe navazují jednou mlhou.
+  Den po soumraku O nás. Podkladem je holý papír washi (washi-day.webp,
+  viz scripts/build-day-bg.mjs) — malba za talířem by jídlu brala oko,
+  jídlo je tu jediná kresba. S O nás ji nespojuje přechod barvy, ale
+  MATERIÁL: list washi s ručně utrženou horní hranou (.show__tear,
+  tear-edge.webp) leží přes papír O nás. Dvě různé barvy papíru vedle
+  sebe tak nejsou šev, který musí splynout — jsou to dva listy na sobě.
+
+  Konec pinu je zhasnutí v kině (.show__dusk, app.js): po posledním jídle
+  se tma stáhne od krajů okna k talíři jako clona a nechá ho v kuželu
+  světla. Jméno jídla a tlačítko menu přejdou do nočního materiálu, takže
+  poslední záběr není prázdný. Galerie pak začíná ve tmě, bez švu.
 
   Sekce se připíchne na obrazovku a jídla jedou vodorovně: to uprostřed je
   největší a stojí v ose, ta po stranách se zmenší a nakloní. Fotky jsou
   WebP s alfa kanálem (vyříznuté z pozadí), takže drop-shadow() obkresluje
   skutečný obrys jídla. Kruh, zář a zapuštěné logo tvoří podstavec.
+  Pod každým talířem leží vržený stín (.dish__shadow): světlo stojí nad
+  středem scény, takže talíř uprostřed má stín krátký a hutný, talíř
+  odjíždějící do strany dlouhý a slabý, odvrácený od středu.
 
   Tlačítko pod názvem jídla otevírá <MenuOverlay> s celým lístkem. Kategorii mu
   app.js průběžně přepisuje na tu, ze které je jídlo právě uprostřed, takže
@@ -54,14 +66,17 @@ const dishes = SHOWCASE.map((slug) => {
 const first = dishes[0];
 ---
 
-<section class="show" id="menu" data-tone="lift">
+<section class="show" id="menu" data-tone="day">
+  <!-- Utržená hrana listu, přesahuje nahoru přes O nás. Mimo pin: v pinu
+       by zůstala přilepená k horní hraně okna po celou scénu. -->
+  <div class="show__tear" aria-hidden="true"></div>
+
   <div class="show__pin" id="showPin">
-    <!-- Pravé křídlo zástěny, jejíž levé křídlo leží pod „O nás“ — sekce
-         na sebe navazují jednou mlhou. Podklad je UVNITŘ pinu: přes celou
-         sekci (vysokou o celé rolování scény) ho „cover“ zvětšil tak, že
-         z obrazu zbyl jen kus prázdného papíru. Vodoznak 匠 odešel: přes
-         tušovou malbu za talířem byl jen další šum. -->
-    <div class="secbg secbg--lift show__bg" aria-hidden="true"><img src="/assets/bg/pines-mist.webp" alt="" /></div>
+    <!-- Podklad je UVNITŘ pinu a stojí: kdyby pin byl průhledný, papír
+         sekce by pod ním při rolování ujížděl. -->
+    <div class="secbg secbg--day show__bg" aria-hidden="true"><img src="/assets/bg/washi-day.webp" alt="" /></div>
+    <!-- Zhasnutí: clona tmy kolem talíře. Poloměry a střed řídí app.js. -->
+    <div class="show__dusk" id="showDusk" aria-hidden="true"><i></i></div>
 
     <!-- Nadpis patří DO pinu: jinak na telefonu zmizí, jakmile se scéna
          připíchne, a od talíře ho dělí celá výška okna. -->
@@ -83,6 +98,7 @@ const first = dishes[0];
       <div class="show__stage" id="showStage">
       {dishes.map((d) => (
         <figure class="dish" data-cat={d.cat} data-kicker={d.kicker} data-name={d.name} data-price={d.price}>
+          <span class="dish__shadow" aria-hidden="true"></span>
           <img src={d.img} alt={d.name} width="900" height="900" loading="lazy" decoding="async" />
           <!-- Popisek je vidět jen v náhradní podobě scény (bez pohybu nebo
                bez GSAP), kde se pás roluje prstem. Jinak jméno nese

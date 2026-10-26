@@ -9,15 +9,19 @@
   řady, která se složí do jednoho řádku — na telefonu se oba kroky vejdou
   na jednu obrazovku. Bez JavaScriptu je vidět všechno najednou a datum
   je obyčejné pole.
+
+  Do tmy galerie i do zlata poukazu přechází švy v OKLab
+  (.res::before / .res::after, global.css sekce 11).
 */
-import Blend from "./Blend.astro";
 ---
 
-<section class="res" id="rezervace" data-tone="lift">
-  <!-- Podklad: Sesshū, Zimní krajina (viz ASSET-CREDITS.md) — poutník
-       sněhem k chrámu pod skálou. Jen tlumeně, pod hustým závojem tuše.
-       Vodoznak 席 odešel: přes tušovou malbu byl jen další šum. -->
-  <div class="secbg secbg--lift res__bg" aria-hidden="true"><img src="/assets/bg/sesshu-winter.webp" alt="" loading="lazy" /></div>
+<section class="res" id="rezervace" data-tone="day">
+  <!-- Podklad: za šódži je den. Na papír dopadá stín borovice z Tōhakuovy
+       zástěny (shoji-pine.webp, scripts/build-day-bg.mjs) — tatáž borovice,
+       která v O nás stála v mlze. Stín leží vlevo pod textem, formulář
+       stojí na čistém papíře. Mřížka šódži tu schválně není: její linky
+       by se pletly s linkami polí. -->
+  <div class="secbg secbg--day res__bg" aria-hidden="true"><img src="/assets/bg/shoji-pine.webp" alt="" loading="lazy" /></div>
 
   <div class="wrap res__in">
     <div class="res__copy">
@@ -140,5 +144,4 @@ import Blend from "./Blend.astro";
       <p class="ok-box" id="resOk" role="status" data-i18n="res.ok">Děkujeme! Vaši rezervaci jsme přijali a potvrzení vám zašleme do 15 minut.</p>
     </form>
   </div>
-  <Blend to="lift" class="blend--merge" />
 </section>
