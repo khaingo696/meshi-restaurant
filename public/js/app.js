@@ -587,7 +587,8 @@
      rezervace ani objednávka poukazu se nikam nedoručí. Než web pustíte
      na hosty, doplňte odeslání (endpoint / mail na info@meshi-restaurant.cz)
      a teprve po úspěšné odpovědi ukazujte #resOk / #vOk. Platí pro
-     #resForm i #vForm. Stejně nedodělaná je i #objednavka v panelu.
+     #resForm i #vForm. Stejně nedodělaná je i #objednavka v panelu
+     a deska .hero-cta--order v heru — obě zatím bez obsluhy.
      ====================================================================== */
   function wire(formId, okId) {
     var f = $(formId), ok = $(okId);
@@ -937,8 +938,10 @@
     });
   }
 
-  /* Magnet na tlačítku do menu: posune se o kousek za kurzorem. */
-  var heroCta = $('.hero-cta');
+  /* Magnet na desce v heru: posune se o kousek za kurzorem. Jen na
+     objednávce — druhý stupeň („Celé menu“) je vlas bez obrysu, a ten by
+     se při posunu odlepil od textu, pod kterým leží. */
+  var heroCta = $('.hero-cta--order');
   if (heroCta && !reduced) {
     heroCta.addEventListener('pointermove', function (e) {
       var rect = heroCta.getBoundingClientRect();
@@ -1255,10 +1258,12 @@
               opacity: (1 - a * .5) * (1 - k)
             });
           });
-          // velmi lehké „dýchání“ loga, ať scéna nestojí úplně na místě
+          // Logo dýchá s pásem. Ve dne drží razítkovou krytí (~.5);
+          // za soumraku se rozsvítí — na zhasnuté scéně je zlatá jediné světlo.
+          var breathe = Math.sin(sp * Math.PI);
           gsap.set(markEl, {
-            scale: 1 + Math.sin(sp * Math.PI) * .07,
-            opacity: .11 + Math.sin(sp * Math.PI) * .05
+            scale: 1 + breathe * .07,
+            opacity: .48 + breathe * .08 + k * .22
           });
           // Clona: začíná za rohy okna (polovina úhlopříčky), končí kuželem
           // o něco širším než talíř uprostřed. Poloměr se zmenšuje
@@ -1381,8 +1386,8 @@
      --door-p na .kicker-node, a transform by si s ním GSAP přetahoval.
      Nadpis se hýbe jako celek, ne po řádcích: řádek s „Plate“ přesahuje
      talířem a párou, takže výřez (maskLines) tady není možný.
-     Tlačítko se posouvá za .hero-cta-wrap, aby zůstal volný transform na
-     .hero-cta pro magnet. */
+     Tlačítka se posouvají za .hero-cta-wrap, aby zůstal volný transform
+     na .hero-cta--order pro magnet. */
   whenDoorOpens(function () {
     gsap.timeline()
       .fromTo('.hero-kicker', { opacity: 0 }, { opacity: 1, duration: .9, ease: 'power2.out' })

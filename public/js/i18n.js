@@ -30,7 +30,12 @@ window.MESHI_I18N = {
     'nav.toTop': 'Nahoru na začátek stránky',
     'nav.up': 'Nahoru',
 
-    'hero.explore': 'Prozkoumat menu',
+    /* Dvě tlačítka v heru: deska je online objednávka (bere nav.order,
+       ať je ten řetězec jen jednou), vlas vede do menu. Obě musí zůstat
+       krátká — vedle sebe se vejdou na jeden řádek i na 390 px —
+       a „Celé menu“ se nesmí plést s „Menu“ v liště, které otevírá
+       panel s navigací. */
+    'hero.explore': 'Celé menu',
     /* Tiráž hera: popisek hodnocení se pod kurzorem přetáčí z prvního
        řádku na druhý (viz .rating-reel v global.css, sekce 6). */
     'hero.reviews': 'Google Reviews',
@@ -180,7 +185,7 @@ window.MESHI_I18N = {
     'nav.toTop': 'Back to top of page',
     'nav.up': 'Top',
 
-    'hero.explore': 'See the menu',
+    'hero.explore': 'Full menu',
     'hero.reviews': 'Google Reviews',
     'hero.map': 'Plzeň · Map',
     'hero.ratingAria': 'Google rating {score} out of 5, MESHi restaurant in Plzeň, open in Google Maps',

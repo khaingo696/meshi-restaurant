@@ -15,7 +15,7 @@
   Proti prototypu se tady liší jen napojení na zdejší web:
     · #gRatingLink / #gRatingScore plní app.js ze snapshotu
       /google-rating.json, #openState z rozpisu hodin
-    · data-i18n na textu tlačítka (hero.explore); popisek odkazu na
+    · data-i18n na textech tlačítek (nav.order, hero.explore); popisek odkazu na
       hodnocení skládá app.js, aby v něm bylo živé číslo (paintRatingAria)
     · <aside class="dev-controls"> z prototypu tu nemá co dělat
     · počet recenzí odešel: tiráž místo něj přetáčí popisek na „Plzeň · Mapa“
@@ -173,10 +173,27 @@
         </span>
       </h1>
 
+      <!-- Dvě akce, dva stupně vedle sebe. Deska z kouřového skla patří
+           objednávce — to je akce, která vydělává; menu si bere druhý
+           stupeň (vlas, global.css sekce 4), takže se vedle ní nečtou
+           jako dvě pilulky a vejdou se na jeden řádek i na telefonu.
+
+           Objednávka je zatím <button> bez obsluhy — stejně nedodělaná
+           jako #objednavka v panelu (app.js, sekce 6). Až přijde cíl,
+           stačí vyměnit element za <a href>. -->
       <div class="hero-cta-wrap">
-        <a class="hero-cta" href="#menu">
+        <button class="hero-cta hero-cta--order" type="button">
           <span class="hero-cta-gem" aria-hidden="true"></span>
-          <span class="hero-cta-label" data-i18n="hero.explore">Prozkoumat menu</span>
+          <span class="hero-cta-label" data-i18n="nav.order">Online objednávka</span>
+          <span class="hero-cta-icon" aria-hidden="true">
+            <svg viewBox="0 0 22 10" fill="none">
+              <path d="M0 5H20M16 1L20 5L16 9" stroke="currentColor" stroke-width="1.2" />
+            </svg>
+          </span>
+        </button>
+
+        <a class="hero-cta hero-cta--menu" href="#menu">
+          <span class="hero-cta-label" data-i18n="hero.explore">Celé menu</span>
           <span class="hero-cta-icon" aria-hidden="true">
             <svg viewBox="0 0 22 10" fill="none">
               <path d="M0 5H20M16 1L20 5L16 9" stroke="currentColor" stroke-width="1.2" />
