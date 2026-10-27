@@ -75,6 +75,13 @@ gallery's is the `height` of `.tick` in CSS. Both have a no-motion fallback —
 the showcase turns into a plain horizontal scroller (`.show__pin.is-static`),
 the gallery simply stops drifting.
 
+While the showcase is pinned, `app.js` owns the input: one gesture = one dish,
+always landing centred in the ring (on touch `<html>` gets `.show-lock` to stop
+native momentum). On touch, a fling that would overshoot the pin is caught just
+before it and glides in at the same speed. Keep in-flow heights above the pin
+in `svh`, not `dvh` — ScrollTrigger deliberately ignores the mobile toolbar
+resize, so a `dvh` hero would leave the pin's start stale and it would jump.
+
 **Fonts** are all self-hosted in `public/fonts`, nothing is fetched from Google:
 Shippori Mincho (body and headings), Zen Kaku Gothic New (labels, eyebrows,
 footer), Noto Serif (small print) and Yuji Syuku (the brush kanji). The two

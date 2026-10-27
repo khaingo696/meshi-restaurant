@@ -405,7 +405,12 @@ body.menu-open .nav__bars i:nth-child(3) { transform: translateY(-6px) rotate(-4
    kde je video pozadí celého dokumentu a lišta stojí v toku):
      · .hero::before je absolute, ne fixed — video i závoj patří sekci,
        jinak by gradient ležel přes celou stránku i při rolování
-     · min-height 100dvh, ne 100dvh − 76px — zdejší lišta je fixed
+     · min-height 100svh, ne 100dvh − 76px — zdejší lišta je fixed. A svh,
+       ne dvh: dvh hero na telefonu natáhne, jakmile se při rolování schová
+       lišta prohlížeče, a celá stránka pod ním poskočí. ScrollTrigger
+       takovou změnu okna na dotyku schválně nepřepočítává, takže by pin
+       Signatures při vjezdu i výjezdu cukl o výšku lišty. Nahoře stránky
+       je lišta vždycky vysunutá, tam jsou svh a dvh totéž.
      · vodorovné odsazení je var(--pad), ne clamp(20px, 5vw, 68px), aby
        hero lícovalo s lištou nad sebou i se sekcemi pod sebou
      · pod 900 px se přidává odsazení shora: .hero-meta se tam stěhuje
@@ -422,7 +427,7 @@ body.menu-open .nav__bars i:nth-child(3) { transform: translateY(-6px) rotate(-4
   --muted: rgba(232, 216, 193, .68);
 
   position: relative;
-  min-height: 100dvh;
+  min-height: 100svh;
   overflow: hidden;
   background: var(--ink);
   display: flex;

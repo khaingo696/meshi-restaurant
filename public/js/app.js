@@ -128,7 +128,8 @@
   // Skok na kotvu nebo nahoru právě projíždí stránkou: Signatures ho nechají
   // projet a nechytí ho na prvním jídle.
   var jumping = false;
-  var showcaseTop = null;
+  // Signatures (initShowcase): začátek pinu, zastavení kroku, dojezd po skoku.
+  var showcase = null;
   if (!reduced && window.Lenis) {
     lenis = new Lenis({
       duration: 1.6,
@@ -155,21 +156,41 @@
     return Math.round(h + 24);
   }
 
+  /* Skok končí trojím způsobem: dojede, sáhne do něj člověk (dotyk,
+     kolečko), nebo ho zastaví otevřený panel. V druhém a třetím případě
+     ho Lenis tiše zahodí a onComplete nepřijde — jumping pak zůstal
+     navždy true a Signatures přestaly dojíždět na jídlo. Proto konec
+     hlídá i vstup a časová pojistka. */
+  var JUMP_INPUT = ['touchstart', 'wheel'];
+  var jumpTimer = 0;
+  function endJump(e) {
+    if (!jumping) return;
+    jumping = false;
+    clearTimeout(jumpTimer);
+    JUMP_INPUT.forEach(function (type) { window.removeEventListener(type, endJump, true); });
+    // Sáhl do něj člověk: skok pustí stránku hned. Sám by to Lenis poznal
+    // až z pohybu prstu — a v pinu vůbec, tam vstup bere krok po jídle.
+    // (scrollTo na současné místo nestačí: Lenis během skoku drží cíl na
+    // současné poloze, vezme to jako „už jsem tam“ a jede dál.)
+    if (e && lenis && lenis.isScrolling === 'smooth') { lenis.stop(); lenis.start(); }
+    if (showcase) showcase.settle();
+  }
+
   function jump(y, duration) {
+    if (showcase) showcase.stop();
     jumping = true;
-    var done = function () { jumping = false; };
-    if (lenis) lenis.scrollTo(y, { duration: duration, onComplete: done });
-    else {
-      window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
-      setTimeout(done, reduced ? 0 : 1400);
-    }
+    clearTimeout(jumpTimer);
+    JUMP_INPUT.forEach(function (type) { window.addEventListener(type, endJump, { capture: true, passive: true }); });
+    jumpTimer = setTimeout(endJump, lenis ? duration * 1000 + 300 : (reduced ? 0 : 1400));
+    if (lenis) lenis.scrollTo(y, { duration: duration, onComplete: function () { endJump(); } });
+    else window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
   }
 
   function goTo(target) {
     var el = typeof target === 'string' ? $(target) : target;
     if (!el) return;
     // Signatures: přistát přesně na začátku pinu, s prvním jídlem v kruhu.
-    if (el.id === 'menu' && showcaseTop) return jump(showcaseTop(), 1.15);
+    if (el.id === 'menu' && showcase) return jump(showcase.top(), 1.15);
     jump(el.getBoundingClientRect().top + window.pageYOffset - headerGap(), 1.15);
   }
 
@@ -243,6 +264,20 @@
   }
 
   if (!doorEl) startHeroVideo();
+
+  /* Video mimo obrazovku stojí. Pouští se přes play(), ne atributem
+     autoplay, takže ho prohlížeč sám nezastaví — dekodér 1080p by běžel
+     i pod Signatures a galerií a na telefonu ubíral snímky rolování. */
+  var heroVid = $('video.hero-bg');
+  if (heroVid && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      if (!heroVid.dataset.started) return;
+      if (entries[entries.length - 1].isIntersecting) {
+        var go = heroVid.play();
+        if (go && go.catch) go.catch(function () {});
+      } else heroVid.pause();
+    }).observe(heroVid);
+  }
 
   /* Zavolá fn ve chvíli, kdy se dveře rozjedou. Bez dveří (druhá návštěva
      v téže kartě, vypnutý modul) hned. Když dveře stojí a čekají na vstup,
@@ -338,26 +373,41 @@
     .map(function (a) { return $(a.getAttribute('href')); })
     .filter(Boolean);
 
+  /* Polohy sekcí a výška stránky se měří jen po změně rozvržení, ne při
+     každém rolování. Tahle obsluha běží v téže události až po
+     ScrollTriggeru (Lenis ho volá ze své), který právě zapsal styly, a
+     každé čtení by prohlížeč nutilo přepočítat celou stránku znovu. */
+  var progressEl = $('#progress');
+  var secTops = [], scrollMax = 0;
+  function measureScroll() {
+    var y = window.pageYOffset;
+    secTops = sections.map(function (s) { return s.getBoundingClientRect().top + y; });
+    scrollMax = document.documentElement.scrollHeight - window.innerHeight;
+  }
+
   function onScroll() {
     var y = window.pageYOffset;
 
     var current = sections[0];
     for (var i = 0; i < sections.length; i++) {
-      if (sections[i].getBoundingClientRect().top <= 140) current = sections[i];
+      if (secTops[i] - y <= 140) current = sections[i];
     }
     navLinks.forEach(function (a) {
       a.classList.toggle('active', !!current && a.getAttribute('href') === '#' + current.id);
     });
 
-    var p = $('#progress');
-    if (p) {
-      var max = document.documentElement.scrollHeight - window.innerHeight;
-      p.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, y / max) : 0) + ')';
+    if (progressEl) {
+      progressEl.style.transform = 'scaleX(' + (scrollMax > 0 ? Math.min(1, y / scrollMax) : 0) + ')';
     }
   }
+  function remeasure() { measureScroll(); onScroll(); }
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  onScroll();
+  window.addEventListener('resize', remeasure);
+  // Výška stránky se mění i bez změny okna: pin dostane rozpěrku,
+  // formulář rezervace se rozbalí, dorazí fonty.
+  if (window.ResizeObserver) new ResizeObserver(remeasure).observe(document.body);
+  if (hasST) ScrollTrigger.addEventListener('refresh', remeasure);
+  remeasure();
 
   // Zpět nahoru
   var toTop = $('#toTop');
@@ -1241,7 +1291,12 @@
     var TURNS = [0, -15, 15, -30, 30, -45, 45];
     var headEl = $('.show__head');
     var metaEl = $('.show__meta');
+    /* Pro onUpdate: jak daleko od středu talíře může jídlo sahat (px, i s
+       natočením a stínem), které jídlo odjelo za okraj okna a stojí, a
+       poslední zapsaný filtr. */
+    var reach = [], parked = [], filters = [];
     function fitDishes() {
+      parked = [];
       var pr = pinEl.getBoundingClientRect();
       var rr = ringEl.getBoundingClientRect();
       var D = ringEl.offsetWidth;
@@ -1255,7 +1310,7 @@
         b: metaEl.getBoundingClientRect().top - pr.top - pad - ry
       };
       stage.style.setProperty('--slot', D + 'px');
-      dishes.forEach(function (el) {
+      dishes.forEach(function (el, i) {
         var f = (el.dataset.fit || '').split(' ').map(Number);
         if (f.length !== 4) return;
         var d = f[0], x = f[1], y = f[2], r = f[3];
@@ -1289,6 +1344,8 @@
             'drop-shadow(' + (4 * sx).toFixed(1) + 'px ' + (4 * sy).toFixed(1) + 'px 8px rgba(74, 48, 22, .26))';
         } else img.style.filter = '';
         el.style.setProperty('--dp', d * w + 'px');
+        // Nejvzdálenější roh fotky od středu talíře, plus stín.
+        reach[i] = w * Math.hypot(1, r) + 60;
       });
       // Pás stojí na středu studny, kruh o kousek výš — dorovnat.
       stage.style.translate = '';
@@ -1358,14 +1415,34 @@
           var k = gsap.utils.clamp(0, 1, (p - 1) / DUSK); // průběh soumraku
           dusk = k = k * k * (3 - 2 * k);
 
-          setMeta(Math.round(sp * (dishes.length - 1)));
-          gsap.set(barEl, { width: (12 + sp * 88) + '%' });
+          /* Nejdřív všechno změřit, pak teprve psát. Čtení hned po zápisu
+             nutí prohlížeč přepočítat styly znovu, a to tady bylo u každého
+             jídla v každém snímku. Krok po jídle jede po hlavním vlákně
+             (tween → rolování → tahle funkce), takže co stojí tahle
+             smyčka, to chybí plynulosti pásu na telefonu. */
           var wr = wellEl.getBoundingClientRect();
           var half = wr.width / 2, cx = wr.left + half;
-          dishes.forEach(function (el, i) {
+          var pos = dishes.map(function (el) {
             var r = el.getBoundingClientRect();
-            var d = (r.left + r.width / 2 - cx) / half;      // -1 … 0 … 1
+            return (r.left + r.width / 2 - cx) / half;       // -1 … 0 … 1
+          });
+          var lit = !!nightEl && k > 0;
+          var rr = lit && ringEl.getBoundingClientRect();
+          var pr = lit && pinEl.getBoundingClientRect();
+          var ph = lit ? pinEl.clientHeight : 0;
+
+          setMeta(Math.round(sp * (dishes.length - 1)));
+          gsap.set(barEl, { width: (12 + sp * 88) + '%' });
+          dishes.forEach(function (el, i) {
+            var d = pos[i];
             var a = Math.abs(d);
+            /* Jídlo za okrajem okna: měřítko, krytí i rozostření už stojí
+               na mezi a nic z něj není vidět. Zapíše se jednou, když
+               odjede, a pak stojí — jinak se každý snímek přepočítávalo
+               všech třináct talířů s filtrem, i když jsou vidět dva tři. */
+            var gone = (a - 1) * half > reach[i];
+            if (gone && parked[i]) return;
+            parked[i] = gone;
             var rot = gsap.utils.clamp(-8, 8, d * 9);
             gsap.set(el, {
               scale: gsap.utils.clamp(.55, 1, 1 - a * .42),
@@ -1376,7 +1453,8 @@
             var fa = Math.min(1, a);
             var blur = Math.round(fa * BLUR * 4) / 4;
             var sat = Math.round((1 - fa * .55) * 20) / 20;
-            el.style.filter = blur > 0 ? 'blur(' + blur + 'px) saturate(' + sat + ')' : '';
+            var look = blur > 0 ? 'blur(' + blur + 'px) saturate(' + sat + ')' : '';
+            if (look !== filters[i]) el.style.filter = filters[i] = look;
             // Světlo stojí nad středem: stín utíká od středu, s dálkou se
             // natahuje a slábne. Natočení talíře se mu odečte — stín leží
             // na papíře, ne na talíři.
@@ -1402,11 +1480,10 @@
           // geometricky, ne lineárně — jako clona objektivu: kraje zhasnou
           // rychle, kolem talíře zpomalí.
           if (nightEl) {
-            if (k > 0) {
-              var w = window.innerWidth, h = pinEl.clientHeight;
+            if (lit) {
+              var w = window.innerWidth, h = ph;
               var hd = Math.sqrt(w * w + h * h) / 2;
               var dw = parseFloat(dishes[dishes.length - 1].style.getPropertyValue('--dp')) || 300;
-              var rr = ringEl.getBoundingClientRect(), pr = pinEl.getBoundingClientRect();
               var geo = function (a, b) { return a * Math.pow(b / a, k); };
               duskEl.style.setProperty('--cy', Math.round(rr.top + rr.height / 2 - pr.top) + 'px');
               duskEl.style.setProperty('--r0', Math.round(geo(hd * 1.02, dw * .42)) + 'px');
@@ -1473,8 +1550,28 @@
         (lb && lb.classList.contains('on')) || document.documentElement.classList.contains('md-lock');
     }
 
+    /* Dojezd, který naváže na rychlost, jakou stránka právě jede (v, px/s):
+       začne stejně rychle a měkce stane v cíli — Hermitova křivka se
+       sklonem m0 na začátku a nulou na konci (do 3 nepřejede). Dřív zámek
+       dojezd prstu utnul a pás se rozjížděl znovu z nuly: zespodu tak
+       stránka zastavila a pak se pomalu rozjela 700 px soumraku nahoru.
+       Jede-li stránka od cíle (prst přejel začátek pinu o kus), rychlost
+       se zahodí a pás se vrátí z klidu. */
+    function glide(y, v) {
+      var dist = y - curY();
+      if (Math.abs(dist) < 2) return toY(y, 0);
+      var m = v / dist;                              // 1/s; kladné = jede k cíli
+      if (!(m > 0)) return toY(y, Math.min(.8, .3 + Math.abs(dist) / 1600));
+      var dur = gsap.utils.clamp(.4, 1, 2 / m);
+      var m0 = Math.min(3, m * dur);
+      toY(y, dur, function (t) { return m0 * t * (1 - t) * (1 - t) + t * t * (3 - 2 * t); });
+    }
+
     function step(dir) {
       if (overlayUp()) return;
+      // Bez rozjetého kroku se vychází z toho, kde pás opravdu stojí —
+      // stepAt mohl zůstat z dřívějška (skok na kotvu, refresh).
+      if (!stepTw) stepAt = nearest();
       var to = stepAt + dir;
       // Navazující gesto během jízdy: dojet rovnou k dalšímu, bez zastávky.
       var ease = stepTw ? 'power2.out' : 'power3.inOut';
@@ -1520,41 +1617,133 @@
       if (!e.repeat || !stepTw) step(dir);
     }
 
-    /* Pin se připíchl / odepnul. Na dotykovém zařízení dostane <html>
-       overflow: hidden — zastaví nativní dojezd prstu, který by jinak
-       odvezl pás z kruhu (ve Safari na programové rolování nedbá). */
+    /* Na dotykovém zařízení dostane <html> overflow: hidden — zastaví
+       nativní dojezd prstu, který by jinak odvezl pás z kruhu (ve Safari
+       na programové rolování nedbá). */
+    function lock(on) {
+      if (coarse) document.documentElement.classList.toggle('show-lock', on);
+    }
+
+    /* Krok, který dojíždí mimo pin (výjezd za poslední nebo před první
+       jídlo, chycený dojezd před pinem), pustí stránku, jakmile do ní
+       člověk sáhne. Jinak by dál každý snímek přepisoval rolování a
+       přetahoval se s prstem i s kolečkem. V pinu ho vystřídá další krok.
+       Nový dotyk, ne pohyb: prst, který výjezd spustil, se ještě hýbe,
+       když pás pin opouští — a výjezd by utnul hned za soumrakem. */
+    function stopStep() {
+      if (stepTw) stepTw.kill();
+      stepTw = null;
+      if (!st.isActive) lock(false);
+    }
+    ['touchstart', 'wheel'].forEach(function (type) {
+      window.addEventListener(type, function () {
+        if (stepTw && !st.isActive) stopStep();
+      }, { capture: true, passive: true });
+    });
+
+    /* Pin se připíchl / odepnul. */
     function holdPin(on, dir) {
       if (!obs) return;              // ScrollTrigger se ozval dřív, než krok vznikl
       wheelHeld = on;
-      if (coarse) document.documentElement.classList.toggle('show-lock', on);
       if (on) {
         obs.enable();
         window.addEventListener('keydown', onKey);
-        if (jumping || stepTw) return;
+        // Skok na kotvu sekcí jen projíždí: zámek i dojezd na jídlo počkají,
+        // jestli v ní skončí (settle).
+        if (jumping) return;
+        lock(true);
+        if (stepTw) return;
         // Vjezd do sekce: první (shora) nebo poslední (zespodu) jídlo do kruhu.
         // Gesto, které sem dovezlo, je tím spotřebované. Načtení stránky
         // uprostřed pinu (dir 0) dojede k nejbližšímu.
         stepAt = dir < 0 ? n - 1 : dir > 0 ? 0 : nearest();
         used = true;
         lastIn = performance.now();
-        var d = Math.abs(stepY(stepAt) - curY());
-        toY(stepY(stepAt), dir < 0 ? 1 : Math.min(.8, .3 + d / 1600));
+        glide(stepY(stepAt), st.getVelocity());
       } else {
+        lock(false);
         obs.disable();
         window.removeEventListener('keydown', onKey);
       }
     }
 
+    // Skok na kotvu skončil (dojel nebo ho člověk zastavil). Stojí-li
+    // v pinu, zamknout a dojet na nejbližší jídlo.
+    function settle() {
+      if (!st.isActive) return;
+      lock(true);
+      if (stepTw) return;
+      stepAt = nearest();
+      if (Math.abs(curY() - stepY(stepAt)) > 2) toY(stepY(stepAt), .5);
+    }
+
+    /* Chycení dojezdu (jen dotyk). Prst pustí stránku a ta k Signatures
+       dojíždí tak rychle, že by začátek pinu přejela: zámek ji zastavil
+       až za ním a pás se pak vracel na první jídlo — zastavit, couvnout.
+       Proto se dojezd chytí už kus před pinem a plynule, ve stejném směru
+       a ze stejné rychlosti, dojede přesně na první jídlo (zespodu na
+       poslední). Dojezd, který by se zastavil sám před sekcí, se nechá. */
+    var CATCH = .6;                  // jak daleko před pinem (výšek okna) se chytá
+    var COAST = .4;                  // s: odhad, kolik ještě dojezd ujede (v · COAST px)
+    var touching = false, flung = false;
+    window.addEventListener('touchstart', function () { touching = true; flung = false; }, { capture: true, passive: true });
+    ['touchend', 'touchcancel'].forEach(function (type) {
+      window.addEventListener(type, function (e) {
+        touching = e.touches.length > 0;
+        flung = !touching;
+      }, { capture: true, passive: true });
+    });
+    window.addEventListener('wheel', function () { flung = false; }, { capture: true, passive: true });
+    window.addEventListener('scroll', function () {
+      if (!coarse || !flung || touching || stepTw || jumping || st.isActive || overlayUp()) return;
+      var y = curY(), v = st.getVelocity(), zone = window.innerHeight * CATCH;
+      var into = v > 0
+        ? y < st.start && y > st.start - zone && y + v * COAST > st.start
+        : v < 0 && y > st.end && y < st.end + zone && y + v * COAST < st.end;
+      if (!into) return;
+      flung = false;
+      stepAt = v > 0 ? 0 : n - 1;
+      used = true;
+      lock(true);
+      glide(stepY(stepAt), v);
+    }, { passive: true });
+
     /* Rolování, které do pinu nepřišlo krokem (posuvník, skok na kotvu,
        hledání v textu), po zastavení dojede k nejbližšímu jídlu. */
     ScrollTrigger.addEventListener('scrollEnd', function () {
+      flung = false;                 // dojezd doběhl, chytat už není co
       if (!st.isActive || stepTw || jumping || st.progress > lastStop + .002) return;
       stepAt = nearest();
       if (Math.abs(curY() - stepY(stepAt)) > 2) toY(stepY(stepAt), .5);
     });
 
-    showcaseTop = function () { return stepY(0); };
+    showcase = {
+      top: function () { return stepY(0); },
+      stop: function () { stopStep(); lock(false); },
+      settle: settle
+    };
     if (st.isActive) holdPin(true, 0);
+
+    /* Fotky jídel mají loading="lazy" — v náhradní podobě scény se pás
+       roluje prstem a stahovat se mají, až na ně dojde. Tady ale pás jede
+       do strany po krocích a další jídlo by se stahovalo a dekódovalo až
+       během kroku: talíř by přijel prázdný, nebo by krok zadrhl. Stáhnou
+       se proto všechny, když je sekce ještě obrazovku daleko. */
+    var warm = false;
+    ScrollTrigger.create({
+      trigger: '#menu', end: 'max',
+      start: function () { return 'top bottom+=' + window.innerHeight; },
+      onToggle: function (self) {
+        if (warm || !self.isActive) return;
+        warm = true;
+        dishes.forEach(function (el) {
+          var img = $('img', el);
+          if (!img) return;
+          img.loading = 'eager';
+          if (img.decode) img.decode().catch(function () {});
+        });
+      }
+    });
 
     if (window.visualViewport) {
       var onVp = function () {
