@@ -1466,8 +1466,8 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
 
 /* ==========================================================================
    9 · SIGNATURES — vyříznuté fotky jídel, připíchnutá obrazovka a vodorovné
-   rolování. Fotky jsou WebP s alfa kanálem, takže drop-shadow() obkresluje
-   skutečný obrys jídla, ne obdélník.
+   rolování. Fotky jsou WebP s alfa kanálem, takže na papíře leží jen
+   obrys jídla, ne obdélník.
    ========================================================================== */
 /* Den, ale pod lampou, ne pod sluncem. Krémový papír (L* 92) svítil
    třikrát víc než nejsvětlejší plocha zbytku stránky (O nás, L* 33)
@@ -1680,32 +1680,21 @@ html.show-lock { overflow: hidden; overscroll-behavior: none; }
 .show__stage { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center;
   gap: clamp(3rem, 9vw, 9.5rem); padding-inline: 50%; will-change: transform; }
 .dish { position: relative; margin: 0; flex: 0 0 auto; transform-origin: 50% 60%; }
-/* Drop-shadow jen drží obrys talíře na papíře — těsný, v tónu tuše, ne
-   černý: černá kaluž na krémové vypadá jako špína. Směr a délku stínu
-   nese .dish__shadow pod ním. */
+/* Výřez s alphou + transform pásu: na některých GPU (WebKit) se okraj
+   složí proti černé a kolem talíře zbude sazový kruh. Žádný filter na
+   fotce; backface-visibility drží bitmapu na vlastní vrstvě. */
 .dish img { position: relative; z-index: 1; width: clamp(260px, 32vw, 460px); height: auto;
-  filter: drop-shadow(0 18px 22px rgba(74, 48, 22, .26)) drop-shadow(0 4px 8px rgba(74, 48, 22, .26)); }
-/* Vržený stín na papíře. Měkkost nese sám gradient, žádný filter: app.js
-   ho každý snímek posouvá a natahuje (od středu pryč, čím dál od středu,
-   tím delší a slabší) a filtr by se přepočítával s ním. Za soumraku zmizí
-   — bez slunce není stín. V klidové podobě scény stojí pod talířem rovně. */
-.dish__shadow { position: absolute; z-index: 0; left: 11%; width: 78%; bottom: 7%; height: 15%;
-  border-radius: 50%; pointer-events: none; transform-origin: 50% 50%;
-  background: radial-gradient(closest-side, rgba(74, 48, 22, .36) 0%, rgba(74, 48, 22, .16) 55%, rgba(74, 48, 22, 0) 100%); }
+  -webkit-backface-visibility: hidden; backface-visibility: hidden; }
 
 /* Srovnání podle hlavního talíře (.is-fit nasadí app.js, jen v pohyblivé
    scéně). Každé jídlo dostane stejný čtvercový slot o průměru kruhu a
    fotka v něm visí tak, že střed HLAVNÍHO talíře leží ve středu slotu —
    šířku a posun jí dopočítá app.js z data-fit. Přílohy ze slotu vyčuhují,
-   proto je mezera mezi sloty větší. Stín patří talíři, ne celé fotce:
-   --dp je průměr talíře v px. */
+   proto je mezera mezi sloty větší. --dp je průměr talíře v px. */
 .show__pin.is-fit .show__stage { gap: clamp(4rem, 11vw, 11rem); }
 .show__pin.is-fit .dish { width: var(--slot); height: var(--slot); }
 .show__pin.is-fit .dish img { position: absolute; left: 50%; top: 50%; max-width: none;
   translate: -50% -50%; }
-.show__pin.is-fit .dish__shadow {
-  left: calc(50% - var(--dp) * .39); width: calc(var(--dp) * .78);
-  top: calc(50% + var(--dp) * .36); height: calc(var(--dp) * .15); bottom: auto; }
 
 /* název se mění podle jídla uprostřed */
 .show__meta { position: absolute; z-index: 4; left: 0; right: 0; bottom: clamp(7.2rem, 14vh, 11rem);
@@ -1743,8 +1732,7 @@ html.show-lock { overflow: hidden; overscroll-behavior: none; }
 :is(.show__pin.is-static, html.no-js .show__pin) .show__mark,
 :is(.show__pin.is-static, html.no-js .show__pin) .show__meta,
 :is(.show__pin.is-static, html.no-js .show__pin) .show__bar,
-:is(.show__pin.is-static, html.no-js .show__pin) .show__dusk,
-:is(.show__pin.is-static, html.no-js .show__pin) .dish__shadow { display: none; }
+:is(.show__pin.is-static, html.no-js .show__pin) .show__dusk { display: none; }
 :is(.show__pin.is-static, html.no-js .show__pin) .show__stage {
   position: relative; inset: auto;
   gap: clamp(1.5rem, 4vw, 3rem); padding: clamp(2rem, 5vh, 4rem) var(--pad);
@@ -2537,6 +2525,7 @@ html.no-js :is(#resNext, .rSum) { display: none; }
    14 · PATIČKA
    ========================================================================== */
 .foot { position: relative; overflow: hidden; padding-top: clamp(2.8rem, 5vw, 4.5rem);
+  padding-bottom: calc(clamp(1.6rem, 3vw, 2.4rem) + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--hair);
   background: linear-gradient(var(--ink) 0%, var(--ink-2) 42%, #120b05 100%); }
 /* Dřív vpravo nahoře, tedy přesně pod sloupcem s adresou a e-mailem —
@@ -2560,10 +2549,6 @@ html.no-js :is(#resNext, .rSum) { display: none; }
   display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; justify-content: space-between; }
 .foot__bottom p { margin: 0; font-family: var(--fine); font-size: 12px; color: var(--t-4); }
 .foot__bottom a:hover { color: var(--gold); }
-
-.wordmark { position: relative; z-index: 2; margin-top: clamp(2.5rem, 5vw, 4rem); padding: 0 var(--pad); line-height: .78; overflow: hidden; }
-.wordmark span { display: block; text-align: center; font-family: var(--font-display); font-size: 18vw; font-weight: 300; font-style: italic; letter-spacing: -.02em;
-  color: transparent; -webkit-text-stroke: 1px rgba(236, 208, 156, .16); white-space: nowrap; }
 
 /* ==========================================================================
    15 · ZPĚT NAHORU
@@ -3197,8 +3182,6 @@ body.ov-open { overflow: hidden; }
   .wm--foot { right: 8%; top: 24%; font-size: 13rem; }
   .foot__bottom { margin-top: 1.6rem; padding-top: 1rem; gap: .35rem; }
   .foot__bottom p { font-size: 11.5px; line-height: 1.5; }
-  .wordmark { margin-top: 1rem; }
-  .wordmark span { font-size: 18vw; }
 
   /* Panel s navigací. Předtím to byl sloupec plotů: jazykový přepínač přes
      celou šířku, pod ním zlatá deska „Rezervovat stůl“ a další dvě stejně

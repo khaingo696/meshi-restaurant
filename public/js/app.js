@@ -1251,16 +1251,15 @@
 
     /* Zhasnutí: za posledním jídlem pin pokračuje ještě o DUSK délky pásu.
        Na tom kousku se od krajů okna stáhne tma k talíři (clona v
-       .show__dusk), stíny talířů zmizí a nadpis odejde. Popisek, průběh
-       a tlačítko zůstanou a v půlce přejdou do nočního materiálu
-       (.is-night) — jinak by mezi talířem a galerií zbyla černá díra. */
+       .show__dusk) a nadpis odejde. Popisek, průběh a tlačítko zůstanou
+       a v půlce přejdou do nočního materiálu (.is-night) — jinak by mezi
+       talířem a galerií zbyla černá díra. */
     var DUSK = .14;
     var nightEl = duskEl ? duskEl.firstElementChild : null;
     var fadeEls = $$('.show__head');
     // Kruh a zář jsou denní světlo (prosvětlený papír) — ve tmě by z nich
     // zbyl šedý kotouč. Za talířem pak svítí jen lucerna noční vrstvy.
     var dayLight = $$('.show__ring, .show__glow');
-    var shadows = dishes.map(function (el) { return $('.dish__shadow', el); });
     var lastStop = 1 / (1 + DUSK);   // průběh, při kterém stojí uprostřed poslední jídlo
     var dusk = 0;
     var pinLen = function () { return span() * 1.15 * (1 + DUSK); };
@@ -1292,8 +1291,8 @@
     var headEl = $('.show__head');
     var metaEl = $('.show__meta');
     /* Pro onUpdate: jak daleko od středu talíře může jídlo sahat (px, i s
-       natočením a stínem), které jídlo odjelo za okraj okna a stojí, a
-       poslední zapsaný filtr. */
+       natočením), které jídlo odjelo za okraj okna a stojí, a poslední
+       zapsaný filtr. */
     var reach = [], parked = [], filters = [];
     function fitDishes() {
       parked = [];
@@ -1337,15 +1336,9 @@
         img.style.translate = (-x * w) + 'px ' + (-y * w * r) + 'px';
         img.style.transformOrigin = (x * 100) + '% ' + (y * 100) + '%';
         img.style.rotate = best.a ? best.a + 'deg' : '';
-        // Obrys drží stín směrem dolů i u pootočené fotky (filtr se otáčí s ní).
-        if (best.a) {
-          var ar = best.a * Math.PI / 180, sx = Math.sin(ar), sy = Math.cos(ar);
-          img.style.filter = 'drop-shadow(' + (18 * sx).toFixed(1) + 'px ' + (18 * sy).toFixed(1) + 'px 22px rgba(74, 48, 22, .26)) ' +
-            'drop-shadow(' + (4 * sx).toFixed(1) + 'px ' + (4 * sy).toFixed(1) + 'px 8px rgba(74, 48, 22, .26))';
-        } else img.style.filter = '';
         el.style.setProperty('--dp', d * w + 'px');
-        // Nejvzdálenější roh fotky od středu talíře, plus stín.
-        reach[i] = w * Math.hypot(1, r) + 60;
+        // Nejvzdálenější roh fotky od středu talíře.
+        reach[i] = w * Math.hypot(1, r);
       });
       // Pás stojí na středu studny, kruh o kousek výš — dorovnat.
       stage.style.translate = '';
@@ -1358,9 +1351,11 @@
 
     /* Hloubka ostrosti: jídla mimo střed se rozostří a vyblednou, jako
        když objektiv zaostří na talíř uprostřed. Hodnoty jsou zaokrouhlené,
-       aby se filtr nepřepočítával každý snímek; na dotykových zařízeních
-       je rozostření mělčí (slabší GPU). */
-    var BLUR = matchMedia('(pointer: coarse)').matches ? 2.5 : 5;
+       aby se filtr nepřepočítával každý snímek. Na telefonu filtr NE:
+       na některých GPU (hlavně WebKit) se filter na výřezu s alphou
+       složí proti černé a kolem talíře zbude sazový kruh. Zůstane jen
+       zmenšení a zeslabení. */
+    var BLUR = matchMedia('(pointer: coarse)').matches ? 0 : 5;
 
     /* Pin GSAP zamkne na výšku, kterou měl v okamžiku připíchnutí (100svh).
        Na telefonu se po chvíli rolování schová lišta prohlížeče, okno se
@@ -1458,13 +1453,6 @@
             var sat = Math.round((1 - fa * .55) * 20) / 20;
             var look = blur > 0 ? 'blur(' + blur + 'px) saturate(' + sat + ')' : '';
             if (look !== filters[i]) el.style.filter = filters[i] = look;
-            // Světlo stojí nad středem: stín utíká od středu, s dálkou se
-            // natahuje a slábne. Natočení talíře se mu odečte — stín leží
-            // na papíře, ne na talíři.
-            if (shadows[i]) gsap.set(shadows[i], {
-              xPercent: d * 26, scaleX: 1 + a * .4, rotate: -rot,
-              opacity: (1 - a * .5) * (1 - k)
-            });
           });
           // Logo dýchá s pásem a ustoupí talíři: když jídlo stojí v kruhu,
           // skoro zmizí (prosvítalo by mezerami kolem misky), mezi dvěma
@@ -2133,16 +2121,12 @@
     scrollTrigger: { trigger: '.about', start: 'top bottom', end: 'bottom top', scrub: true }
   });
 
-  /* ---- 9h · vodoznaky a vysazené MESHi -------------------------------- */
+  /* ---- 9h · vodoznaky ------------------------------------------------- */
   gsap.utils.toArray('.wm').forEach(function (el, i) {
     gsap.fromTo(el, { y: 0 }, {
       y: i % 2 ? 80 : -80, ease: 'none',
       scrollTrigger: { trigger: el.parentElement, start: 'top bottom', end: 'bottom top', scrub: true }
     });
-  });
-  gsap.fromTo('.wordmark span', { yPercent: 55, opacity: 0 }, {
-    yPercent: 0, opacity: 1, ease: 'none',
-    scrollTrigger: { trigger: '.wordmark', start: 'top 96%', end: 'bottom bottom', scrub: .6 }
   });
 
   /* ---- 9i · lišta a tlačítko zpět nahoru ------------------------------ */

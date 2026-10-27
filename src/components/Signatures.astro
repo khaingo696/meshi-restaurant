@@ -16,11 +16,8 @@
 
   Sekce se připíchne na obrazovku a jídla jedou vodorovně: to uprostřed je
   největší a stojí v ose, ta po stranách se zmenší a nakloní. Fotky jsou
-  WebP s alfa kanálem (vyříznuté z pozadí), takže drop-shadow() obkresluje
-  skutečný obrys jídla. Kruh, zář a zapuštěné logo tvoří podstavec.
-  Pod každým talířem leží vržený stín (.dish__shadow): světlo stojí nad
-  středem scény, takže talíř uprostřed má stín krátký a hutný, talíř
-  odjíždějící do strany dlouhý a slabý, odvrácený od středu.
+  WebP s alfa kanálem (vyříznuté z pozadí). Kruh, zář a zapuštěné logo
+  tvoří podstavec.
 
   Tlačítko pod názvem jídla otevírá <MenuOverlay> s celým lístkem. Kategorii mu
   app.js průběžně přepisuje na tu, ze které je jídlo právě uprostřed, takže
@@ -62,9 +59,8 @@ const SHOWCASE: (string | Extra)[] = [
 
 /* Pevné natočení fotky (stupně, + po směru hodin) místo toho, které by
    app.js vybral podle místa. Deska nigiri leží na fotce šikmo „\“ asi o
-   24° a výběr podle místa ji na telefonu natočil ještě strměji tamtéž —
-   tady stojí zrcadlově, „/“. */
-const TILT: Record<string, number> = { nigiri: -50 };
+   24° — tady se otočí o stejný úhel zpět, aby ležela vodorovně. */
+const TILT: Record<string, number> = { nigiri: -24 };
 
 const dishes = SHOWCASE.map((entry) => {
   if (typeof entry !== "string") {
@@ -131,7 +127,6 @@ const first = dishes[0];
         <figure class="dish" data-cat={d.cat} data-kicker={d.kicker} data-name={d.name} data-price={d.price}
                 data-fit={d.fit && `${d.fit.d} ${d.fit.x} ${d.fit.y} ${d.fit.r}`} data-hull={d.fit?.h.join(" ")}
                 data-group={d.fit?.g ? "" : undefined} data-tilt={d.tilt}>
-          <span class="dish__shadow" aria-hidden="true"></span>
           <img src={d.img} alt={d.name} width="860" height={d.fit ? Math.round(860 * d.fit.r) : 860}
                loading="lazy" decoding="async" />
           <!-- Popisek je vidět jen v náhradní podobě scény (bez pohybu nebo
