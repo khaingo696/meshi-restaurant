@@ -24,8 +24,8 @@ interface Props {
 }
 
 const {
-  title = "MESHi | Asijská kuchyně a prémiové sushi v Plzni",
-  description = "MESHi — tradiční asijská kuchyně a prémiové sushi na náměstí Republiky v Plzni. Rezervace stolu, dárkové poukazy.",
+  title = "MESHI | Asijská kuchyně a prémiové sushi v Plzni",
+  description = "MESHI — tradiční asijská kuchyně a prémiové sushi na náměstí Republiky v Plzni. Rezervace stolu, dárkové poukazy.",
   door = false,
 } = Astro.props;
 
@@ -41,7 +41,7 @@ const MAPS = "https://maps.app.goo.gl/UFdjuugsRDGuJuGq6";
 const schema = {
   "@context": "https://schema.org",
   "@type": "Restaurant",
-  name: "MESHi",
+  name: "MESHI",
   description,
   url: site.href,
   image: [ogImage, new URL("/assets/space/interior.webp", site).href],
@@ -92,14 +92,14 @@ const schema = {
 <!-- Náhled při sdílení odkazu. Jazyk se přepíná až za běhu, takže scrapery
      vždycky dostanou českou verzi. -->
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="MESHi" />
+<meta property="og:site_name" content="MESHI" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta property="og:image" content={ogImage} />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="Dřevěná loď plná sushi v restauraci MESHi" />
+<meta property="og:image:alt" content="Dřevěná loď plná sushi v restauraci MESHI" />
 <meta property="og:locale" content="cs_CZ" />
 <meta property="og:locale:alternate" content="en_US" />
 <meta name="twitter:card" content="summary_large_image" />
@@ -117,6 +117,10 @@ try {
   var storedLang = localStorage.getItem('meshi-lang');
   if (storedLang === 'en') document.documentElement.lang = 'en';
 } catch (e) {}
+/* Prohlížeč si pamatuje posun a po obnovení / návratu do app ho vrátí.
+   Pod dveřmi to není vidět, ale po otevření by se odhalila stará sekce
+   místo hera. Musí se vypnout hned v <head>, Safari to jinak stihne. */
+try { history.scrollRestoration = 'manual'; } catch (e) {}
 </script>
 
 <link rel="preload" as="image" href="/assets/hero-poster.webp" />

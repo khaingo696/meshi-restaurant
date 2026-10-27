@@ -4,6 +4,7 @@
 
   Bez fotky, jen barva, která tmavne ke dnu.
 */
+const MAPS = "https://maps.app.goo.gl/UFdjuugsRDGuJuGq6";
 ---
 
 <footer class="foot">
@@ -11,7 +12,7 @@
 
   <div class="wrap foot__top">
     <div class="foot__brand">
-      <img class="foot__logo" src="/assets/meshi_logo_hero.png?v=gold" width="593" height="421" alt="MESHi" />
+      <img class="foot__logo" src="/assets/meshi_logo_hero.png?v=gold" width="593" height="421" alt="MESHI" />
       <p class="foot__blurb" data-i18n-html="foot.blurb">
         Autentická asijská kuchyně a prémiové sushi v srdci Plzně. Tradice, poctivé suroviny a filozofie <em>omotenashi</em>.
       </p>
@@ -36,15 +37,14 @@
 
     <div class="fcol">
       <h5 data-i18n="foot.find">Kontakt</h5>
-      <p>nám. Republiky 107/14</p>
-      <p>301 00 Plzeň 3-Vnitřní Město</p>
+      <a href={MAPS} target="_blank" rel="noopener">nám. Republiky 107/14<br />301 00 Plzeň 3-Vnitřní Město</a>
       <a href="tel:+420778585688">+420 778 585 688</a>
       <a href="mailto:info@meshi-restaurant.cz">info@meshi-restaurant.cz</a>
     </div>
   </div>
 
   <div class="wrap foot__bottom">
-    <p>© 2026 MESHi Asian Cuisine · <span data-i18n="foot.rights">Všechna práva vyhrazena</span> · Nguyen Quoc Vinh OSVČ, IČO: 23517034</p>
+    <p>© 2026 MESHI Asian Cuisine · <span data-i18n="foot.rights">Všechna práva vyhrazena</span> · Nguyen Quoc Vinh OSVČ, IČO: 23517034</p>
     <p><a href="#" data-i18n="foot.privacy">Ochrana osobních údajů</a> · <a href="#" data-i18n="foot.terms">Obchodní podmínky</a></p>
   </div>
 </footer>

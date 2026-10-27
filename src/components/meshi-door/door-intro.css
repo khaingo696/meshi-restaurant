@@ -1,6 +1,6 @@
 /* Meshi door intro. Everything is scoped under .md-root (and .md-lock on <html>). */
 
-.md-lock { overflow: hidden; }
+.md-lock { overflow: hidden; overscroll-behavior: none; }
 
 .md-root {
   position: fixed;

@@ -109,9 +109,20 @@ export function createDoorIntro(root, options = {}) {
   const lockScroll = on => {
     if (!o.lockScroll) return;
     const html = document.documentElement;
+    // drop overflow only after the page sits at the top: Safari restores the
+    // previous scroll in the same turn the lock comes off
+    if (!on) {
+      window.scrollTo(0, 0);
+      html.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
     html.classList.toggle('md-lock', on);
     html.style.paddingRight = '';
-    if (!on || html.scrollHeight <= innerHeight) return;
+    if (!on) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    if (html.scrollHeight <= innerHeight) return;
     // the page will scroll once the door is gone: hold the scrollbar's width now, so the page
     // doesn't jump sideways in the moment the scrollbar comes back
     const probe = document.createElement('div');

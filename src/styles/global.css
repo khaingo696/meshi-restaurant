@@ -1631,8 +1631,10 @@ html.show-lock { overflow: hidden; overscroll-behavior: none; }
    denního světla, ne zlatá — zlatá zář na krémové jen špiní. */
 .show__ring {
   position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
-  /* Hlídá i výšku: na 900 px vysokém okně by plný kruh nechal přílohám
-     (rýže vedle misky) jen pár pixelů mezi nadpisem a jménem jídla. */
+  /* Průměr hlídá i výšku: na 900 px vysokém okně by plný kruh nechal
+     přílohám (rýže vedle misky) jen pár pixelů mezi nadpisem a jménem
+     jídla. Na MacBooku se kruh dál drží 48vh; místo se bere ze spodu
+     (jméno jídla blíž k talíři), ne z mezery pod nadpisem. */
   width: clamp(290px, min(34vw, 48vh), 470px); aspect-ratio: 1; border-radius: 50%;
   border: 1px solid rgba(87, 58, 30, .2);
   box-shadow: inset 0 0 80px rgba(255, 240, 210, .4);
@@ -3279,11 +3281,19 @@ body.ov-open { overflow: hidden; }
   .show__name { font-size: 24px; }
 }
 
-@media (max-height: 820px) and (min-width: 810px) {
-  .dish img { width: clamp(220px, 26vw, 360px); }
-  .show__ring { width: clamp(230px, 28vw, 360px); }
-  .show__glow { width: clamp(280px, 38vw, 520px); }
-  .show__name { font-size: clamp(26px, 3vw, 40px); }
+/* MacBook / nízké okno: nadpis zůstane dva řádky s mezerou nad talířem.
+   Kruh je o stupeň menší než na 1080, jméno jídla sjede nahoru k talíři
+   (díra byla pod ním, ne pod nadpisem). */
+@media (max-height: 980px) and (min-width: 810px) {
+  .show__head .h2 { font-size: clamp(32px, 4vh, 42px); line-height: 1.1; }
+  .show__ring { top: 47%; width: clamp(300px, min(34vw, 50vh), 400px); }
+  .show__glow { top: 47%; width: clamp(360px, min(46vw, 66vh), 560px); }
+  .show__mark { top: 46%; width: clamp(170px, 20vw, 270px); }
+  .dish img { width: clamp(240px, 28vw, 380px); }
+  .show__meta { bottom: clamp(8.6rem, 16vh, 11.5rem); }
+  .show__bar { bottom: clamp(6.6rem, 13vh, 9rem); }
+  .show__cta { bottom: clamp(1.7rem, 4vh, 3rem); }
+  .show__name { font-size: clamp(26px, 3vw, 38px); }
 }
 
 /* Telefon s lištou prohlížeče má kolem 750 px výšky — tam se panel

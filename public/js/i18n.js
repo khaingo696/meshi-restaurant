@@ -1,4 +1,4 @@
-/* MESHi — slovník CZ / EN. app.js sem sahá přes window.MESHI_I18N.
+/* MESHI — slovník CZ / EN. app.js sem sahá přes window.MESHI_I18N.
 
    Klíč musí existovat v obou jazycích; když chybí, app.js spadne zpátky na
    češtinu, takže se chybějící překlad pozná jako česká věta mezi anglickými.
@@ -8,8 +8,8 @@
    Při překladu drž dělení ve stejném místě věty. */
 window.MESHI_I18N = {
   cs: {
-    'meta.title': 'MESHi | Asijská kuchyně a prémiové sushi v Plzni',
-    'meta.desc': 'MESHi: tradiční asijská kuchyně a prémiové sushi na náměstí Republiky v Plzni. Rezervace stolu, dárkové poukazy.',
+    'meta.title': 'MESHI | Asijská kuchyně a prémiové sushi v Plzni',
+    'meta.desc': 'MESHI: tradiční asijská kuchyně a prémiové sushi na náměstí Republiky v Plzni. Rezervace stolu, dárkové poukazy.',
 
     'nav.main': 'Hlavní nabídka',
     'nav.lang': 'Jazyk',
@@ -25,7 +25,7 @@ window.MESHI_I18N = {
     'nav.openMenu': 'Otevřít nabídku',
     'nav.closeMenu': 'Zavřít nabídku',
     'nav.close': 'Zavřít',
-    'nav.brandHome': 'MESHi, domů',
+    'nav.brandHome': 'MESHI, domů',
     'nav.call': 'Zavolat',
     'nav.toTop': 'Nahoru na začátek stránky',
     'nav.up': 'Nahoru',
@@ -40,14 +40,14 @@ window.MESHI_I18N = {
        řádku na druhý (viz .rating-reel v global.css, sekce 6). */
     'hero.reviews': 'Google Reviews',
     'hero.map': 'Plzeň · Mapa',
-    'hero.ratingAria': 'Hodnocení Google {score} z 5, restaurace MESHi Plzeň, otevřít na Google Maps',
+    'hero.ratingAria': 'Hodnocení Google {score} z 5, restaurace MESHI Plzeň, otevřít na Google Maps',
 
     'about.eyebrow': 'O nás',
     'about.title1': 'Chuť, kterou',
     'about.title2': 'rádi sdílíte',
-    'about.p1': 'Jsme malá rodina s velkou vášní pro asijskou kuchyni a právě z této vášně vzniklo <strong>MESHi</strong>. „Meshi“ v japonštině znamená jídlo, respektive domácí jídlo či pokrm. Pro nás však představuje mnohem víc: chvíle strávené u společného stolu, radost ze sdílení a spojení mezi lidmi.',
+    'about.p1': 'Jsme malá rodina s velkou vášní pro asijskou kuchyni a právě z této vášně vzniklo <strong>MESHI</strong>. „Meshi“ v japonštině znamená jídlo, respektive domácí jídlo či pokrm. Pro nás však představuje mnohem víc: chvíle strávené u společného stolu, radost ze sdílení a spojení mezi lidmi.',
     'about.p2': 'Naše kuchyně harmonicky propojuje japonskou eleganci s autentickými chutěmi Asie: jednoduchými, osobitými a plnými charakteru.',
-    'about.p3': 'Pečlivě vybíráme kvalitní suroviny a každému pokrmu věnujeme čas, péči a srdce. MESHi jsme vytvořili jako místo, kam se budete rádi vracet: za dobrým jídlem, příjemnou atmosférou a společnými chvílemi, přímo v srdci Plzně, na náměstí Republiky.',
+    'about.p3': 'Pečlivě vybíráme kvalitní suroviny a každému pokrmu věnujeme čas, péči a srdce. MESHI jsme vytvořili jako místo, kam se budete rádi vracet: za dobrým jídlem, příjemnou atmosférou a společnými chvílemi, přímo v srdci Plzně, na náměstí Republiky.',
 
     'sig.title1': 'Naše',
     'sig.title2': 'signatures',
@@ -60,13 +60,13 @@ window.MESHI_I18N = {
     'gal.title': 'Jak to u nás vypadá',
     'gal.title1': 'Jak to u nás',
     'gal.title2': 'vypadá',
-    'gal.a': 'Hlavní sál restaurace MESHi se závěsnými lampami, zelení a ukiyo-e',
-    'gal.b': 'Prostřený stůl s jídelními lístky MESHi',
+    'gal.a': 'Hlavní sál restaurace MESHI se závěsnými lampami, zelení a ukiyo-e',
+    'gal.b': 'Prostřený stůl s jídelními lístky MESHI',
     'gal.c': 'Zátiší s javorem, kočkou maneki-neko a lahví sake',
     'gal.d': 'Otevřený vchod s noren závěsem a výhledem na noční náměstí Republiky',
-    'gal.e': 'Modrý noren závěs s nápisem MESHi a závěsnou zelení',
+    'gal.e': 'Modrý noren závěs s nápisem MESHI a závěsnou zelení',
     'gal.g': 'Police s lahvemi saké, daruma a výhledem do noci',
-    'gal.f': 'Tabule s ema a daruma u vnitřního norenu MESHi',
+    'gal.f': 'Tabule s ema a daruma u vnitřního norenu MESHI',
     'gal.r1': 'Vchod · noc',
     'gal.r2': 'Noren',
     'gal.r3': 'Hlavní sál',
@@ -117,9 +117,9 @@ window.MESHI_I18N = {
 
     'gift.eyebrow': 'Darujte zážitek',
     'gift.title1': 'Dárkový poukaz',
-    'gift.title2': 'do MESHi',
+    'gift.title2': 'do MESHI',
     'gift.body': 'Chcete udělat radost svým blízkým a dopřát jim kousek ráje na talíři? Vyplňte hodnotu a kontakt.<span class="gift-lead-more"> Ozveme se obratem s platebními údaji. Poukaz pošleme <strong>v PDF k tisku</strong>, nebo si ho vyzvednete osobně v dárkovém balení.</span>',
-    'gift.alt': 'Dárkový poukaz MESHi: jméno, hodnota a platnost',
+    'gift.alt': 'Dárkový poukaz MESHI: jméno, hodnota a platnost',
     'gift.formTitle': 'Darujte poukaz',
     'gift.value': 'Požadovaná hodnota poukazu',
     'gift.phone': 'Vaše telefonní číslo *',
@@ -141,7 +141,7 @@ window.MESHI_I18N = {
     'con.phone': 'Telefon',
     'con.mail': 'E-mail',
     'con.follow': 'Sledujte nás',
-    'con.mapTitle': 'Mapa: MESHi Restaurant Plzeň, nám. Republiky 107/14',
+    'con.mapTitle': 'Mapa: MESHI Restaurant Plzeň, nám. Republiky 107/14',
     'con.openMaps': 'Otevřít v Mapách',
     'con.operator': 'Provozovatel',
 
@@ -163,8 +163,8 @@ window.MESHI_I18N = {
   },
 
   en: {
-    'meta.title': 'MESHi | Asian cuisine and premium sushi in Plzeň',
-    'meta.desc': 'MESHi: traditional Asian cuisine and premium sushi on Náměstí Republiky in Plzeň. Table reservations and gift vouchers.',
+    'meta.title': 'MESHI | Asian cuisine and premium sushi in Plzeň',
+    'meta.desc': 'MESHI: traditional Asian cuisine and premium sushi on Náměstí Republiky in Plzeň. Table reservations and gift vouchers.',
 
     'nav.main': 'Main menu',
     'nav.lang': 'Language',
@@ -180,7 +180,7 @@ window.MESHI_I18N = {
     'nav.openMenu': 'Open menu',
     'nav.closeMenu': 'Close menu',
     'nav.close': 'Close',
-    'nav.brandHome': 'MESHi, home',
+    'nav.brandHome': 'MESHI, home',
     'nav.call': 'Call',
     'nav.toTop': 'Back to top of page',
     'nav.up': 'Top',
@@ -188,14 +188,14 @@ window.MESHI_I18N = {
     'hero.explore': 'Full menu',
     'hero.reviews': 'Google Reviews',
     'hero.map': 'Plzeň · Map',
-    'hero.ratingAria': 'Google rating {score} out of 5, MESHi restaurant in Plzeň, open in Google Maps',
+    'hero.ratingAria': 'Google rating {score} out of 5, MESHI restaurant in Plzeň, open in Google Maps',
 
     'about.eyebrow': 'About',
     'about.title1': 'A taste you',
     'about.title2': 'love to share',
-    'about.p1': 'We are a small family with a big passion for Asian cooking, and from that passion <strong>MESHi</strong> was born. In Japanese, "Meshi" means food, or a home-style meal. For us it means more: time around one table, the joy of sharing, and a connection between people.',
+    'about.p1': 'We are a small family with a big passion for Asian cooking, and from that passion <strong>MESHI</strong> was born. In Japanese, "Meshi" means food, or a home-style meal. For us it means more: time around one table, the joy of sharing, and a connection between people.',
     'about.p2': 'Our kitchen brings Japanese elegance together with authentic Asian flavours: simple, distinctive, and full of character.',
-    'about.p3': 'We choose quality ingredients with care and give every dish time, attention, and heart. We built MESHi as a place you will gladly come back to, for good food, a warm room, and shared moments, right in the heart of Plzeň on Náměstí Republiky.',
+    'about.p3': 'We choose quality ingredients with care and give every dish time, attention, and heart. We built MESHI as a place you will gladly come back to, for good food, a warm room, and shared moments, right in the heart of Plzeň on Náměstí Republiky.',
 
     'sig.title1': 'Our',
     'sig.title2': 'signatures',
@@ -208,13 +208,13 @@ window.MESHI_I18N = {
     'gal.title': 'How it looks here',
     'gal.title1': 'Take a look',
     'gal.title2': 'inside',
-    'gal.a': 'Main dining room at MESHi with hanging lanterns, greenery and ukiyo-e',
-    'gal.b': 'Set table with MESHi menus',
+    'gal.a': 'Main dining room at MESHI with hanging lanterns, greenery and ukiyo-e',
+    'gal.b': 'Set table with MESHI menus',
     'gal.c': 'Still life with maple, a maneki-neko cat and a bottle of sake',
     'gal.d': 'Open doorway with a noren curtain and a view of Náměstí Republiky at night',
-    'gal.e': 'Blue noren curtain with the MESHi name and hanging plants',
+    'gal.e': 'Blue noren curtain with the MESHI name and hanging plants',
     'gal.g': 'Shelves of sake bottles, daruma, and a view into the night',
-    'gal.f': 'Ema tablets and daruma by the inner MESHi noren',
+    'gal.f': 'Ema tablets and daruma by the inner MESHI noren',
     'gal.r1': 'Doorway · night',
     'gal.r2': 'The noren',
     'gal.r3': 'Main room',
@@ -264,10 +264,10 @@ window.MESHI_I18N = {
     'res.ok': 'Thank you. We have received your reservation and will confirm within 15 minutes.',
 
     'gift.eyebrow': 'Give an experience',
-    'gift.title1': 'A MESHi',
+    'gift.title1': 'A MESHI',
     'gift.title2': 'gift voucher',
     'gift.body': 'Want to treat someone to a little paradise on their plate? Fill in the value and your contact.<span class="gift-lead-more"> We will write back with payment details. We send the voucher <strong>as a printable PDF</strong>, or you can collect it in person, gift-wrapped.</span>',
-    'gift.alt': 'MESHi gift voucher: name, value and validity',
+    'gift.alt': 'MESHI gift voucher: name, value and validity',
     'gift.formTitle': 'Order a voucher',
     'gift.value': 'Voucher value',
     'gift.phone': 'Your phone number *',
@@ -289,7 +289,7 @@ window.MESHI_I18N = {
     'con.phone': 'Phone',
     'con.mail': 'E-mail',
     'con.follow': 'Follow us',
-    'con.mapTitle': 'Map: MESHi Restaurant Plzeň, nám. Republiky 107/14',
+    'con.mapTitle': 'Map: MESHI Restaurant Plzeň, nám. Republiky 107/14',
     'con.openMaps': 'Open in Maps',
     'con.operator': 'Operator',
 

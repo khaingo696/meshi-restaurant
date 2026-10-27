@@ -44,7 +44,11 @@ const { interior, assets = '/meshi-door/', hint, once = false } = Astro.props;
     var seen = false;
     try { seen = el.dataset.once === 'session' && sessionStorage.getItem('meshi-door') === '1'; } catch (e) {}
     if (seen) el.remove();
-    else document.documentElement.classList.add('md-lock');
+    else {
+      document.documentElement.classList.add('md-lock');
+      try { history.scrollRestoration = 'manual'; } catch (e) {}
+      window.scrollTo(0, 0);
+    }
   })();
 </script>
 

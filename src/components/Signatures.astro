@@ -38,18 +38,18 @@ import Blend from "./Blend.astro";
 const fitOf = (slug: string) =>
   (FIT as Record<string, { d: number; x: number; y: number; r: number; h: number[]; g?: number }>)[slug];
 
-/* Pořadí na scéně: hlavní jídla, předkrmy, sushi. Délku připíchnuté scény
-   určuje počet jídel — každé přidá přes 500 px rolování. */
+/* Pořadí na scéně. Délku připíchnuté scény určuje počet jídel — každé
+   přidá přes 500 px rolování. */
 type Extra = { slug: string; name: string; cat: string };
 const SHOWCASE: (string | Extra)[] = [
+  "sake-tartar",
+  { slug: "maguro-tataki", name: "Maguro Tataki", cat: "predkrmy" },
   "chahan",
   "mama-bowl",
   { slug: "meshi-special-ramen", name: "Meshi Special Ramen", cat: "hlavni" },
   "mongolian-beef",
   { slug: "salmon-teriyaki", name: "Salmon Teriyaki", cat: "hlavni" },
   "yaki-udon",
-  { slug: "maguro-tataki", name: "Maguro Tataki", cat: "predkrmy" },
-  "sake-tartar",
   "nigiri",
   { slug: "sake-set", name: "Sake Set", cat: "sushi" },
   "samuraj-roll",

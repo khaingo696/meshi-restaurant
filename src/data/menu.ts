@@ -55,7 +55,7 @@ export const categories: Category[] = [
     slug: "hlavni",
     label: "Hlavní jídla",
     cover: "/assets/menu/covers/hlavni.webp",
-    coverAlt: "Tonkotsu ramen s vepřovým chashu a vejcem na dřevěném tácu MESHi",
+    coverAlt: "Tonkotsu ramen s vepřovým chashu a vejcem na dřevěném tácu MESHI",
     items: [
       { slug: "bossam",                name: "Bossam",                price: null, img: "/assets/menu/hlavni/bossam.webp" },
       { slug: "bun-cha",               name: "Bun Cha",               price: null, img: "/assets/menu/hlavni/bun-cha.webp" },

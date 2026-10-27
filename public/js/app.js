@@ -206,6 +206,10 @@
          odemčení by stránka uskočila.
        · Hero se odhalí teprve ve chvíli, kdy se dveře začnou otvírat —
          jinak by si animace odjela neviditelně za nimi (viz 9b).
+       · Prohlížeč (Safari zvlášť) po obnovení / návratu do app vrací starý
+         posun. Overflow: hidden ho neschová, jen zamkne — po otevření dveří
+         by se odhalila stará sekce. Proto se posun drží na nule, dokud
+         dveře stojí, a sundání zámku ho znovu přibije nahoru.
 
      window.meshiDoor vyrábí modul, a ten jde jako type="module", tedy
      odloženě — při spuštění app.js ještě není. Čte se proto vždycky až
@@ -226,13 +230,62 @@
     if (go && go.catch) go.catch(function () {});
   }
 
+  function pinTop() {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
+  }
+
+  var doorPinning = false;
+  var doorPinTimer = 0;
+  function onDoorScroll() {
+    if (!doorPinning) return;
+    var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+    var ly = lenis ? lenis.scroll : 0;
+    if (y > 0.5 || ly > 0.5) pinTop();
+  }
+  function onDoorShow() {
+    if (doorPinning) pinTop();
+  }
+  function releaseDoorPin() {
+    if (!doorPinning) return;
+    doorPinning = false;
+    clearInterval(doorPinTimer);
+    window.removeEventListener('scroll', onDoorScroll, true);
+    window.removeEventListener('pageshow', onDoorShow);
+    window.removeEventListener('load', onDoorShow);
+  }
+
   function unlockPage() {
+    pinTop();
     document.documentElement.classList.remove('md-lock');
+    pinTop();
     if (lenis && !body.classList.contains('menu-open') && !body.classList.contains('ov-open')) lenis.start();
+    pinTop();
+    // Safari vrací posun v okamžiku, kdy overflow zase teče, někdy až
+    // o snímek později. Dva rAF a krátká pojistka; pak už se rolovat smí.
+    requestAnimationFrame(function () {
+      pinTop();
+      requestAnimationFrame(function () {
+        pinTop();
+        setTimeout(function () { pinTop(); releaseDoorPin(); }, 80);
+      });
+    });
   }
 
   if (doorEl) {
+    try { history.scrollRestoration = 'manual'; } catch (e) {}
+    doorPinning = true;
+    pinTop();
     if (lenis) lenis.stop();
+    window.addEventListener('scroll', onDoorScroll, { capture: true, passive: true });
+    window.addEventListener('pageshow', onDoorShow);
+    window.addEventListener('load', onDoorShow);
+    // Safari občas vrátí posun potichu (bez scroll události), zvlášť
+    // dokud drží overflow: hidden. Interval to chytí dřív, než se dveře
+    // pootevřou a interiér by ukázal starou sekci.
+    doorPinTimer = setInterval(onDoorScroll, 100);
 
     /* Jakmile dveře stojí a mají renderer, video už nikomu nepřekáží.
        Pojistka na 4 s je pro případ, že by modul vůbec nenaběhl — hero
@@ -247,6 +300,7 @@
     // Zámek sundává modul sám; tohle je jen pro Lenis. Pod dveřmi nemůže nic
     // otevřeného být, ale zámek patří tomu, kdo ho nasadil — kdyby se to
     // někdy sešlo, lístek si ho drží dál.
+    doorEl.addEventListener('meshi-door:open', pinTop, { once: true });
     doorEl.addEventListener('meshi-door:opened', unlockPage, { once: true });
 
     /* Pojistka proti zamčené stránce. .md-lock nasazuje inline skript
@@ -1227,6 +1281,7 @@
     var wellEl = $('.show__well');
     var pinEl = $('#showPin');
     var ringEl = $('.show__ring');
+    var glowEl = $('.show__glow');
 
     // Posun, při kterém je střed i-tého jídla na STŘEDU KRUHU.
     // Osa je skutečný střed .show__ring ve studně, ne innerWidth / 2 ani
@@ -1297,15 +1352,33 @@
     function fitDishes() {
       parked = [];
       var pr = pinEl.getBoundingClientRect();
+      var pad = 12;
+      /* Pod nadpisem nechat vzduch (HEAD_GAP): kruh se do titulku nesmí
+         opřít. Na telefonu studna skládá jinak, nechat CSS. */
+      var HEAD_GAP = 40;
+      ringEl.style.width = '';
+      if (glowEl) glowEl.style.width = '';
       var rr = ringEl.getBoundingClientRect();
-      var D = ringEl.offsetWidth;
       var rx = rr.left + rr.width / 2 - pr.left;
       var ry = rr.top + rr.height / 2 - pr.top;
-      var pad = 12;
+      if (window.matchMedia('(min-width: 810px)').matches) {
+        var roomT = ry - (headEl.getBoundingClientRect().bottom - pr.top) - HEAD_GAP;
+        var roomB = metaEl.getBoundingClientRect().top - pr.top - pad - ry;
+        var cssD = ringEl.offsetWidth;
+        var Dfit = Math.max(240, Math.min(cssD, 2 * Math.min(roomT, roomB)));
+        if (Dfit < cssD - 0.5) {
+          ringEl.style.width = Dfit + 'px';
+          if (glowEl) glowEl.style.width = Math.round(Dfit * 1.38) + 'px';
+          rr = ringEl.getBoundingClientRect();
+          rx = rr.left + rr.width / 2 - pr.left;
+          ry = rr.top + rr.height / 2 - pr.top;
+        }
+      }
+      var D = ringEl.offsetWidth;
       var room = {
         l: rx - pad,
         r: pinEl.clientWidth - pad - rx,
-        t: ry - (headEl.getBoundingClientRect().bottom - pr.top + pad),
+        t: ry - (headEl.getBoundingClientRect().bottom - pr.top + HEAD_GAP),
         b: metaEl.getBoundingClientRect().top - pr.top - pad - ry
       };
       stage.style.setProperty('--slot', D + 'px');
@@ -1500,15 +1573,21 @@
        jídly: snap se pouštěl až po dojetí setrvačnosti (Lenis, na telefonu
        nativní dojezd) a prohrával s ní. Proto si pin, dokud je připíchnutý,
        vezme kolečko, dotyk i klávesy sám a jedno gesto = jedno jídlo, vždy
-       dojeté do kruhu. Gesto končí, až kolečko na GAP ms ztichne (trackpad
-       ještě vteřinu dojíždí a jinak by přeskočil několik jídel); dotyk
-       končí zvednutím prstu. Před prvním a za posledním jídlem pin pustí
-       stránku dál — za posledním přes soumrak rovnou do galerie. */
+       dojeté do kruhu. Kolečko i prst mezi dávkami ztichnou, trackpad na
+       Macu ale po zvednutí prstů ještě ~1 s posílá setrvačné wheel eventy
+       — staré „nové gesto = GAP ms ticha“ proto pin zamklo, dokud dojezd
+       úplně neztichl. Pixelové kolečko (trackpad) se teď sčítá a po LOCK
+       ms bere další švihnutí i během dojezdu; drobný dojezd se zahodí.
+       Dotyk končí zvednutím prstu. Před prvním a za posledním jídlem pin
+       pustí stránku dál — za posledním přes soumrak rovnou do galerie. */
     var st = tl.scrollTrigger;
     var n = dishes.length;
     var GAP = 180;
+    var LOCK = 360;          // ms: totéž gesto (včetně dojezdu) se nevezme jako další jídlo
+    var THRESH = 48;         // px deltaY trackpadu = jedno jídlo
     var coarse = matchMedia('(pointer: coarse)').matches;
     var stepAt = 0, stepTw = null, used = false, lastIn = 0, inbound = false;
+    var acc = 0, lastStepAt = 0, coastPeak = 0;
     var touching = false, flung = false, eating = false;
     var touchY = 0, touchT = 0, touchV = 0;
 
@@ -1618,12 +1697,46 @@
       // Čas vzniku události, ne obsluhy: když stránka zrovna dekóduje fotky,
       // dorazí kolečko v dávce a mezery mezi obsluhami by dělaly nová gesta.
       var now = self.event.timeStamp || performance.now();
-      if (self.event.type === 'wheel') {
-        if (now - lastIn > GAP) used = false;
+      var e = self.event;
+      if (e.type === 'wheel') {
+        var mag = Math.abs(e.deltaY || 0);
+        var pixel = e.deltaMode === 0;
+        if (now - lastIn > GAP) {
+          used = false;
+          acc = 0;
+          coastPeak = 0;
+        }
         lastIn = now;
+
+        /* Trackpad / plynulé kolečko (deltaMode pixel): nespoléhat na ticho
+           mezi eventy — to nikdy nepřijde, dokud dojezd neodezněl. Sčítat
+           delta, po LOCK pustit další krok, dojezd pod prahem zahodit. */
+        if (pixel) {
+          if (now - lastStepAt < LOCK) {
+            if (mag > coastPeak) coastPeak = mag;
+            acc = 0;
+            return;
+          }
+          if (mag > coastPeak) coastPeak = mag;
+          else coastPeak *= 0.97;
+          // Dojezd slábne pod vrcholem předchozího švihnutí — nesčítat.
+          if (mag < 8 || (coastPeak > 12 && mag < coastPeak * 0.4)) {
+            acc = 0;
+            return;
+          }
+          acc += mag * (dir > 0 ? 1 : -1);
+          if (Math.abs(acc) < THRESH) return;
+          dir = acc > 0 ? 1 : -1;
+          acc = 0;
+          used = true;
+          lastStepAt = now;
+          step(dir);
+          return;
+        }
       }
       if (used) return;
       used = true;
+      lastStepAt = now;
       step(dir);
     }
 
@@ -1712,6 +1825,9 @@
         stepAt = dir < 0 ? n - 1 : dir > 0 ? 0 : nearest();
         used = true;
         lastIn = performance.now();
+        lastStepAt = lastIn;
+        acc = 0;
+        coastPeak = 0;
         glide(stepY(stepAt), touching ? touchV : st.getVelocity());
       } else {
         obs.disable();
