@@ -122,13 +122,21 @@
      2 · LENIS A KOTVY
      ====================================================================== */
   var lenis = null;
+  // Signatures si kolečko bere samy (krok po jídle, viz initShowcase) —
+  // Lenis by si mezitím nastřádal posun a talíř ujel ze středu.
+  var wheelHeld = false;
+  // Skok na kotvu nebo nahoru právě projíždí stránkou: Signatures ho nechají
+  // projet a nechytí ho na prvním jídle.
+  var jumping = false;
+  var showcaseTop = null;
   if (!reduced && window.Lenis) {
     lenis = new Lenis({
       duration: 1.6,
       easing: function (t) { return Math.min(1, 1.001 - Math.pow(2, -10 * t)); },
       smoothWheel: true,
       wheelMultiplier: 0.78,     // kolečko ujíždělo, tohle ho přibrzdí
-      touchMultiplier: 1.4
+      touchMultiplier: 1.4,
+      virtualScroll: function () { return !wheelHeld; }
     });
     if (hasST) {
       lenis.on('scroll', ScrollTrigger.update);
@@ -147,12 +155,22 @@
     return Math.round(h + 24);
   }
 
+  function jump(y, duration) {
+    jumping = true;
+    var done = function () { jumping = false; };
+    if (lenis) lenis.scrollTo(y, { duration: duration, onComplete: done });
+    else {
+      window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+      setTimeout(done, reduced ? 0 : 1400);
+    }
+  }
+
   function goTo(target) {
     var el = typeof target === 'string' ? $(target) : target;
     if (!el) return;
-    var gap = headerGap();
-    if (lenis) lenis.scrollTo(el, { offset: -gap, duration: 1.15 });
-    else window.scrollTo({ top: el.getBoundingClientRect().top + window.pageYOffset - gap, behavior: 'smooth' });
+    // Signatures: přistát přesně na začátku pinu, s prvním jídlem v kruhu.
+    if (el.id === 'menu' && showcaseTop) return jump(showcaseTop(), 1.15);
+    jump(el.getBoundingClientRect().top + window.pageYOffset - headerGap(), 1.15);
   }
 
   /* ======================================================================
@@ -344,10 +362,7 @@
   // Zpět nahoru
   var toTop = $('#toTop');
   if (toTop) {
-    toTop.addEventListener('click', function () {
-      if (lenis) lenis.scrollTo(0, { duration: 1.25 });
-      else window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
-    });
+    toTop.addEventListener('click', function () { jump(0, 1.25); });
   }
 
   /* ======================================================================
@@ -1159,8 +1174,29 @@
         .to([kickEl, nameEl, priceEl], { opacity: 1, y: 0, duration: .45, stagger: .04, ease: 'power3.out' });
     }
 
-    // Posun, při kterém je střed i-tého jídla na středu obrazovky.
-    var off = function (i) { return dishes[i].offsetLeft + dishes[i].offsetWidth / 2 - window.innerWidth / 2; };
+    var wellEl = $('.show__well');
+    var pinEl = $('#showPin');
+    var ringEl = $('.show__ring');
+
+    // Posun, při kterém je střed i-tého jídla na STŘEDU KRUHU.
+    // Osa je skutečný střed .show__ring ve studně, ne innerWidth / 2 ani
+    // 50vw: to počítá i posuvník okna a talíř pak stál o půl posuvníku
+    // vpravo. Poloha se skládá z CSS (odsazení, slot, mezera), ne z
+    // offsetLeft — ten zaokrouhluje na celé px a mezera ve vw chybu sčítá
+    // jídlo od jídla.
+    var axisX = function () {
+      var rr = ringEl.getBoundingClientRect();
+      var sr = stage.getBoundingClientRect();
+      var sx = parseFloat(gsap.getProperty(stage, 'x')) || 0;
+      return rr.left + rr.width / 2 - sr.left + sx;
+    };
+    var off = function (i) {
+      var slot = parseFloat(stage.style.getPropertyValue('--slot'));
+      var axis = axisX();
+      if (!slot) return dishes[i].offsetLeft + dishes[i].offsetWidth / 2 - axis;
+      var cs = getComputedStyle(stage);
+      return parseFloat(cs.paddingLeft) + i * (slot + parseFloat(cs.columnGap)) + slot / 2 - axis;
+    };
     var span = function () { return off(dishes.length - 1) - off(0); };
 
     /* Zhasnutí: za posledním jídlem pin pokračuje ještě o DUSK délky pásu.
@@ -1169,8 +1205,6 @@
        a tlačítko zůstanou a v půlce přejdou do nočního materiálu
        (.is-night) — jinak by mezi talířem a galerií zbyla černá díra. */
     var DUSK = .14;
-    var pinEl = $('#showPin');
-    var ringEl = $('.show__ring');
     var nightEl = duskEl ? duskEl.firstElementChild : null;
     var fadeEls = $$('.show__head');
     // Kruh a zář jsou denní světlo (prosvětlený papír) — ve tmě by z nich
@@ -1179,6 +1213,97 @@
     var shadows = dishes.map(function (el) { return $('.dish__shadow', el); });
     var lastStop = 1 / (1 + DUSK);   // průběh, při kterém stojí uprostřed poslední jídlo
     var dusk = 0;
+    var pinLen = function () { return span() * 1.15 * (1 + DUSK); };
+    /* Poloha pásu na začátku pinu. První jídlo stojí o pixel po začátku
+       (viz stepY), takže pás začíná o ten pixel dřív — jinak by první talíř
+       stál ~¾ px vlevo od osy. */
+    var stripFrom = function () {
+      var a = 1 / pinLen() / lastStop, x1 = -off(dishes.length - 1);
+      return (-off(0) - a * x1) / (1 - a);
+    };
+
+    /* Jídla se srovnají podle HLAVNÍHO talíře, ne podle rámu fotky (čísla
+       ze scripts/measure-dishes.py v data-fit a data-hull): talíř má ve
+       všech jídlech stejný průměr a stojí středem v kruhu. Přílohy (rýže,
+       sojovka) smí z kruhu vyčuhovat — asymetrii nese sama fotka — ale ne
+       pod nadpis, na jméno jídla ani za okraj okna. Fotky jsou shora, takže
+       jde jídlo kolem talíře pootočit: na širokém okně se rýže stočí do
+       strany, na telefonu dolů, kde je místo. Zkouší se úhly od nejmenšího
+       a bere se první, se kterým talíř zůstane v plné velikosti; když se
+       nevejde žádný, ten s největším talířem. Přepočítá se při každém
+       refreshi ScrollTriggeru (změna okna), dřív než se měří dráha pásu. */
+    var PLATE = .9;                  // průměr talíře / průměr kruhu
+    /* Jídlo z víc nádob (miska + rýže, data-group): hlavní talíř by stál v
+       kruhu a rýže visela bokem, celek by byl mimo osu a kvůli přesahu
+       malý. Tady stojí v kruhu těžiště celé fotky a delší strana kompozice
+       je GROUP průměrů kruhu. */
+    var GROUP = 1.2;
+    var TURNS = [0, -15, 15, -30, 30, -45, 45];
+    var headEl = $('.show__head');
+    var metaEl = $('.show__meta');
+    function fitDishes() {
+      var pr = pinEl.getBoundingClientRect();
+      var rr = ringEl.getBoundingClientRect();
+      var D = ringEl.offsetWidth;
+      var rx = rr.left + rr.width / 2 - pr.left;
+      var ry = rr.top + rr.height / 2 - pr.top;
+      var pad = 12;
+      var room = {
+        l: rx - pad,
+        r: pinEl.clientWidth - pad - rx,
+        t: ry - (headEl.getBoundingClientRect().bottom - pr.top + pad),
+        b: metaEl.getBoundingClientRect().top - pr.top - pad - ry
+      };
+      stage.style.setProperty('--slot', D + 'px');
+      dishes.forEach(function (el) {
+        var f = (el.dataset.fit || '').split(' ').map(Number);
+        if (f.length !== 4) return;
+        var d = f[0], x = f[1], y = f[2], r = f[3];
+        var hull = (el.dataset.hull || '').split(' ').map(Number);
+        var full = D * ('group' in el.dataset ? GROUP : PLATE) / d;
+        var best = { w: 0, a: 0 };
+        // data-tilt: natočení pevně dané v Signatures.astro, nevybírá se
+        var turns = el.dataset.tilt ? [Number(el.dataset.tilt)] : TURNS;
+        for (var t = 0; t < turns.length; t++) {
+          // obal otočený o úhel; rozměry v šířkách fotky od středu talíře
+          var rad = turns[t] * Math.PI / 180, c = Math.cos(rad), s = Math.sin(rad);
+          var l = 0, rt = 0, tp = 0, bt = 0;
+          for (var k = 0; k + 1 < hull.length; k += 2) {
+            var u = hull[k] * c - hull[k + 1] * s, v = hull[k] * s + hull[k + 1] * c;
+            l = Math.max(l, -u); rt = Math.max(rt, u); tp = Math.max(tp, -v); bt = Math.max(bt, v);
+          }
+          var w = Math.min(full, room.l / l, room.r / rt, room.t / tp, room.b / bt);
+          if (w > best.w * 1.03) best = { w: w, a: turns[t] };
+          if (w >= full) break;
+        }
+        var w = Math.max(best.w, D * .55);
+        var img = $('img', el);
+        img.style.width = w + 'px';
+        img.style.translate = (-x * w) + 'px ' + (-y * w * r) + 'px';
+        img.style.transformOrigin = (x * 100) + '% ' + (y * 100) + '%';
+        img.style.rotate = best.a ? best.a + 'deg' : '';
+        // Obrys drží stín směrem dolů i u pootočené fotky (filtr se otáčí s ní).
+        if (best.a) {
+          var ar = best.a * Math.PI / 180, sx = Math.sin(ar), sy = Math.cos(ar);
+          img.style.filter = 'drop-shadow(' + (18 * sx).toFixed(1) + 'px ' + (18 * sy).toFixed(1) + 'px 22px rgba(74, 48, 22, .26)) ' +
+            'drop-shadow(' + (4 * sx).toFixed(1) + 'px ' + (4 * sy).toFixed(1) + 'px 8px rgba(74, 48, 22, .26))';
+        } else img.style.filter = '';
+        el.style.setProperty('--dp', d * w + 'px');
+      });
+      // Pás stojí na středu studny, kruh o kousek výš — dorovnat.
+      stage.style.translate = '';
+      var sr = stage.getBoundingClientRect();
+      stage.style.translate = '0 ' + (ry - (sr.top + sr.height / 2 - pr.top)) + 'px';
+    }
+    pinEl.classList.add('is-fit');
+    fitDishes();
+    ScrollTrigger.addEventListener('refreshInit', fitDishes);
+
+    /* Hloubka ostrosti: jídla mimo střed se rozostří a vyblednou, jako
+       když objektiv zaostří na talíř uprostřed. Hodnoty jsou zaokrouhlené,
+       aby se filtr nepřepočítával každý snímek; na dotykových zařízeních
+       je rozostření mělčí (slabší GPU). */
+    var BLUR = matchMedia('(pointer: coarse)').matches ? 2.5 : 5;
 
     /* Pin GSAP zamkne na výšku, kterou měl v okamžiku připíchnutí (100svh).
        Na telefonu se po chvíli rolování schová lišta prohlížeče, okno se
@@ -1213,22 +1338,19 @@
     var tl = gsap.timeline({
       scrollTrigger: {
         trigger: '.show__pin', start: 'top top',
-        end: function () { return '+=' + span() * 1.15 * (1 + DUSK); },
-        pin: true, scrub: .55, invalidateOnRefresh: true,
-        // zastavit se má na jídle, ne v mezeře mezi dvěma; v soumraku volně
-        snap: {
-          snapTo: function (v) {
-            if (v > lastStop + .002) return v;
-            var step = lastStop / (dishes.length - 1);
-            return Math.round(v / step) * step;
-          },
-          duration: { min: .18, max: .42 }, delay: .06, ease: 'power2.inOut'
-        },
+        end: function () { return '+=' + pinLen(); },
+        // Bez vyhlazení: rolování v pinu řídí krok po jídle (níž), který má
+        // vlastní křivku — scrub navíc by talíř do kruhu dotahoval opožděně.
+        pin: true, scrub: true, invalidateOnRefresh: true,
         onToggle: function (self) {
           fitPinnedPin(self.isActive);
           setDay('pin', self.isActive && dusk < .5);
+          holdPin(self.isActive, self.direction);
         },
-        onRefresh: function (self) { fitPinnedPin(self.isActive); },
+        onRefresh: function (self) {
+          fitPinnedPin(self.isActive);
+          if (st && self.isActive && !stepTw) toY(stepY(stepAt), 0);
+        },
         onUpdate: function (self) {
           fitPinnedPin(self.isActive);
           var p = self.progress * (1 + DUSK);
@@ -1238,18 +1360,23 @@
 
           setMeta(Math.round(sp * (dishes.length - 1)));
           gsap.set(barEl, { width: (12 + sp * 88) + '%' });
-          var cx = window.innerWidth / 2;
+          var wr = wellEl.getBoundingClientRect();
+          var half = wr.width / 2, cx = wr.left + half;
           dishes.forEach(function (el, i) {
             var r = el.getBoundingClientRect();
-            var d = (r.left + r.width / 2 - cx) / cx;        // -1 … 0 … 1
+            var d = (r.left + r.width / 2 - cx) / half;      // -1 … 0 … 1
             var a = Math.abs(d);
             var rot = gsap.utils.clamp(-8, 8, d * 9);
             gsap.set(el, {
-              scale: gsap.utils.clamp(.6, 1, 1 - a * .34),
+              scale: gsap.utils.clamp(.55, 1, 1 - a * .42),
               rotate: rot,
               yPercent: a * 6,
               opacity: gsap.utils.clamp(.3, 1, 1 - a * .62)
             });
+            var fa = Math.min(1, a);
+            var blur = Math.round(fa * BLUR * 4) / 4;
+            var sat = Math.round((1 - fa * .55) * 20) / 20;
+            el.style.filter = blur > 0 ? 'blur(' + blur + 'px) saturate(' + sat + ')' : '';
             // Světlo stojí nad středem: stín utíká od středu, s dálkou se
             // natahuje a slábne. Natočení talíře se mu odečte — stín leží
             // na papíře, ne na talíři.
@@ -1258,12 +1385,17 @@
               opacity: (1 - a * .5) * (1 - k)
             });
           });
-          // Logo dýchá s pásem. Ve dne drží razítkovou krytí (~.5);
-          // za soumraku se rozsvítí — na zhasnuté scéně je zlatá jediné světlo.
+          // Logo dýchá s pásem a ustoupí talíři: když jídlo stojí v kruhu,
+          // skoro zmizí (prosvítalo by mezerami kolem misky), mezi dvěma
+          // jídly se vrátí jako razítko (~.35 — víc by se tlouklo s
+          // rozostřenými přílohami, které zrovna jedou přes kruh). Za
+          // soumraku se rozsvítí — na zhasnuté scéně je zlatá jediné světlo.
           var breathe = Math.sin(sp * Math.PI);
+          var at = sp * (dishes.length - 1);
+          var gap = Math.min(1, Math.abs(at - Math.round(at)) * 2.4);   // 0 na jídle, 1 mezi
           gsap.set(markEl, {
             scale: 1 + breathe * .07,
-            opacity: .48 + breathe * .08 + k * .22
+            opacity: (.06 + .3 * gap * gap * (3 - 2 * gap)) * (1 - k) + .7 * k
           });
           // Clona: začíná za rohy okna (polovina úhlopříčky), končí kuželem
           // o něco širším než talíř uprostřed. Poloměr se zmenšuje
@@ -1273,8 +1405,7 @@
             if (k > 0) {
               var w = window.innerWidth, h = pinEl.clientHeight;
               var hd = Math.sqrt(w * w + h * h) / 2;
-              var dish = dishes[dishes.length - 1].querySelector('img');
-              var dw = dish ? dish.offsetWidth : 300;
+              var dw = parseFloat(dishes[dishes.length - 1].style.getPropertyValue('--dp')) || 300;
               var rr = ringEl.getBoundingClientRect(), pr = pinEl.getBoundingClientRect();
               var geo = function (a, b) { return a * Math.pow(b / a, k); };
               duskEl.style.setProperty('--cy', Math.round(rr.top + rr.height / 2 - pr.top) + 'px');
@@ -1292,10 +1423,138 @@
         }
       }
     });
-    tl.fromTo(stage, { x: function () { return -off(0); } }, {
+    tl.fromTo(stage, { x: stripFrom }, {
       x: function () { return -off(dishes.length - 1); },
       ease: 'none', duration: 1
     }).to({}, { duration: DUSK });
+
+    /* Krok po jídle. Volné rolování v pinu nechávalo pás stát mezi dvěma
+       jídly: snap se pouštěl až po dojetí setrvačnosti (Lenis, na telefonu
+       nativní dojezd) a prohrával s ní. Proto si pin, dokud je připíchnutý,
+       vezme kolečko, dotyk i klávesy sám a jedno gesto = jedno jídlo, vždy
+       dojeté do kruhu. Gesto končí, až kolečko na GAP ms ztichne (trackpad
+       ještě vteřinu dojíždí a jinak by přeskočil několik jídel); dotyk
+       končí zvednutím prstu. Před prvním a za posledním jídlem pin pustí
+       stránku dál — za posledním přes soumrak rovnou do galerie. */
+    var st = tl.scrollTrigger;
+    var n = dishes.length;
+    var GAP = 180;
+    var coarse = matchMedia('(pointer: coarse)').matches;
+    var stepAt = 0, stepTw = null, used = false, lastIn = 0;
+
+    // Rolování, při kterém stojí i-té jídlo přesně v ose kruhu — spočtené
+    // zpátky z dráhy pásu, bez zaokrouhlení (pixel rolování je ~¾ px pásu).
+    // První jídlo tak vyjde pixel po začátku pinu, kde už je pin aktivní.
+    function stepY(i) {
+      var x0 = stripFrom(), x1 = -off(n - 1);
+      return st.start + (st.end - st.start) * lastStop * (-off(i) - x0) / (x1 - x0);
+    }
+    function nearest() {
+      return Math.round(gsap.utils.clamp(0, 1, st.progress / lastStop) * (n - 1));
+    }
+    function curY() { return lenis ? lenis.scroll : window.pageYOffset; }
+    function setY(y) {
+      if (lenis) lenis.scrollTo(y, { immediate: true, force: true });
+      else window.scrollTo(0, y);
+    }
+    function toY(y, dur, ease) {
+      if (stepTw) stepTw.kill();
+      stepTw = null;
+      if (!dur) return setY(y);
+      var at = { y: curY() };
+      stepTw = gsap.to(at, {
+        y: y, duration: dur, ease: ease || 'power3.inOut',
+        onUpdate: function () { setY(at.y); },
+        onComplete: function () { stepTw = null; }
+      });
+    }
+    function overlayUp() {
+      return body.classList.contains('ov-open') || body.classList.contains('menu-open') ||
+        (lb && lb.classList.contains('on')) || document.documentElement.classList.contains('md-lock');
+    }
+
+    function step(dir) {
+      if (overlayUp()) return;
+      var to = stepAt + dir;
+      // Navazující gesto během jízdy: dojet rovnou k dalšímu, bez zastávky.
+      var ease = stepTw ? 'power2.out' : 'power3.inOut';
+      if (to < 0) return toY(st.start - Math.round(window.innerHeight * .45), .7, ease);
+      if (to >= n) return toY(st.end + Math.round(window.innerHeight * .45), 1.2, ease);
+      stepAt = to;
+      toY(stepY(to), .8, ease);
+    }
+
+    function gesture(dir, self) {
+      // Čas vzniku události, ne obsluhy: když stránka zrovna dekóduje fotky,
+      // dorazí kolečko v dávce a mezery mezi obsluhami by dělaly nová gesta.
+      var now = self.event.timeStamp || performance.now();
+      if (self.event.type === 'wheel') {
+        if (now - lastIn > GAP) used = false;
+        lastIn = now;
+      }
+      if (used) return;
+      used = true;
+      step(dir);
+    }
+
+    // wheelSpeed -1: kolečko dolů i prst nahoru jsou „onUp“ = další jídlo.
+    var obs = ScrollTrigger.observe({
+      target: window, type: 'wheel,touch', wheelSpeed: -1, tolerance: 12,
+      preventDefault: true, ignore: '#menuOv, #sheet, #lb',
+      onUp: function (self) { gesture(1, self); },
+      onDown: function (self) { gesture(-1, self); },
+      onPress: function () { used = false; }
+    });
+    obs.disable();
+
+    function onKey(e) {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || overlayUp()) return;
+      var tag = e.target && e.target.tagName;
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+      var dir = 0;
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') dir = 1;
+      else if (e.key === 'ArrowUp' || e.key === 'PageUp') dir = -1;
+      else if (e.key === ' ' && !/^(BUTTON|A)$/.test(tag)) dir = e.shiftKey ? -1 : 1;
+      if (!dir) return;
+      e.preventDefault();
+      if (!e.repeat || !stepTw) step(dir);
+    }
+
+    /* Pin se připíchl / odepnul. Na dotykovém zařízení dostane <html>
+       overflow: hidden — zastaví nativní dojezd prstu, který by jinak
+       odvezl pás z kruhu (ve Safari na programové rolování nedbá). */
+    function holdPin(on, dir) {
+      if (!obs) return;              // ScrollTrigger se ozval dřív, než krok vznikl
+      wheelHeld = on;
+      if (coarse) document.documentElement.classList.toggle('show-lock', on);
+      if (on) {
+        obs.enable();
+        window.addEventListener('keydown', onKey);
+        if (jumping || stepTw) return;
+        // Vjezd do sekce: první (shora) nebo poslední (zespodu) jídlo do kruhu.
+        // Gesto, které sem dovezlo, je tím spotřebované. Načtení stránky
+        // uprostřed pinu (dir 0) dojede k nejbližšímu.
+        stepAt = dir < 0 ? n - 1 : dir > 0 ? 0 : nearest();
+        used = true;
+        lastIn = performance.now();
+        var d = Math.abs(stepY(stepAt) - curY());
+        toY(stepY(stepAt), dir < 0 ? 1 : Math.min(.8, .3 + d / 1600));
+      } else {
+        obs.disable();
+        window.removeEventListener('keydown', onKey);
+      }
+    }
+
+    /* Rolování, které do pinu nepřišlo krokem (posuvník, skok na kotvu,
+       hledání v textu), po zastavení dojede k nejbližšímu jídlu. */
+    ScrollTrigger.addEventListener('scrollEnd', function () {
+      if (!st.isActive || stepTw || jumping || st.progress > lastStop + .002) return;
+      stepAt = nearest();
+      if (Math.abs(curY() - stepY(stepAt)) > 2) toY(stepY(stepAt), .5);
+    });
+
+    showcaseTop = function () { return stepY(0); };
+    if (st.isActive) holdPin(true, 0);
 
     if (window.visualViewport) {
       var onVp = function () {

@@ -1261,7 +1261,12 @@ body:has(.nav__right .btn--act:focus-visible) .hashi-lower {
   .hero-title-line.is-italic.is-climax {
     font-size: clamp(42px, 11.6vw, 54px);
     margin-left: clamp(18px, 6vw, 36px);
+    padding-bottom: 0;
   }
+
+  /* Talíř + hůlky pod „Plate“ jsou kresba pro desktop; na telefonu
+     se pod nadpis nevejdou a tlačí řádek od tlačítek. */
+  .plate-art-hashi { display: none; }
 
   .hero-cta-wrap { margin-top: 24px; margin-left: clamp(18px, 6vw, 36px); }
 
@@ -1603,6 +1608,9 @@ html.no-js .show .blend {
    každého jídla by přestal odpovídat skutečné souřadnici → vybrané jídlo by
    neskončilo uprostřed. */
 .show__pin { position: relative; z-index: 2; height: 100svh; height: 100dvh; overflow: hidden; }
+/* Dotyk v připíchnutých Signatures: stránku posouvá jen krok po jídle
+   (app.js), nativní dojezd prstu by pás odvezl z kruhu. */
+html.show-lock { overflow: hidden; }
 /* Studna drží kruh, zář, logo i pás jídel ve stejném rámu. Na desktopu
    vyplní pin (chování beze změny). Na telefonu je to prostřední řádek
    sloupce, takže talíř sedí v kruhu i když se nadpis a patička scény
@@ -1614,14 +1622,16 @@ html.no-js .show .blend {
    denního světla, ne zlatá — zlatá zář na krémové jen špiní. */
 .show__ring {
   position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
-  width: clamp(290px, 34vw, 470px); aspect-ratio: 1; border-radius: 50%;
+  /* Hlídá i výšku: na 900 px vysokém okně by plný kruh nechal přílohám
+     (rýže vedle misky) jen pár pixelů mezi nadpisem a jménem jídla. */
+  width: clamp(290px, min(34vw, 48vh), 470px); aspect-ratio: 1; border-radius: 50%;
   border: 1px solid rgba(87, 58, 30, .2);
   box-shadow: inset 0 0 80px rgba(255, 240, 210, .4);
   transition: transform .65s var(--ease), border-color .5s var(--ease), box-shadow .5s var(--ease);
 }
 .show__glow {
   position: absolute; top: 46%; left: 50%; transform: translate(-50%, -50%);
-  width: clamp(360px, 46vw, 660px); aspect-ratio: 1; border-radius: 50%;
+  width: clamp(360px, min(46vw, 65vh), 660px); aspect-ratio: 1; border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 240, 210, .5) 0%, rgba(255, 240, 210, .16) 46%, transparent 70%);
   filter: blur(14px);
   transition: transform .65s var(--ease);
@@ -1659,7 +1669,7 @@ html.no-js .show .blend {
 }
 
 .show__stage { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center;
-  gap: clamp(3rem, 9vw, 9.5rem); padding-inline: 50vw; will-change: transform; }
+  gap: clamp(3rem, 9vw, 9.5rem); padding-inline: 50%; will-change: transform; }
 .dish { position: relative; margin: 0; flex: 0 0 auto; transform-origin: 50% 60%; }
 /* Drop-shadow jen drží obrys talíře na papíře — těsný, v tónu tuše, ne
    černý: černá kaluž na krémové vypadá jako špína. Směr a délku stínu
@@ -1673,6 +1683,20 @@ html.no-js .show .blend {
 .dish__shadow { position: absolute; z-index: 0; left: 11%; width: 78%; bottom: 7%; height: 15%;
   border-radius: 50%; pointer-events: none; transform-origin: 50% 50%;
   background: radial-gradient(closest-side, rgba(74, 48, 22, .36) 0%, rgba(74, 48, 22, .16) 55%, rgba(74, 48, 22, 0) 100%); }
+
+/* Srovnání podle hlavního talíře (.is-fit nasadí app.js, jen v pohyblivé
+   scéně). Každé jídlo dostane stejný čtvercový slot o průměru kruhu a
+   fotka v něm visí tak, že střed HLAVNÍHO talíře leží ve středu slotu —
+   šířku a posun jí dopočítá app.js z data-fit. Přílohy ze slotu vyčuhují,
+   proto je mezera mezi sloty větší. Stín patří talíři, ne celé fotce:
+   --dp je průměr talíře v px. */
+.show__pin.is-fit .show__stage { gap: clamp(4rem, 11vw, 11rem); }
+.show__pin.is-fit .dish { width: var(--slot); height: var(--slot); }
+.show__pin.is-fit .dish img { position: absolute; left: 50%; top: 50%; max-width: none;
+  translate: -50% -50%; }
+.show__pin.is-fit .dish__shadow {
+  left: calc(50% - var(--dp) * .39); width: calc(var(--dp) * .78);
+  top: calc(50% + var(--dp) * .36); height: calc(var(--dp) * .15); bottom: auto; }
 
 /* název se mění podle jídla uprostřed */
 .show__meta { position: absolute; z-index: 4; left: 0; right: 0; bottom: clamp(7.2rem, 14vh, 11rem);

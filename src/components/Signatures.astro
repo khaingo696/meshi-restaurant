@@ -27,30 +27,60 @@
   překryv se otevře v kategorii, kterou si člověk prohlížel.
 
   Seznam se skládá z src/data/menu.ts — názvy ani ceny se tady nepíšou.
-  Vyříznuté fotky existují jen pro část jídel, proto SHOWCASE: slug musí mít
-  soubor v public/assets/dishes/. Ceny ještě nejsou (price: null), a dokud
+  Výjimkou jsou jídla, která v lístku (zatím) nejsou: ta nesou jméno a
+  kategorii přímo v SHOWCASE. Každý slug musí mít soubor v
+  public/assets/dishes/. Ceny ještě nejsou (price: null), a dokud
   nebudou, řádek s cenou se nevykreslí — žádné „0 Kč“ ani vymyšlená čísla.
 */
 import { categories, formatPrice } from "../data/menu";
+import FIT from "../data/dish-fit.json";
 import Blend from "./Blend.astro";
 
-/* Pořadí na scéně: hlavní jídla, předkrmy, sushi. Osm jídel je strop:
-   délku připíchnuté scény určuje jejich počet, a každé další přidá přes
-   500 px rolování. Jen cutouty, kde je talíř celý a alfa obkresluje
-   skutečný obrys — oříznuté scény (rýže uříznutá rámem, deska jako
-   obdélník) sem nepatří. */
-const SHOWCASE = [
-  "duck-teriyaki",
+/* Hlavní talíř v každém výřezu (scripts/measure-dishes.py): app.js podle
+   něj srovná velikost i polohu jídel, viz initShowcase. */
+const fitOf = (slug: string) =>
+  (FIT as Record<string, { d: number; x: number; y: number; r: number; h: number[]; g?: number }>)[slug];
+
+/* Pořadí na scéně: hlavní jídla, předkrmy, sushi. Délku připíchnuté scény
+   určuje počet jídel — každé přidá přes 500 px rolování. */
+type Extra = { slug: string; name: string; cat: string };
+const SHOWCASE: (string | Extra)[] = [
   "chahan",
-  "bossam",
-  "ebi-tempura",
-  "soft-shell-crab",
+  "mama-bowl",
+  { slug: "meshi-special-ramen", name: "Meshi Special Ramen", cat: "hlavni" },
+  "mongolian-beef",
+  { slug: "salmon-teriyaki", name: "Salmon Teriyaki", cat: "hlavni" },
+  "yaki-udon",
+  { slug: "maguro-tataki", name: "Maguro Tataki", cat: "predkrmy" },
+  "sake-tartar",
   "nigiri",
+  { slug: "sake-set", name: "Sake Set", cat: "sushi" },
   "samuraj-roll",
-  "geisha-tempura-roll",
+  "signature-m-s-salmon",
+  { slug: "signature-m-s-foie-gras", name: "Signature M_S Foie Gras", cat: "sushi" },
 ];
 
-const dishes = SHOWCASE.map((slug) => {
+/* Pevné natočení fotky (stupně, + po směru hodin) místo toho, které by
+   app.js vybral podle místa. Deska nigiri leží na fotce šikmo „\“ asi o
+   24° a výběr podle místa ji na telefonu natočil ještě strměji tamtéž —
+   tady stojí zrcadlově, „/“. */
+const TILT: Record<string, number> = { nigiri: -50 };
+
+const dishes = SHOWCASE.map((entry) => {
+  if (typeof entry !== "string") {
+    const cat = categories.find((c) => c.slug === entry.cat);
+    if (!cat) throw new Error(`Signatures: kategorie "${entry.cat}" není v src/data/menu.ts`);
+    return {
+      cat: cat.slug,
+      kicker: cat.label,
+      name: entry.name,
+      price: "",
+      img: `/assets/dishes/${entry.slug}.webp`,
+      fit: fitOf(entry.slug),
+      tilt: TILT[entry.slug],
+    };
+  }
+  const slug = entry;
   const cat = categories.find((c) => c.items.some((d) => d.slug === slug));
   if (!cat) throw new Error(`Signatures: slug "${slug}" není v src/data/menu.ts`);
   const dish = cat.items.find((d) => d.slug === slug)!;
@@ -60,6 +90,8 @@ const dishes = SHOWCASE.map((slug) => {
     name: dish.name,
     price: formatPrice(dish.price) ?? "",
     img: `/assets/dishes/${slug}.webp`,
+    fit: fitOf(slug),
+    tilt: TILT[slug],
   };
 });
 
@@ -96,9 +128,12 @@ const first = dishes[0];
 
       <div class="show__stage" id="showStage">
       {dishes.map((d) => (
-        <figure class="dish" data-cat={d.cat} data-kicker={d.kicker} data-name={d.name} data-price={d.price}>
+        <figure class="dish" data-cat={d.cat} data-kicker={d.kicker} data-name={d.name} data-price={d.price}
+                data-fit={d.fit && `${d.fit.d} ${d.fit.x} ${d.fit.y} ${d.fit.r}`} data-hull={d.fit?.h.join(" ")}
+                data-group={d.fit?.g ? "" : undefined} data-tilt={d.tilt}>
           <span class="dish__shadow" aria-hidden="true"></span>
-          <img src={d.img} alt={d.name} width="900" height="900" loading="lazy" decoding="async" />
+          <img src={d.img} alt={d.name} width="860" height={d.fit ? Math.round(860 * d.fit.r) : 860}
+               loading="lazy" decoding="async" />
           <!-- Popisek je vidět jen v náhradní podobě scény (bez pohybu nebo
                bez GSAP), kde se pás roluje prstem. Jinak jméno nese
                .show__meta uprostřed. -->

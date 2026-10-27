@@ -70,7 +70,7 @@ reads `#sheet .sheet-nav a`, not the bar.
 **Two sections pin the screen** — the Signatures showcase and the gallery ticker.
 Both are driven by ScrollTrigger in `app.js` §9. Their length is not free: the
 showcase's scroll distance is a function of how many dishes are on stage (about
-500 px each, hence the eight-dish cap noted in `Signatures.astro`), and the
+500 px each, see `Signatures.astro`), and the
 gallery's is the `height` of `.tick` in CSS. Both have a no-motion fallback —
 the showcase turns into a plain horizontal scroller (`.show__pin.is-static`),
 the gallery simply stops drifting.
@@ -108,6 +108,7 @@ Run by hand when needed; they are not part of `npm run build`:
 | Script | Purpose |
 |---|---|
 | `scripts/build-menu-images.py` | Source dish photos → `public/assets/menu/` (WebP, 4:5 covers and 4:3 tiles, each with @2x) |
+| `scripts/measure-dishes.py` | Measures the main plate (size, centre, outline) in every cut-out in `public/assets/dishes/` → `src/data/dish-fit.json`. The Signatures showcase uses it to give every plate the same size in the ring. **Rerun after replacing or adding a cut-out.** Needs numpy, opencv-python, Pillow. |
 | `scripts/build-patterns.py` | Generates the Japanese pattern SVGs in `public/assets/art/`. **Nothing renders those SVGs any more** — the current design uses photographic ink-wash backdrops instead. Kept in case the patterns come back. |
 | `scripts/build-jp-subset.sh` | Subsets both Japanese faces. The full files are 1.3 MB (Shippori Mincho) and 3.6 MB (Yuji Syuku) to draw a few dozen characters, so the repo carries only the ~50 KB subsets — rerun this if new Japanese text is added. Takes both source faces as arguments. |
 | `scripts/build-favicons.py` | favicon.ico + favicon-32 + apple-touch-icon from `assets/meshi_logo_hero.png` |
