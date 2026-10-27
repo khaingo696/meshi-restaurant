@@ -4,7 +4,13 @@
 
 .md-root {
   position: fixed;
-  inset: 0;
+  /* top/left/width/height (ne inset): index.js je přepisuje podle
+     visualViewport — iOS 26 Safari posouvá position:fixed, když
+     visualViewport.offsetTop zůstane > 0. */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1000;
   overflow: hidden;
   cursor: grab;

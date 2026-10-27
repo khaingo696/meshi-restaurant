@@ -228,6 +228,28 @@ export function createDoorIntro(root, options = {}) {
     torch.r = Math.min(260, Math.max(110, Math.min(vw, vh) * o.torchRadius));
   }
 
+  // iOS 26 Safari: position:fixed layers drift when visualViewport.offsetTop
+  // stays non-zero (Liquid Glass chrome / keyboard residue). Pin the overlay
+  // to the visual viewport so the door stays flush with what the user sees.
+  // Pointer clientX/Y stay in layout-viewport space — subtract the frame
+  // origin so torch / cursor / drag stay aligned with the painted door.
+  let frameX = 0, frameY = 0;
+  function syncFrame() {
+    const vv = window.visualViewport;
+    if (vv) {
+      frameX = vv.offsetLeft;
+      frameY = vv.offsetTop;
+      root.style.top = `${frameY}px`;
+      root.style.left = `${frameX}px`;
+      root.style.width = `${vv.width}px`;
+      root.style.height = `${vv.height}px`;
+    } else {
+      frameX = frameY = 0;
+    }
+    layout();
+    render();
+  }
+
   // logo plate at screen resolution so the print stays crisp; rebuilt only when it changes
   function plateFor(v, g) {
     const R = Math.min(tier.plate, g.s * Math.min(devicePixelRatio, tier.dpr));
@@ -449,8 +471,7 @@ export function createDoorIntro(root, options = {}) {
     lockScroll(true);
     setState('closed');
     if (!view) createView(glModule ? 'webgl' : '2d');
-    layout();
-    render();
+    syncFrame();
     start();
   }
 
@@ -465,8 +486,8 @@ export function createDoorIntro(root, options = {}) {
     if (!geo) return;
     pointer.inside = true;
     pointer.hover = e.pointerType === 'mouse';
-    pointer.cx = e.clientX;
-    pointer.cy = e.clientY;
+    pointer.cx = e.clientX - frameX;
+    pointer.cy = e.clientY - frameY;
     if (!drag) return;
     const dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
     if (drag.axis === 'y') {                      // a vertical swipe reads as scrolling
@@ -535,17 +556,23 @@ export function createDoorIntro(root, options = {}) {
   let resizeRaf = 0;
   const onResize = () => {                        // once per frame at most (rotation fires several)
     cancelAnimationFrame(resizeRaf);
-    resizeRaf = requestAnimationFrame(() => { layout(); render(); });
+    resizeRaf = requestAnimationFrame(syncFrame);
   };
   const onVisibility = () => {                    // nothing to draw in a background tab
     if (document.hidden) stop();
-    else if (state === 'closed' || state === 'opening') start();
+    else if (state === 'closed' || state === 'opening') {
+      syncFrame();
+      start();
+    }
   };
   const listeners = [
     [root, 'pointermove', onMove], [root, 'pointerdown', onDown], [root, 'pointerup', onUp],
     [root, 'pointercancel', onCancel], [root, 'pointerleave', onLeave], [root, 'keydown', onKey],
     [window, 'wheel', onWheel, { passive: true }], [window, 'resize', onResize], [document, 'visibilitychange', onVisibility],
   ];
+  if (window.visualViewport) {
+    listeners.push([window.visualViewport, 'resize', onResize], [window.visualViewport, 'scroll', onResize]);
+  }
   for (const [target, type, fn, opts] of listeners) target.addEventListener(type, fn, opts);
   soundBtn?.addEventListener('pointerdown', e => e.stopPropagation());
   soundBtn?.addEventListener('keydown', e => e.stopPropagation());
@@ -570,7 +597,7 @@ export function createDoorIntro(root, options = {}) {
     if (grainEl && !grainEl.style.backgroundImage) grainEl.style.backgroundImage = `url(${grainTile()})`;
     lockScroll(true);                             // again, now that the page under the door has laid out
     setState('closed');
-    layout();
+    syncFrame();
     if (o.debugPointer) {
       Object.assign(pointer, { inside: true, hover: true });
       [pointer.cx, pointer.cy] = [(o.debugPointer.x + 1) / 2 * geo.vw, (o.debugPointer.y + 1) / 2 * geo.vh];

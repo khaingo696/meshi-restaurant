@@ -220,14 +220,42 @@
   /* Video v heru se nepouští samo (viz Hero.astro). Rozjede se teprve tehdy,
      až dveře vědí, čím kreslí — jinak by dekódování 1080p30 zdrželo chunk
      three.js natolik, že by ho dveře při startu neměly a kreslily by se
-     procesorem. Bez dveří se pouští hned. */
-  function startHeroVideo() {
-    var v = $('video.hero-bg');
-    if (!v || v.dataset.started) return;
-    v.dataset.started = '1';
-    if (v.dataset.src) v.src = v.dataset.src;
+     procesorem. Bez dveří se pouští hned.
+
+     iOS Safari (zejména 26) je na muted autoplay přísný: muted musí platit
+     jako property i atribut, play() se smí volat až po loadeddata, a při
+     odmítnutí se zkouší znovu po gestu / návratu do tabu. */
+  function armHeroVideoMute(v) {
+    v.muted = true;
+    v.defaultMuted = true;
+    v.playsInline = true;
+    v.setAttribute('muted', '');
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+  }
+  function playHeroVideo(v) {
+    if (!v) return;
+    armHeroVideoMute(v);
     var go = v.play();
     if (go && go.catch) go.catch(function () {});
+  }
+  function startHeroVideo() {
+    var v = $('video.hero-bg');
+    if (!v) return;
+    armHeroVideoMute(v);
+    if (!v.dataset.started) {
+      v.dataset.started = '1';
+      if (v.dataset.src) {
+        v.src = v.dataset.src;
+        try { v.load(); } catch (e) {}
+      }
+    }
+    if (v.readyState >= 2) playHeroVideo(v);
+    else {
+      var kick = function () { playHeroVideo(v); };
+      v.addEventListener('loadeddata', kick, { once: true });
+      v.addEventListener('canplay', kick, { once: true });
+    }
   }
 
   function pinTop() {
@@ -326,12 +354,21 @@
   if (heroVid && 'IntersectionObserver' in window) {
     new IntersectionObserver(function (entries) {
       if (!heroVid.dataset.started) return;
-      if (entries[entries.length - 1].isIntersecting) {
-        var go = heroVid.play();
-        if (go && go.catch) go.catch(function () {});
-      } else heroVid.pause();
+      if (entries[entries.length - 1].isIntersecting) playHeroVideo(heroVid);
+      else heroVid.pause();
     }).observe(heroVid);
   }
+  /* iOS 26 občas play() při startu tiše odmítne; gesto u dveří / návrat
+     do tabu je další šance, dokud video ještě nestojí. */
+  function retryHeroVideo() {
+    if (!heroVid || !heroVid.dataset.started || !heroVid.paused) return;
+    playHeroVideo(heroVid);
+  }
+  document.addEventListener('pointerdown', retryHeroVideo, { passive: true, once: true });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) retryHeroVideo();
+  });
+  window.addEventListener('pageshow', retryHeroVideo);
 
   /* Zavolá fn ve chvíli, kdy se dveře rozjedou. Bez dveří (druhá návštěva
      v téže kartě, vypnutý modul) hned. Když dveře stojí a čekají na vstup,

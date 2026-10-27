@@ -38,9 +38,11 @@ out="$(cd "$(dirname "$0")/.." && pwd)/public/assets/background_video.mp4"
 
 command -v ffmpeg >/dev/null || { echo "chybí ffmpeg (brew install ffmpeg)" >&2; exit 1; }
 
+# Main (ne High): iOS Safari — zvlášť 26 — často odmítne inline autoplay
+# u H.264 High. Main @ 1080p30 level 4.0 projde a na plátně se nepozná.
 ffmpeg -nostdin -y -i "$src" \
   -vf "hqdn3d=4:3:6:4.5" \
-  -c:v libx264 -crf 28 -preset veryslow -profile:v high -level 4.0 \
+  -c:v libx264 -crf 28 -preset veryslow -profile:v main -level 4.0 \
   -pix_fmt yuv420p \
   -an \
   -movflags +faststart \
