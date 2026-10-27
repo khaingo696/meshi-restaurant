@@ -1371,6 +1371,9 @@
     var pinFitTop = -1;
     function fitPinnedPin(active) {
       if (!pinEl) return;
+      // Během vjezdu výšku neměnit: lišta prohlížeče se schovává a skok
+      // výšky by se složil s dojezdem na jídlo.
+      if (inbound && stepTw) return;
       if (!active) {
         if (pinFitH) {
           pinEl.style.top = '';
@@ -1517,7 +1520,9 @@
     var n = dishes.length;
     var GAP = 180;
     var coarse = matchMedia('(pointer: coarse)').matches;
-    var stepAt = 0, stepTw = null, used = false, lastIn = 0;
+    var stepAt = 0, stepTw = null, used = false, lastIn = 0, inbound = false;
+    var touching = false, flung = false, eating = false;
+    var touchY = 0, touchT = 0, touchV = 0;
 
     // Rolování, při kterém stojí i-té jídlo přesně v ose kruhu — spočtené
     // zpátky z dráhy pásu, bez zaokrouhlení (pixel rolování je ~¾ px pásu).
@@ -1542,7 +1547,12 @@
       stepTw = gsap.to(at, {
         y: y, duration: dur, ease: ease || 'power3.inOut',
         onUpdate: function () { setY(at.y); },
-        onComplete: function () { stepTw = null; }
+        onComplete: function () {
+          stepTw = null;
+          // Vjezd dojel: pin drží zámek. Výjezd / chycení mimo pin zámek pustí.
+          if (!st.isActive) { inbound = false; lock(false); }
+          else fitPinnedPin(true);
+        }
       });
     }
     function overlayUp() {
@@ -1552,19 +1562,54 @@
 
     /* Dojezd, který naváže na rychlost, jakou stránka právě jede (v, px/s):
        začne stejně rychle a měkce stane v cíli — Hermitova křivka se
-       sklonem m0 na začátku a nulou na konci (do 3 nepřejede). Dřív zámek
-       dojezd prstu utnul a pás se rozjížděl znovu z nuly: zespodu tak
-       stránka zastavila a pak se pomalu rozjela 700 px soumraku nahoru.
-       Jede-li stránka od cíle (prst přejel začátek pinu o kus), rychlost
-       se zahodí a pás se vrátí z klidu. */
+       sklonem m0 na začátku a nulou na konci. Bez zastavení: dřív zámek
+       dojezd utnul a pás se rozjížděl z nuly (cuk, pak pomalý rozjezd).
+       Jede-li pryč od cíle, nejdřív dobrzdí ve svém směru a teprve pak
+       se vrátí — ne couvne z klidu. */
     function glide(y, v) {
-      var dist = y - curY();
+      var y0 = curY();
+      var dist = y - y0;
       if (Math.abs(dist) < 2) return toY(y, 0);
-      var m = v / dist;                              // 1/s; kladné = jede k cíli
-      if (!(m > 0)) return toY(y, Math.min(.8, .3 + Math.abs(dist) / 1600));
-      var dur = gsap.utils.clamp(.4, 1, 2 / m);
-      var m0 = Math.min(3, m * dur);
-      toY(y, dur, function (t) { return m0 * t * (1 - t) * (1 - t) + t * t * (3 - 2 * t); });
+      var toward = v * dist > 0;
+      if (toward) {
+        var m = v / dist;
+        var dur = gsap.utils.clamp(.5, 1.2, 1.7 / m);
+        var m0 = gsap.utils.clamp(.15, 1.55, m * dur);
+        return toY(y, dur, function (t) {
+          return m0 * t * (1 - t) * (1 - t) + t * t * (3 - 2 * t);
+        });
+      }
+      // Přejeli jsme cíl. Krátký dojezd vpřed (ze současné rychlosti),
+      // pak měkký návrat — jedna křivka, bez zastávky na nule.
+      var tStop = gsap.utils.clamp(.1, .28, Math.abs(v) / 4500);
+      var extra = gsap.utils.clamp(-window.innerHeight * .22, window.innerHeight * .22, v * tStop * .45);
+      var peak = y0 + extra;
+      var tBack = gsap.utils.clamp(.4, .85, Math.abs(y - peak) / 1200);
+      var dur = tStop + tBack;
+      var u = tStop / dur;
+      var tw = { t: 0 };
+      if (stepTw) stepTw.kill();
+      stepTw = gsap.to(tw, {
+        t: 1, duration: dur, ease: 'none',
+        onUpdate: function () {
+          var t = tw.t, yy;
+          if (t < u) {
+            var s = t / u;
+            yy = y0 + extra * (2 * s - s * s);          // sklon 2 extra na začátku, 0 na vrcholu
+          } else {
+            var s = (t - u) / (1 - u);
+            var e = s * s * (3 - 2 * s);                 // smoothstep zpět na cíl
+            yy = peak + (y - peak) * e;
+          }
+          setY(yy);
+        },
+        onComplete: function () {
+          stepTw = null;
+          setY(y);
+          if (!st.isActive) { inbound = false; lock(false); }
+          else fitPinnedPin(true);
+        }
+      });
     }
 
     function step(dir) {
@@ -1600,7 +1645,8 @@
       preventDefault: true, ignore: '#menuOv, #sheet, #lb',
       onUp: function (self) { gesture(1, self); },
       onDown: function (self) { gesture(-1, self); },
-      onPress: function () { used = false; }
+      // Gesto, které sem dovezlo, je spotřebované — nový prst až po něm.
+      onPress: function () { if (!inbound) used = false; }
     });
     obs.disable();
 
@@ -1617,11 +1663,27 @@
       if (!e.repeat || !stepTw) step(dir);
     }
 
-    /* Na dotykovém zařízení dostane <html> overflow: hidden — zastaví
-       nativní dojezd prstu, který by jinak odvezl pás z kruhu (ve Safari
-       na programové rolování nedbá). */
+    /* Zámek má dvě vrstvy, a nesmí se zapnout obě uprostřed gesta:
+       eat = preventDefault zbylého touchmove (žádný nativní posun).
+       clip = overflow: hidden, až prst pustí — jinak Safari cukne
+       compositorovou setrvačností. Observer se na vjezdové gesto
+       nenapojí (minul touchstart), eat ho proto spolkne. */
+    function eat(on) {
+      eating = on;
+    }
+    function clipCoast(on) {
+      if (!coarse) return;
+      document.documentElement.classList.toggle('show-lock', on);
+    }
     function lock(on) {
-      if (coarse) document.documentElement.classList.toggle('show-lock', on);
+      if (on) wheelHeld = true;
+      else wheelHeld = false;
+      if (!coarse) return;
+      eat(on);
+      if (!on) {
+        clipCoast(false);
+        watchCatch(false);
+      } else if (!touching) clipCoast(true);
     }
 
     /* Krok, který dojíždí mimo pin (výjezd za poslední nebo před první
@@ -1633,6 +1695,7 @@
     function stopStep() {
       if (stepTw) stepTw.kill();
       stepTw = null;
+      inbound = false;
       if (!st.isActive) lock(false);
     }
     ['touchstart', 'wheel'].forEach(function (type) {
@@ -1644,26 +1707,32 @@
     /* Pin se připíchl / odepnul. */
     function holdPin(on, dir) {
       if (!obs) return;              // ScrollTrigger se ozval dřív, než krok vznikl
-      wheelHeld = on;
       if (on) {
+        wheelHeld = true;
         obs.enable();
         window.addEventListener('keydown', onKey);
         // Skok na kotvu sekcí jen projíždí: zámek i dojezd na jídlo počkají,
         // jestli v ní skončí (settle).
         if (jumping) return;
+        inbound = true;
         lock(true);
         if (stepTw) return;
         // Vjezd do sekce: první (shora) nebo poslední (zespodu) jídlo do kruhu.
         // Gesto, které sem dovezlo, je tím spotřebované. Načtení stránky
-        // uprostřed pinu (dir 0) dojede k nejbližšímu.
+        // uprostřed pinu (dir 0) dojede k nejbližšímu. Bez setY — zastavení
+        // a nový rozjezd je ten cuk, který zůstal po prvním zásahu.
         stepAt = dir < 0 ? n - 1 : dir > 0 ? 0 : nearest();
         used = true;
         lastIn = performance.now();
-        glide(stepY(stepAt), st.getVelocity());
+        glide(stepY(stepAt), touching ? touchV : st.getVelocity());
       } else {
-        lock(false);
         obs.disable();
         window.removeEventListener('keydown', onKey);
+        // Vjezd ještě dojíždí: odemknout by vrátilo nativní dojezd a pin
+        // by se na startu zapínal a vypínal.
+        if (inbound && stepTw) return;
+        inbound = false;
+        lock(false);
       }
     }
 
@@ -1677,42 +1746,98 @@
       if (Math.abs(curY() - stepY(stepAt)) > 2) toY(stepY(stepAt), .5);
     }
 
-    /* Chycení dojezdu (jen dotyk). Prst pustí stránku a ta k Signatures
-       dojíždí tak rychle, že by začátek pinu přejela: zámek ji zastavil
-       až za ním a pás se pak vracel na první jídlo — zastavit, couvnout.
-       Proto se dojezd chytí už kus před pinem a plynule, ve stejném směru
-       a ze stejné rychlosti, dojede přesně na první jídlo (zespodu na
-       poslední). Dojezd, který by se zastavil sám před sekcí, se nechá. */
-    var CATCH = .6;                  // jak daleko před pinem (výšek okna) se chytá
-    var COAST = .4;                  // s: odhad, kolik ještě dojezd ujede (v · COAST px)
-    var touching = false, flung = false;
-    window.addEventListener('touchstart', function () { touching = true; flung = false; }, { capture: true, passive: true });
+    /* Chycení dojezdu (dotyk). Vezme se už na touchmove, dřív než prst
+       pustí: preventDefault na tom snímku, takže Safari nespustí nativní
+       setrvačnost do pinu. Pak pás jen dobrzdí na první jídlo (zespodu
+       na poslední) ve stejném směru. overflow: hidden až po zvednutí
+       prstu. Pomalé tažení, které by se zastavilo samo, se nechá. */
+    var CATCH = 2;                   // jak daleko před pinem (výšek okna) se chytá
+    var COAST = 1;                   // s: odhad nativního dojezdu po zvednutí
+    function catchIn(v, e) {
+      if (!coarse || stepTw || jumping || st.isActive || overlayUp()) return false;
+      var y = curY(), zone = window.innerHeight * CATCH;
+      var ahead = e ? .2 : COAST;    // prst drží: krátká predikce; dojezd: delší
+      var into = v > 90
+        ? y < st.start && y > st.start - zone && y + v * ahead > st.start
+        : v < -90 && y > st.end && y < st.end + zone && y + v * ahead < st.end;
+      if (!into) return false;
+      if (e && e.cancelable) e.preventDefault();
+      flung = false;
+      inbound = true;
+      stepAt = v > 0 ? 0 : n - 1;
+      used = true;
+      lastIn = performance.now();
+      eat(true);
+      wheelHeld = true;
+      watchCatch(true);
+      if (!touching) clipCoast(true);
+      glide(stepY(stepAt), v);
+      return true;
+    }
+    var watching = false;
+    function onCatchMove(e) {
+      if (overlayUp()) return;
+      var t = e.changedTouches && e.changedTouches[0];
+      if (t) {
+        var dt = (e.timeStamp - touchT) / 1000;
+        if (dt > .001 && dt < .12) {
+          var inst = -(t.clientY - touchY) / dt;
+          touchV = touchV ? touchV * .4 + inst * .6 : inst;
+        }
+        touchY = t.clientY;
+        touchT = e.timeStamp;
+      }
+      if (eating) {
+        if (e.cancelable) e.preventDefault();
+        return;
+      }
+      catchIn(touchV, e);
+    }
+    function watchCatch(on) {
+      if (!coarse || on === watching) return;
+      watching = on;
+      if (on) window.addEventListener('touchmove', onCatchMove, { capture: true, passive: false });
+      else window.removeEventListener('touchmove', onCatchMove, { capture: true });
+    }
+    function nearPin() {
+      var y = curY(), zone = window.innerHeight * (CATCH + .4);
+      return y < st.start && y > st.start - zone || y > st.end && y < st.end + zone;
+    }
+    window.addEventListener('touchstart', function (e) {
+      touching = true;
+      flung = false;
+      var t = e.changedTouches && e.changedTouches[0];
+      if (t) { touchY = t.clientY; touchT = e.timeStamp; touchV = 0; }
+      // Nový prst v pinu: vjezdové gesto skončilo, další = další jídlo.
+      if (st.isActive && !stepTw) inbound = false;
+      if (nearPin() || eating) watchCatch(true);
+    }, { capture: true, passive: true });
     ['touchend', 'touchcancel'].forEach(function (type) {
       window.addEventListener(type, function (e) {
         touching = e.touches.length > 0;
         flung = !touching;
+        // Prst pryč: teprve teď overflow hidden, ať compositor dojíždí
+        // do zámku, ne uprostřed gesta.
+        if (!touching && (inbound || st.isActive) && !jumping && !overlayUp()) {
+          eat(true);
+          wheelHeld = true;
+          clipCoast(true);
+        }
       }, { capture: true, passive: true });
     });
     window.addEventListener('wheel', function () { flung = false; }, { capture: true, passive: true });
     window.addEventListener('scroll', function () {
-      if (!coarse || !flung || touching || stepTw || jumping || st.isActive || overlayUp()) return;
-      var y = curY(), v = st.getVelocity(), zone = window.innerHeight * CATCH;
-      var into = v > 0
-        ? y < st.start && y > st.start - zone && y + v * COAST > st.start
-        : v < 0 && y > st.end && y < st.end + zone && y + v * COAST < st.end;
-      if (!into) return;
-      flung = false;
-      stepAt = v > 0 ? 0 : n - 1;
-      used = true;
-      lock(true);
-      glide(stepY(stepAt), v);
+      if (coarse && !st.isActive) watchCatch(nearPin() || eating);
+      else if (!eating && !st.isActive) watchCatch(false);
+      if (!flung || touching) return;
+      catchIn(st.getVelocity(), null);
     }, { passive: true });
 
     /* Rolování, které do pinu nepřišlo krokem (posuvník, skok na kotvu,
        hledání v textu), po zastavení dojede k nejbližšímu jídlu. */
     ScrollTrigger.addEventListener('scrollEnd', function () {
       flung = false;                 // dojezd doběhl, chytat už není co
-      if (!st.isActive || stepTw || jumping || st.progress > lastStop + .002) return;
+      if (!st.isActive || stepTw || jumping || inbound || st.progress > lastStop + .002) return;
       stepAt = nearest();
       if (Math.abs(curY() - stepY(stepAt)) > 2) toY(stepY(stepAt), .5);
     });

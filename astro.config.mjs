@@ -67,7 +67,7 @@ function preloadDoorWebgl() {
 }
 
 export default defineConfig({
-  site: 'https://meshi-restaurant.eu',
+  site: 'https://meshi-restaurant.pages.dev',
   // Static output: každá stránka je HTML na Cloudflare CDN, nula Workers requestů.
   output: 'static',
   integrations: [preloadDoorWebgl()],

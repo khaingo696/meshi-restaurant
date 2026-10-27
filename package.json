@@ -8,6 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "deploy": "npm run build && npx wrangler@4.86.0 pages deploy dist --project-name=meshi-restaurant --branch=main",
     "rating:google": "node scripts/fetch-google-rating.mjs"
   },
   "dependencies": {

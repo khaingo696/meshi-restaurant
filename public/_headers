@@ -1,7 +1,16 @@
-# Cloudflare Pages servíruje všechno s max-age=0, takže se při každé návštěvě
-# revaliduje i to, co se nikdy nemění. Hashované a verzované soubory můžou
-# ležet v cache rok; fotky v /assets jen týden, aby se dala vyměnit fotka
-# beze změny názvu.
+# Hashované / verzované soubory můžou ležet v cache rok. HTML a /js se
+# nesmí: Safari na iOS si je i tak schová a po deployi ukazuje starou verzi.
+# /assets a /docs nemají hash v názvu, takže se při každé návštěvě
+# revalidují (304, když se nic nezměnilo).
+
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/js/*
+  Cache-Control: no-cache, no-store, must-revalidate
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
@@ -13,10 +22,10 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /assets/*
-  Cache-Control: public, max-age=604800
+  Cache-Control: public, max-age=0, must-revalidate
 
 /docs/*
-  Cache-Control: public, max-age=604800
+  Cache-Control: public, max-age=0, must-revalidate
 
 # Hodnocení se přepisuje skriptem, ať se chytí nové číslo do pěti minut.
 /google-rating.json
